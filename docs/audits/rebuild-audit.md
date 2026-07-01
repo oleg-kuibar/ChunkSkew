@@ -62,13 +62,16 @@ Change made in the next pass:
 
 - Added a guided scenario runner above the manual controls.
 - Added one-click preparation for payment recovery, missing chunk fallback, KYB draft review, and API contract blocking.
+- Added lightweight setup progress in the guided banner so the active step matches the route opened by each scenario.
+- Exposed each guided scenario's skew mode and target route on the card so setup is visible before clicking.
+- Clarified in the guided runner that clean retests should reset simulation state before choosing a scenario.
 - Moved manual mode controls, release state, preload status, telemetry, and audit trail into a collapsible advanced diagnostics section.
 - Moved the release debug panel into a desktop right rail so it stays visible without covering reset or guided scenario controls.
 - Centralized debug/router/scenario URL generation in `src/shared/routerLinks.ts` so start-page, examples-page, guided-banner, and reset links cannot drift.
 
 Remaining rebuild target:
 
-- Add richer per-step completion states if the current lightweight guided scenario banner is not enough.
+- Add richer per-step completion states only if the current lightweight guided scenario banner is not enough after more retesting.
 - Keep the current diagnostics table for verification, but keep it opt-in behind the guided scenario path.
 
 ### 5. Examples need a "minimal path" variant
@@ -90,6 +93,8 @@ Change made in this pass:
 - Each card now shows a tiny TypeScript-shaped check before linking to the broader implementation.
 - Added `src/examples/simpleVersionSkewPatterns.ts` as a tiny source file for copy/paste release, chunk, refresh, idempotency, gate, and asset-strategy examples.
 - Added a direct Playwright check for the tiny source examples so they stay runnable, not only rendered as text.
+- Added a visible `tests/simple-patterns.spec.ts` proof anchor on the simple examples page.
+- Updated the retest runbook and example docs to use guided scenarios as the primary path instead of old manual mode-switching steps.
 
 Future rebuild target:
 

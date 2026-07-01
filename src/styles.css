@@ -223,6 +223,12 @@ a {
   line-height: 1.45;
 }
 
+.guided-scenario-banner small {
+  color: #275f8f;
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .guided-scenario-banner ol {
   display: flex;
   flex-wrap: wrap;
@@ -245,6 +251,12 @@ a {
 .guided-scenario-banner li.active {
   border-color: var(--blue);
   color: #183f70;
+}
+
+.guided-scenario-banner li.complete {
+  border-color: #8fc5a7;
+  background: #e8f6ee;
+  color: #1f6b43;
 }
 
 .guided-scenario-banner .guided-scenario-actions {
@@ -394,6 +406,30 @@ a {
 
 .scenario-card p {
   margin: 0;
+}
+
+.scenario-meta {
+  display: grid;
+  gap: 5px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.scenario-meta span {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.scenario-meta code {
+  color: #30414a;
+  font-size: 12px;
+  overflow-wrap: anywhere;
 }
 
 .scenario-card ol {

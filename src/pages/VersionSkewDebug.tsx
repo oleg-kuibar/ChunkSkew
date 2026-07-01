@@ -32,7 +32,8 @@ const guidedScenarios = [
     icon: WalletCards,
     action: "Prepare payment recovery",
     outcome: "Autosave a payment, force a required update, then refresh safely without duplicate submit.",
-    steps: ["Start with retained assets", "Fill the payment memo", "Force required update before submit"]
+    steps: ["Start with retained assets", "Fill the payment memo", "Force required update before submit"],
+    targetStepIndex: 1
   },
   {
     id: "missing-chunk",
@@ -42,7 +43,8 @@ const guidedScenarios = [
     icon: Bug,
     action: "Prepare missing chunk fallback",
     outcome: "Open a lazy review route while old chunks are unavailable and see controlled recovery.",
-    steps: ["Switch to broken assets", "Open lazy payment review", "Confirm fallback and reload-loop prevention"]
+    steps: ["Switch to broken assets", "Open lazy payment review", "Confirm fallback and reload-loop prevention"],
+    targetStepIndex: 2
   },
   {
     id: "kyb-draft",
@@ -53,6 +55,7 @@ const guidedScenarios = [
     action: "Prepare KYB draft review",
     outcome: "Seed an incompatible KYB draft and verify the app asks for review instead of submitting.",
     steps: ["Seed incompatible draft", "Open KYB review", "Review the compatibility fallback"],
+    targetStepIndex: 2,
     seedKybDraft: true
   },
   {
@@ -63,7 +66,8 @@ const guidedScenarios = [
     icon: ShieldCheck,
     action: "Prepare API contract block",
     outcome: "Open a risky payment step with an incompatible API contract and watch mutation get paused.",
-    steps: ["Switch API contract", "Verify MFA", "Submit to see the guard"]
+    steps: ["Switch API contract", "Verify MFA", "Submit to see the guard"],
+    targetStepIndex: 1
   }
 ];
 
@@ -123,7 +127,8 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
           title: scenario.title,
           outcome: scenario.outcome,
           href: scenario.href,
-          steps: scenario.steps
+          steps: scenario.steps,
+          targetStepIndex: scenario.targetStepIndex
         });
         window.location.assign(debugRouteHref(scenario.href, routerMode));
       }
@@ -157,7 +162,7 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
           <div>
             <p className="eyebrow">Guided path</p>
             <h2>Pick one scenario</h2>
-            <p>Each card sets the lab to the right mode and opens a focused example.</p>
+            <p>For a clean retest, reset simulation state first. Then each card sets the lab mode and opens a focused example.</p>
           </div>
         </header>
         <div className="scenario-grid">
@@ -170,6 +175,14 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
                 <strong>{scenario.title}</strong>
                 {suggested ? <span className="status-chip">Recommended next</span> : null}
                 <p>{scenario.outcome}</p>
+                <div className="scenario-meta" aria-label={`${scenario.title} setup`}>
+                  <span>
+                    Mode <code>{scenario.mode}</code>
+                  </span>
+                  <span>
+                    Opens <code>{scenario.href}</code>
+                  </span>
+                </div>
                 <ol>
                   {scenario.steps.map((step) => (
                     <li key={step}>{step}</li>

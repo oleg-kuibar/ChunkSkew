@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Fragment, type ReactNode, useEffect, useState } from "react";
 import { clearGuidedScenarioState, readGuidedScenarioState, type GuidedScenarioState } from "../shared/guidedScenarioState";
+import { cx } from "../shared/format";
 import { isDebugMode, setDebugMode } from "../shared/releaseIdentity";
 import { debugRouteHref } from "../shared/routerLinks";
 import { getSessionSnapshot } from "../shared/sessionSimulation";
@@ -176,17 +177,18 @@ function GuidedScenarioBanner({
   }
   const currentPath = typeof window === "undefined" ? "" : window.location.pathname;
   const isTargetRoute = currentPath === scenario.href;
-  const activeStep = isTargetRoute ? scenario.steps[scenario.steps.length - 1] : scenario.steps[0];
+  const activeStepIndex = isTargetRoute ? scenario.targetStepIndex ?? scenario.steps.length - 1 : 0;
 
   return (
     <section className="guided-scenario-banner" data-testid="guided-scenario-banner" aria-label="Active guided scenario">
       <ListChecks aria-hidden="true" />
       <div>
         <strong>{scenario.title}</strong>
+        <small data-testid="guided-scenario-status">{isTargetRoute ? "Setup complete" : "Setup pending"}</small>
         <span>{scenario.outcome}</span>
         <ol>
-          {scenario.steps.map((step) => (
-            <li className={step === activeStep ? "active" : undefined} key={step}>
+          {scenario.steps.map((step, index) => (
+            <li className={cx(index < activeStepIndex && "complete", index === activeStepIndex && "active")} key={step}>
               {step}
             </li>
           ))}

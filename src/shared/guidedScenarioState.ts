@@ -8,6 +8,7 @@ export interface GuidedScenarioState {
   outcome: string;
   href: string;
   steps: string[];
+  targetStepIndex?: number;
   startedAt: string;
 }
 

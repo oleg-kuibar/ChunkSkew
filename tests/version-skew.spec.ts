@@ -126,6 +126,7 @@ test("1b. Simple examples page teaches core patterns", async ({ page }) => {
   await expect(page.getByTestId("simple-examples")).toContainText("Idempotent mutation");
   await expect(page.getByTestId("simple-examples")).toContainText("session.releaseId !== latest.releaseId");
   await expect(page.getByTestId("simple-examples")).toContainText("src/examples/simpleVersionSkewPatterns.ts");
+  await expect(page.getByTestId("simple-examples")).toContainText("tests/simple-patterns.spec.ts");
   await expect(page.getByTestId("simple-examples")).toContainText("src/shared/chunkRecoveryController.ts");
   await expect(page.getByTestId("router-mode-switch").getByRole("link", { name: "React" })).toHaveAttribute("aria-current", "page");
 
@@ -165,6 +166,9 @@ test("3. Version debug panel works", async ({ page }) => {
   await open(page, "/debug/version-skew");
   await expect(page.getByRole("heading", { name: "Version skew controls" })).toBeVisible();
   await expect(page.getByTestId("guided-scenarios")).toContainText("Pick one scenario");
+  await expect(page.getByTestId("guided-scenarios")).toContainText("reset simulation state first");
+  await expect(page.getByTestId("guided-scenario-missing-chunk")).toContainText("Mode broken");
+  await expect(page.getByTestId("guided-scenario-missing-chunk")).toContainText("Opens /payments/create/review");
   await expect(page.getByTestId("deployment-modes")).toBeHidden();
   await openAdvancedDiagnostics(page);
   await expect(page.getByTestId("deployment-modes")).toContainText("asset-retention");
@@ -176,6 +180,7 @@ test("3c. Guided scenario runner opens missing chunk recovery", async ({ page })
   await page.getByRole("button", { name: "Prepare missing chunk fallback" }).click();
   await expect(page).toHaveURL(/payments\/create\/review/);
   await expect(page.getByTestId("guided-scenario-banner")).toContainText("Missing chunk fallback");
+  await expect(page.getByTestId("guided-scenario-status")).toContainText("Setup complete");
   await expect(page.getByTestId("guided-scenario-banner")).toContainText("Confirm fallback and reload-loop prevention");
   await expect(page.getByTestId("chunk-failure-fallback")).toBeVisible();
 });

@@ -11,11 +11,11 @@ Prove that a required update does not lose the payment draft and does not create
 1. Start `pnpm dev:full`.
 2. Open `/debug/version-skew?debug=1&router=react`.
 3. Click **Reset simulation state**.
-4. Select `asset-retention`.
-5. Open `/payments/create/recipient?debug=1&router=react`.
-6. Enter a memo.
-7. Continue through amount, schedule, review, and MFA.
-8. Select `broken` in the debug page or force a required update.
+4. Click **Prepare payment recovery**.
+5. Enter a memo.
+6. Continue through amount, schedule, review, and MFA.
+7. Use **Lab controls** in the guided banner, open **Advanced diagnostics**, and select `broken`.
+8. Return to `/payments/create/mfa?debug=1&router=react`.
 9. Click **Submit payment**.
 10. Confirm `RequiredUpdateGate` blocks the risky mutation.
 11. Click **Refresh safely**.

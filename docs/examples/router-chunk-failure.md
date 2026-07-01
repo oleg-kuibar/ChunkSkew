@@ -7,18 +7,16 @@ This example demonstrates missing lazy route chunks in both router modes.
 1. Start `pnpm dev:full`.
 2. Open `/debug/version-skew?debug=1&router=react`.
 3. Click **Reset simulation state**.
-4. Select `broken`.
-5. Open `/payments/create/review?debug=1&router=react`.
-6. Confirm `ChunkFailureFallback` appears.
+4. Click **Prepare missing chunk fallback**.
+5. Confirm `ChunkFailureFallback` appears.
 
 ## TanStack Router
 
 1. Start `pnpm dev:full`.
 2. Open `/debug/version-skew?debug=1&router=tanstack`.
 3. Click **Reset simulation state**.
-4. Select `broken`.
-5. Open a TanStack lazy payment or invoice route.
-6. Confirm the same controlled recovery pattern appears.
+4. Click **Prepare missing chunk fallback**.
+5. Confirm the same controlled recovery pattern appears.
 
 ## Expected Behavior
 

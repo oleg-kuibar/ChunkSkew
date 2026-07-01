@@ -7,6 +7,7 @@ import { simplePatternSnippets } from "../examples/simpleVersionSkewPatterns";
 import type { RouterMode } from "../shared/types";
 
 const simpleAnchor = "src/examples/simpleVersionSkewPatterns.ts";
+const testAnchor = "tests/simple-patterns.spec.ts";
 
 const examples = [
   {
@@ -122,6 +123,10 @@ export function SimpleExamplesPage({ routerMode }: { routerMode: RouterMode }) {
               <div className="example-anchor">
                 <span>Study</span>
                 <code>{example.anchor}</code>
+              </div>
+              <div className="example-anchor">
+                <span>Verified</span>
+                <code>{testAnchor}</code>
               </div>
               <span>{example.hook}</span>
               <a className="button button-light" href={debugRouteHref(example.href, routerMode, example.scenarioId)}>

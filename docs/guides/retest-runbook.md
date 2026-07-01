@@ -60,31 +60,29 @@ Manual path:
 ## Reproduce Safe Refresh With Autosaved Payment
 
 1. Reset state.
-2. Select `asset-retention`.
-3. Open `/payments/create/recipient?debug=1&router=react`.
-4. Enter a memo.
-5. Continue to MFA.
-6. Force a required update by selecting `broken`.
-7. Try to submit the payment.
-8. Confirm the required update gate appears.
-9. Click **Refresh safely**.
-10. Confirm the payment flow resumes and the memo is restored.
-11. Confirm the build stamp shows bundle and session separately, for example `Bundle dev-local · session release-b`.
+2. Click **Prepare payment recovery** in the guided scenarios.
+3. Enter a memo.
+4. Continue to MFA.
+5. Use **Lab controls** in the guided banner, open **Advanced diagnostics**, then select `broken`.
+6. Return to `/payments/create/mfa?debug=1&router=react` and try to submit the payment.
+7. Confirm the required update gate appears.
+8. Click **Refresh safely**.
+9. Confirm the payment flow resumes and the memo is restored.
+10. Confirm the build stamp shows bundle and session separately, for example `Bundle dev-local · session release-b`.
 
 ## Reproduce API Contract Blocking
 
 1. Reset state.
-2. Select `api-contract-incompatible`.
-3. Open a sensitive workflow.
-4. Attempt a risky mutation.
+2. Click **Prepare API contract block** in the guided scenarios.
+3. Verify MFA.
+4. Attempt the risky payment mutation.
 5. The policy should block mutation or move the workflow into read-only behavior.
 
 ## Reproduce KYB Draft Recovery
 
 1. Reset state.
-2. Click **Seed incompatible KYB draft**.
-3. Open `/kyb/review?debug=1&router=react`.
-4. The UI should show a review-required fallback, not crash or submit automatically.
+2. Click **Prepare KYB draft review** in the guided scenarios.
+3. The UI should show a review-required fallback, not crash or submit automatically.
 
 ## Verify With Tests
 
