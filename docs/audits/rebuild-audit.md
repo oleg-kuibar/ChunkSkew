@@ -56,12 +56,14 @@ Change made in the next pass:
 
 - Added a guided scenario runner above the manual controls.
 - Added one-click preparation for payment recovery, missing chunk fallback, KYB draft review, and API contract blocking.
-- Moved the manual controls under an advanced diagnostics heading.
+- Moved manual mode controls, release state, preload status, telemetry, and audit trail into a collapsible advanced diagnostics section.
+- Moved the release debug panel into a desktop right rail so it stays visible without covering reset or guided scenario controls.
+- Centralized debug/router/scenario URL generation in `src/shared/routerLinks.ts` so start-page, examples-page, guided-banner, and reset links cannot drift.
 
 Remaining rebuild target:
 
 - Add richer per-step completion states if the current lightweight guided scenario banner is not enough.
-- Keep the current table for verification, but keep the primary scenario path visible after navigation.
+- Keep the current diagnostics table for verification, but keep it opt-in behind the guided scenario path.
 
 ### 5. Examples need a "minimal path" variant
 
@@ -79,6 +81,7 @@ Change made in this pass:
 - Kept each card linked to the realistic fintech/debug workflow that proves the same rule under pressure.
 - Cards that need skew setup now prepare the matching guided scenario instead of jumping directly into an unprepared workflow.
 - Each card now names the implementation file to study after the minimal rule.
+- Each card now shows a tiny TypeScript-shaped check before linking to the broader implementation.
 
 Future rebuild target:
 

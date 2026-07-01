@@ -7,6 +7,7 @@ import { setLocalSkewMode } from "../shared/assetRetentionSimulator";
 import { readPreloadStatuses } from "../shared/preloadWorkflowChunks";
 import { cx } from "../shared/format";
 import { writeGuidedScenarioState } from "../shared/guidedScenarioState";
+import { debugRouteHref } from "../shared/routerLinks";
 import { seedIncompatibleKybDraft } from "../shared/workflowDraftStore";
 import { clearTelemetryEvents } from "../shared/telemetry";
 import { applyReleasePayload, checkForVersionUpdate, getVersionState } from "../shared/versionCheckClient";
@@ -98,7 +99,7 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
       }),
     onSuccess() {
       resetBrowserSimulationState(routerMode);
-      window.location.assign(`/debug/version-skew?debug=1&router=${routerMode === "tanstack-router" ? "tanstack" : "react"}`);
+      window.location.assign(debugRouteHref("/debug/version-skew", routerMode));
     }
   });
   useEffect(() => {
@@ -124,7 +125,7 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
           href: scenario.href,
           steps: scenario.steps
         });
-        window.location.assign(withRouter(scenario.href, routerMode));
+        window.location.assign(debugRouteHref(scenario.href, routerMode));
       }
     });
   };
@@ -184,119 +185,116 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
         </div>
       </section>
 
-      <section className="advanced-diagnostics">
-        <header className="section-header">
+      <details className="advanced-diagnostics" data-testid="advanced-diagnostics">
+        <summary>
           <div>
             <p className="eyebrow">Advanced diagnostics</p>
             <h2>Manual controls</h2>
             <p>Use these when you want to inspect the underlying skew modes, release state, preloads, telemetry, and audit trail.</p>
           </div>
-        </header>
-      </section>
+        </summary>
 
-      <section className="mode-grid" data-testid="deployment-modes">
-        {modes.map((mode) => (
-          <button
-            key={mode}
-            className={cx("mode-card", query.data?.mode === mode && "active")}
-            type="button"
-            onClick={() => mutation.mutate(mode)}
-          >
-            <Bug aria-hidden="true" />
-            <strong>{mode}</strong>
-            <span>{modeCopy(mode)}</span>
-          </button>
-        ))}
-      </section>
+        <div className="advanced-diagnostics-body">
+          <section className="mode-grid" data-testid="deployment-modes">
+            {modes.map((mode) => (
+              <button
+                key={mode}
+                className={cx("mode-card", query.data?.mode === mode && "active")}
+                type="button"
+                onClick={() => mutation.mutate(mode)}
+              >
+                <Bug aria-hidden="true" />
+                <strong>{mode}</strong>
+                <span>{modeCopy(mode)}</span>
+              </button>
+            ))}
+          </section>
 
-      <AssetRetentionWarning active={versionState.latest.skewMode === "asset-retention" || query.data?.mode === "asset-retention"} />
+          <AssetRetentionWarning active={versionState.latest.skewMode === "asset-retention" || query.data?.mode === "asset-retention"} />
 
-      <section className="detail-grid">
-        <div className="summary-tile">
-          <span>Current release</span>
-          <strong>{versionState.current.releaseId}</strong>
+          <section className="detail-grid">
+            <div className="summary-tile">
+              <span>Current release</span>
+              <strong>{versionState.current.releaseId}</strong>
+            </div>
+            <div className="summary-tile">
+              <span>Latest release</span>
+              <strong>{versionState.latest.releaseId}</strong>
+            </div>
+            <div className="summary-tile">
+              <span>Severity</span>
+              <strong>{versionState.updateSeverity}</strong>
+            </div>
+            <div className="summary-tile">
+              <span>API contract</span>
+              <strong>{versionState.apiContractCompatible ? "compatible" : "blocked"}</strong>
+            </div>
+          </section>
+
+          <section className="toolbar">
+            <button className="button button-secondary" type="button" onClick={() => seedIncompatibleKybDraft(routerMode)}>
+              <AlertTriangle aria-hidden="true" />
+              Seed incompatible KYB draft
+            </button>
+            <button
+              className="button button-light"
+              type="button"
+              onClick={() => {
+                clearTelemetryEvents();
+                setTick((value) => value + 1);
+              }}
+            >
+              <Trash2 aria-hidden="true" />
+              Clear telemetry
+            </button>
+          </section>
+
+          <section className="table-section">
+            <header className="section-header">
+              <div>
+                <h2>Workflow chunk preload table</h2>
+                <p>Routes needed to finish current workflows.</p>
+              </div>
+              <span className="status-chip">
+                <CheckCircle2 aria-hidden="true" />
+                {statuses.length} entries
+              </span>
+            </header>
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Route</th>
+                    <th>Workflow</th>
+                    <th>Lazy mechanism</th>
+                    <th>Status</th>
+                    <th>Release</th>
+                    <th>Required</th>
+                    <th>Error</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {statuses.map((status) => (
+                    <tr key={`${status.route}-${status.releaseId}`} data-testid={`preload-row-${status.route}`}>
+                      <td>{status.route}</td>
+                      <td>{status.workflowType}</td>
+                      <td>{status.lazyMechanism}</td>
+                      <td>{status.status}</td>
+                      <td>{status.releaseId}</td>
+                      <td>{status.requiredToFinishWorkflow ? "yes" : "no"}</td>
+                      <td>{status.lastPreloadError ?? ""}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <AuditEventTable routerMode={routerMode} />
         </div>
-        <div className="summary-tile">
-          <span>Latest release</span>
-          <strong>{versionState.latest.releaseId}</strong>
-        </div>
-        <div className="summary-tile">
-          <span>Severity</span>
-          <strong>{versionState.updateSeverity}</strong>
-        </div>
-        <div className="summary-tile">
-          <span>API contract</span>
-          <strong>{versionState.apiContractCompatible ? "compatible" : "blocked"}</strong>
-        </div>
-      </section>
-
-      <section className="toolbar">
-        <button className="button button-secondary" type="button" onClick={() => seedIncompatibleKybDraft(routerMode)}>
-          <AlertTriangle aria-hidden="true" />
-          Seed incompatible KYB draft
-        </button>
-        <button
-          className="button button-light"
-          type="button"
-          onClick={() => {
-            clearTelemetryEvents();
-            setTick((value) => value + 1);
-          }}
-        >
-          <Trash2 aria-hidden="true" />
-          Clear telemetry
-        </button>
-      </section>
-
-      <section className="table-section">
-        <header className="section-header">
-          <div>
-            <h2>Workflow chunk preload table</h2>
-            <p>Routes needed to finish current workflows.</p>
-          </div>
-          <span className="status-chip">
-            <CheckCircle2 aria-hidden="true" />
-            {statuses.length} entries
-          </span>
-        </header>
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Route</th>
-                <th>Workflow</th>
-                <th>Lazy mechanism</th>
-                <th>Status</th>
-                <th>Release</th>
-                <th>Required</th>
-                <th>Error</th>
-              </tr>
-            </thead>
-            <tbody>
-              {statuses.map((status) => (
-                <tr key={`${status.route}-${status.releaseId}`} data-testid={`preload-row-${status.route}`}>
-                  <td>{status.route}</td>
-                  <td>{status.workflowType}</td>
-                  <td>{status.lazyMechanism}</td>
-                  <td>{status.status}</td>
-                  <td>{status.releaseId}</td>
-                  <td>{status.requiredToFinishWorkflow ? "yes" : "no"}</td>
-                  <td>{status.lastPreloadError ?? ""}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <AuditEventTable routerMode={routerMode} />
+      </details>
     </div>
   );
-}
-
-function withRouter(path: string, routerMode: RouterMode) {
-  const router = routerMode === "tanstack-router" ? "tanstack" : "react";
-  return `${path}?debug=1&router=${router}`;
 }
 
 function resetBrowserSimulationState(routerMode: RouterMode) {

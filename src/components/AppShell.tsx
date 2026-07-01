@@ -18,6 +18,7 @@ import {
 import { Fragment, type ReactNode, useEffect, useState } from "react";
 import { clearGuidedScenarioState, readGuidedScenarioState, type GuidedScenarioState } from "../shared/guidedScenarioState";
 import { isDebugMode, setDebugMode } from "../shared/releaseIdentity";
+import { debugRouteHref } from "../shared/routerLinks";
 import { getSessionSnapshot } from "../shared/sessionSimulation";
 import { checkForVersionUpdate } from "../shared/versionCheckClient";
 import type { RouterMode } from "../shared/types";
@@ -78,7 +79,7 @@ export function AppShell({
   }, []);
 
   return (
-    <div className="app-shell">
+    <div className={debug ? "app-shell debug-panel-open" : "app-shell"}>
       <aside className="sidebar">
         <div className="brand">
           <Landmark aria-hidden="true" />
@@ -173,7 +174,6 @@ function GuidedScenarioBanner({
   if (!scenario) {
     return null;
   }
-  const router = routerMode === "tanstack-router" ? "tanstack" : "react";
   const currentPath = typeof window === "undefined" ? "" : window.location.pathname;
   const isTargetRoute = currentPath === scenario.href;
   const activeStep = isTargetRoute ? scenario.steps[scenario.steps.length - 1] : scenario.steps[0];
@@ -193,7 +193,7 @@ function GuidedScenarioBanner({
         </ol>
       </div>
       <div className="guided-scenario-actions">
-        <a className="button button-light" href={`/debug/version-skew?debug=1&router=${router}`}>
+        <a className="button button-light" href={debugRouteHref("/debug/version-skew", routerMode)}>
           Lab controls
         </a>
         <button className="icon-button" type="button" aria-label="Clear guided scenario" title="Clear guided scenario" onClick={onClear}>

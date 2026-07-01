@@ -104,6 +104,12 @@ async function waitForPreloadRoute(page: Page, route: string) {
   );
 }
 
+async function openAdvancedDiagnostics(page: Page) {
+  const diagnostics = page.getByTestId("advanced-diagnostics");
+  await diagnostics.locator("summary").click();
+  return diagnostics;
+}
+
 test("1. Baseline app loads", async ({ page }) => {
   await prepare(page);
   await open(page);
@@ -118,6 +124,7 @@ test("1b. Simple examples page teaches core patterns", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Simple examples" })).toBeVisible();
   await expect(page.getByTestId("simple-examples")).toContainText("Release identity");
   await expect(page.getByTestId("simple-examples")).toContainText("Idempotent mutation");
+  await expect(page.getByTestId("simple-examples")).toContainText("session.releaseId !== latest.releaseId");
   await expect(page.getByTestId("simple-examples")).toContainText("src/shared/chunkRecoveryController.ts");
   await expect(page.getByTestId("router-mode-switch").getByRole("link", { name: "React" })).toHaveAttribute("aria-current", "page");
 
@@ -157,6 +164,8 @@ test("3. Version debug panel works", async ({ page }) => {
   await open(page, "/debug/version-skew");
   await expect(page.getByRole("heading", { name: "Version skew controls" })).toBeVisible();
   await expect(page.getByTestId("guided-scenarios")).toContainText("Pick one scenario");
+  await expect(page.getByTestId("deployment-modes")).toBeHidden();
+  await openAdvancedDiagnostics(page);
   await expect(page.getByTestId("deployment-modes")).toContainText("asset-retention");
 });
 
@@ -374,6 +383,7 @@ test("20. KYB draft restores after reload", async ({ page }) => {
 test("21. Incompatible KYB draft schema shows review-required fallback", async ({ page }) => {
   await prepare(page);
   await open(page, "/debug/version-skew");
+  await openAdvancedDiagnostics(page);
   await page.getByRole("button", { name: "Seed incompatible KYB draft" }).click();
   await open(page, "/kyb/review");
   await expect(page.getByTestId("incompatible-draft-fallback")).toBeVisible();
@@ -415,6 +425,7 @@ test("25. React Router workflow chunks preload on workflow entry", async ({ page
   await expect(page.getByTestId("payment-workflow")).toBeVisible();
   await waitForPreloadRoute(page, "payment-review");
   await open(page, "/debug/version-skew");
+  await openAdvancedDiagnostics(page);
   await expect(page.getByRole("row", { name: /payment-review payment react-router-lazy succeeded/ })).toBeVisible();
 });
 
@@ -439,6 +450,7 @@ test("28. Code-based Route.lazy invoice route failure triggers controlled recove
 test("29. Auto-code-split route behavior is documented in debug controls", async ({ page }) => {
   await prepare(page, "tanstack");
   await open(page, "/debug/version-skew", "tanstack");
+  await openAdvancedDiagnostics(page);
   await expect(page.getByText("Workflow chunk preload table")).toBeVisible();
 });
 
@@ -448,6 +460,7 @@ test("30. TanStack workflow chunks preload on workflow entry", async ({ page }) 
   await expect(page.getByTestId("payment-workflow")).toBeVisible();
   await waitForPreloadRoute(page, "tanstack-payment-lazy");
   await open(page, "/debug/version-skew", "tanstack");
+  await openAdvancedDiagnostics(page);
   await expect(page.getByRole("row", { name: /tanstack-payment-lazy payment tanstack-route-lazy succeeded/ })).toBeVisible();
 });
 

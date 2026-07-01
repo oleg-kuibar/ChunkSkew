@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   WalletCards
 } from "lucide-react";
+import { debugRouteHref } from "../shared/routerLinks";
 import type { RouterMode } from "../shared/types";
 
 const labSteps = [
@@ -86,11 +87,11 @@ export function DashboardPage({ routerMode }: { routerMode: RouterMode }) {
             that keep sensitive workflows safe.
           </p>
           <div className="learning-actions">
-            <a className="button" href={withRouter("/debug/version-skew", routerMode)}>
+            <a className="button" href={debugRouteHref("/debug/version-skew", routerMode)}>
               <ShieldCheck aria-hidden="true" />
               Open lab controls
             </a>
-            <a className="button button-light" href={withRouter("/debug/version-skew", routerMode, "payment-safe-refresh")}>
+            <a className="button button-light" href={debugRouteHref("/debug/version-skew", routerMode, "payment-safe-refresh")}>
               <WalletCards aria-hidden="true" />
               Try payment recovery
             </a>
@@ -132,7 +133,7 @@ export function DashboardPage({ routerMode }: { routerMode: RouterMode }) {
         {scenarioLinks.map((scenario) => {
           const Icon = scenario.icon;
           return (
-            <a className="learning-card learning-card-link" href={withRouter(scenario.href, routerMode, scenario.scenarioId)} key={scenario.title}>
+            <a className="learning-card learning-card-link" href={debugRouteHref(scenario.href, routerMode, scenario.scenarioId)} key={scenario.title}>
               <Icon aria-hidden="true" />
               <strong>{scenario.title}</strong>
               <p>{scenario.body}</p>
@@ -159,13 +160,4 @@ export function DashboardPage({ routerMode }: { routerMode: RouterMode }) {
       </section>
     </div>
   );
-}
-
-function withRouter(path: string, routerMode: RouterMode, scenarioId?: string) {
-  const router = routerMode === "tanstack-router" ? "tanstack" : "react";
-  const params = new URLSearchParams({ debug: "1", router });
-  if (scenarioId) {
-    params.set("scenario", scenarioId);
-  }
-  return `${path}?${params.toString()}`;
 }
