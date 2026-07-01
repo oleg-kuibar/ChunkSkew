@@ -118,10 +118,30 @@ test("1b. Simple examples page teaches core patterns", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Simple examples" })).toBeVisible();
   await expect(page.getByTestId("simple-examples")).toContainText("Release identity");
   await expect(page.getByTestId("simple-examples")).toContainText("Idempotent mutation");
+  await expect(page.getByTestId("simple-examples")).toContainText("src/shared/chunkRecoveryController.ts");
+  await expect(page.getByTestId("router-mode-switch").getByRole("link", { name: "React" })).toHaveAttribute("aria-current", "page");
 
-  await prepare(page, "tanstack");
-  await open(page, "/examples", "tanstack");
+  await page.getByTestId("router-mode-switch").getByRole("link", { name: "TanStack" }).click();
+  await expect(page).toHaveURL(/router=tanstack/);
   await expect(page.getByRole("heading", { name: "Simple examples" })).toBeVisible();
+  await expect(page.getByTestId("router-mode-switch").getByRole("link", { name: "TanStack" })).toHaveAttribute("aria-current", "page");
+});
+
+test("1c. Start page routes payment recovery through guided controls", async ({ page }) => {
+  await prepare(page);
+  await open(page);
+  await page.getByRole("link", { name: "Try payment recovery" }).click();
+  await expect(page).toHaveURL(/debug\/version-skew.*scenario=payment-safe-refresh/);
+  await expect(page.getByTestId("guided-scenario-payment-safe-refresh")).toContainText("Recommended next");
+});
+
+test("1d. Simple examples prepare setup-dependent robust examples", async ({ page }) => {
+  await prepare(page);
+  await open(page, "/examples");
+  const chunkRecoveryCard = page.getByTestId("simple-examples").locator("article").filter({ hasText: "Chunk recovery" });
+  await chunkRecoveryCard.getByRole("link", { name: "Prepare robust example" }).click();
+  await expect(page).toHaveURL(/debug\/version-skew.*scenario=missing-chunk/);
+  await expect(page.getByTestId("guided-scenario-missing-chunk")).toContainText("Recommended next");
 });
 
 test("2. Current release ID is visible in debug mode", async ({ page }) => {
@@ -145,6 +165,8 @@ test("3c. Guided scenario runner opens missing chunk recovery", async ({ page })
   await open(page, "/debug/version-skew");
   await page.getByRole("button", { name: "Prepare missing chunk fallback" }).click();
   await expect(page).toHaveURL(/payments\/create\/review/);
+  await expect(page.getByTestId("guided-scenario-banner")).toContainText("Missing chunk fallback");
+  await expect(page.getByTestId("guided-scenario-banner")).toContainText("Confirm fallback and reload-loop prevention");
   await expect(page.getByTestId("chunk-failure-fallback")).toBeVisible();
 });
 

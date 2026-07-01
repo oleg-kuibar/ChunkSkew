@@ -160,6 +160,93 @@ a {
   line-height: 1.15;
 }
 
+.router-switch {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.router-switch a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 4px 9px;
+  border-radius: 6px;
+  color: #43504c;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.router-switch a:hover,
+.router-switch a:focus-visible {
+  background: var(--panel-strong);
+  outline: none;
+}
+
+.router-switch a[aria-current="page"] {
+  background: var(--blue-soft);
+  color: #183f70;
+}
+
+.guided-scenario-banner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+  margin: 16px 28px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--blue);
+  border-radius: 8px;
+  background: var(--blue-soft);
+}
+
+.guided-scenario-banner > svg {
+  color: var(--blue);
+}
+
+.guided-scenario-banner div {
+  display: grid;
+  gap: 7px;
+}
+
+.guided-scenario-banner span {
+  color: #183f70;
+  line-height: 1.45;
+}
+
+.guided-scenario-banner ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guided-scenario-banner li {
+  padding: 4px 8px;
+  border: 1px solid #b9cfea;
+  border-radius: 999px;
+  background: #fff;
+  color: #40504c;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.guided-scenario-banner li.active {
+  border-color: var(--blue);
+  color: #183f70;
+}
+
+.guided-scenario-banner .guided-scenario-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .content {
   width: min(1320px, calc(100vw - 256px));
   margin: 0 auto;
@@ -263,6 +350,15 @@ a {
 
 .scenario-card > svg {
   color: var(--green);
+}
+
+.scenario-card.active {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+}
+
+.scenario-card.active > svg {
+  color: var(--blue);
 }
 
 .scenario-card p,
@@ -756,6 +852,29 @@ textarea:focus {
   overflow-wrap: anywhere;
 }
 
+.example-anchor {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+}
+
+.example-anchor span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.example-anchor code {
+  color: #30414a;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
 .document-tile {
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -1123,12 +1242,17 @@ td code {
 
   .page-heading,
   .topbar,
-  .learning-hero {
+  .learning-hero,
+  .guided-scenario-banner {
     align-items: flex-start;
     flex-direction: column;
   }
 
   .learning-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .guided-scenario-banner {
     grid-template-columns: 1fr;
   }
 

@@ -22,4 +22,6 @@ http://localhost:5173/examples?debug=1
 http://localhost:5173/debug/version-skew?debug=1
 ```
 
+Use the topbar router switch to replay the current route in React Router or TanStack Router mode.
+
 Click **Reset simulation state** before replaying each example.

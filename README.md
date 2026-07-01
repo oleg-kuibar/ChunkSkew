@@ -43,6 +43,8 @@ Open:
 - Simple examples: `http://localhost:5173/examples?debug=1`
 - Version skew controls: `http://localhost:5173/debug/version-skew?debug=1`
 
+Use the topbar router switch to replay the same route in React Router or TanStack Router mode.
+
 If you prefer separate terminals:
 
 ```bash

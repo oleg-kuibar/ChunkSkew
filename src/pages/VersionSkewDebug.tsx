@@ -6,6 +6,7 @@ import { apiFetch } from "../shared/apiClient";
 import { setLocalSkewMode } from "../shared/assetRetentionSimulator";
 import { readPreloadStatuses } from "../shared/preloadWorkflowChunks";
 import { cx } from "../shared/format";
+import { writeGuidedScenarioState } from "../shared/guidedScenarioState";
 import { seedIncompatibleKybDraft } from "../shared/workflowDraftStore";
 import { clearTelemetryEvents } from "../shared/telemetry";
 import { applyReleasePayload, checkForVersionUpdate, getVersionState } from "../shared/versionCheckClient";
@@ -106,6 +107,8 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
   }, []);
   const versionState = getVersionState(routerMode);
   const statuses = readPreloadStatuses();
+  const suggestedScenarioId =
+    typeof window === "undefined" ? undefined : new URLSearchParams(window.location.search).get("scenario") ?? undefined;
   const runGuidedScenario = (scenario: (typeof guidedScenarios)[number]) => {
     mutation.mutate(scenario.mode, {
       onSuccess(data) {
@@ -114,6 +117,13 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
         if (scenario.seedKybDraft) {
           seedIncompatibleKybDraft(routerMode);
         }
+        writeGuidedScenarioState({
+          id: scenario.id,
+          title: scenario.title,
+          outcome: scenario.outcome,
+          href: scenario.href,
+          steps: scenario.steps
+        });
         window.location.assign(withRouter(scenario.href, routerMode));
       }
     });
@@ -152,10 +162,12 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
         <div className="scenario-grid">
           {guidedScenarios.map((scenario) => {
             const Icon = scenario.icon;
+            const suggested = scenario.id === suggestedScenarioId;
             return (
-              <article className="scenario-card" key={scenario.id}>
+              <article className={cx("scenario-card", suggested && "active")} data-testid={`guided-scenario-${scenario.id}`} key={scenario.id}>
                 <Icon aria-hidden="true" />
                 <strong>{scenario.title}</strong>
+                {suggested ? <span className="status-chip">Recommended next</span> : null}
                 <p>{scenario.outcome}</p>
                 <ol>
                   {scenario.steps.map((step) => (

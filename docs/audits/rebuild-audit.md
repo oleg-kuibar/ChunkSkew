@@ -21,6 +21,7 @@ Change made in this pass:
 - Replaced the root dashboard with a learning-first lab page.
 - The first viewport now explains the four-step mental model: deploy, lazy route, missing chunk, safe recovery.
 - Direct scenario links now point to payment recovery, missing chunk recovery, KYB draft recovery, and lab controls.
+- Scenario links that require setup now open lab controls with the matching guided card highlighted from the start page and simple examples page.
 
 ### 2. Navigation labels mixed product app and teaching artifact
 
@@ -59,8 +60,8 @@ Change made in the next pass:
 
 Remaining rebuild target:
 
-- Add richer in-page progress feedback after each guided scenario step.
-- Keep the current table for verification, but make the happy learning path continue one click at a time after navigation.
+- Add richer per-step completion states if the current lightweight guided scenario banner is not enough.
+- Keep the current table for verification, but keep the primary scenario path visible after navigation.
 
 ### 5. Examples need a "minimal path" variant
 
@@ -76,17 +77,19 @@ Change made in this pass:
 
 - Added a dedicated `/examples` route with tiny cards for release identity, chunk recovery, safe refresh, idempotent mutation, required update gates, and asset strategy.
 - Kept each card linked to the realistic fintech/debug workflow that proves the same rule under pressure.
+- Cards that need skew setup now prepare the matching guided scenario instead of jumping directly into an unprepared workflow.
+- Each card now names the implementation file to study after the minimal rule.
 
 Future rebuild target:
 
-- Add `src/examples/simple-*` modules if the route still feels too UI-first for readers who want copy/paste code snippets.
+- Add `src/examples/simple-*` modules only if the implementation anchors still feel too broad for readers who want copy/paste code snippets.
 
 ## Target Information Architecture
 
 1. Start here: mental model and scenario cards.
 2. Try one scenario: payment safe refresh as the primary walkthrough.
 3. Inspect the pattern: release identity, policy, chunk recovery, autosave, idempotency.
-4. Compare routers: React Router and TanStack Router side by side.
+4. Compare routers: use the topbar router switch to replay the same path in React Router or TanStack Router mode.
 5. Run diagnostics: skew modes, preload table, telemetry, audit.
 6. Read production rollout: checklist and tradeoffs.
 

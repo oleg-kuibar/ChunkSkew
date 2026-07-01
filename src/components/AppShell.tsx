@@ -9,16 +9,19 @@ import {
   Gauge,
   KeyRound,
   Landmark,
+  ListChecks,
   LayoutDashboard,
   ShieldCheck,
-  Users
+  Users,
+  X
 } from "lucide-react";
 import { Fragment, type ReactNode, useEffect, useState } from "react";
+import { clearGuidedScenarioState, readGuidedScenarioState, type GuidedScenarioState } from "../shared/guidedScenarioState";
 import { isDebugMode, setDebugMode } from "../shared/releaseIdentity";
 import { getSessionSnapshot } from "../shared/sessionSimulation";
 import { checkForVersionUpdate } from "../shared/versionCheckClient";
 import type { RouterMode } from "../shared/types";
-import { BuildVersionStamp, RouterModeBadge, UpdateBanner, UpdateToast, VersionDebugPanel } from "./UpdateSurfaces";
+import { BuildVersionStamp, UpdateBanner, UpdateToast, VersionDebugPanel } from "./UpdateSurfaces";
 
 export type LinkRenderer = (props: { to: string; children: ReactNode; className?: string }) => ReactNode;
 
@@ -45,10 +48,34 @@ export function AppShell({
   children: ReactNode;
 }) {
   const [debug, setDebug] = useState(isDebugMode());
+  const [guidedScenario, setGuidedScenario] = useState(() => readGuidedScenarioState());
   const session = getSessionSnapshot();
+  const routerHref = (target: "react" | "tanstack") => {
+    if (typeof window === "undefined") {
+      return `/?router=${target}`;
+    }
+    const params = new URLSearchParams(window.location.search);
+    params.set("router", target);
+    if (debug) {
+      params.set("debug", "1");
+    } else {
+      params.delete("debug");
+    }
+    return `${window.location.pathname}?${params.toString()}`;
+  };
   useEffect(() => {
     void checkForVersionUpdate(routerMode, "route-transition");
   }, [routerMode]);
+  useEffect(() => {
+    const syncGuidedScenario = (event: Event) => {
+      const key = (event as CustomEvent<{ key?: string }>).detail?.key;
+      if (!key || key === "guided-scenario") {
+        setGuidedScenario(readGuidedScenarioState());
+      }
+    };
+    window.addEventListener("chunk-skew-storage", syncGuidedScenario);
+    return () => window.removeEventListener("chunk-skew-storage", syncGuidedScenario);
+  }, []);
 
   return (
     <div className="app-shell">
@@ -83,7 +110,14 @@ export function AppShell({
       <div className="workspace">
         <header className="topbar">
           <div className="topbar-left">
-            <RouterModeBadge routerMode={routerMode} />
+            <nav className="router-switch" aria-label="Router mode" data-testid="router-mode-switch">
+              <a href={routerHref("react")} aria-current={routerMode === "react-router" ? "page" : undefined}>
+                React
+              </a>
+              <a href={routerHref("tanstack")} aria-current={routerMode === "tanstack-router" ? "page" : undefined}>
+                TanStack
+              </a>
+            </nav>
             <BuildVersionStamp routerMode={routerMode} />
             <span className="badge badge-muted">
               <ShieldCheck aria-hidden="true" />
@@ -112,9 +146,60 @@ export function AppShell({
         </header>
         <UpdateToast routerMode={routerMode} />
         <UpdateBanner routerMode={routerMode} />
+        <GuidedScenarioBanner
+          routerMode={routerMode}
+          scenario={guidedScenario}
+          onClear={() => {
+            clearGuidedScenarioState();
+            setGuidedScenario(null);
+          }}
+        />
         <main className="content">{children}</main>
       </div>
       <VersionDebugPanel routerMode={routerMode} />
     </div>
+  );
+}
+
+function GuidedScenarioBanner({
+  routerMode,
+  scenario,
+  onClear
+}: {
+  routerMode: RouterMode;
+  scenario: GuidedScenarioState | null;
+  onClear: () => void;
+}) {
+  if (!scenario) {
+    return null;
+  }
+  const router = routerMode === "tanstack-router" ? "tanstack" : "react";
+  const currentPath = typeof window === "undefined" ? "" : window.location.pathname;
+  const isTargetRoute = currentPath === scenario.href;
+  const activeStep = isTargetRoute ? scenario.steps[scenario.steps.length - 1] : scenario.steps[0];
+
+  return (
+    <section className="guided-scenario-banner" data-testid="guided-scenario-banner" aria-label="Active guided scenario">
+      <ListChecks aria-hidden="true" />
+      <div>
+        <strong>{scenario.title}</strong>
+        <span>{scenario.outcome}</span>
+        <ol>
+          {scenario.steps.map((step) => (
+            <li className={step === activeStep ? "active" : undefined} key={step}>
+              {step}
+            </li>
+          ))}
+        </ol>
+      </div>
+      <div className="guided-scenario-actions">
+        <a className="button button-light" href={`/debug/version-skew?debug=1&router=${router}`}>
+          Lab controls
+        </a>
+        <button className="icon-button" type="button" aria-label="Clear guided scenario" title="Clear guided scenario" onClick={onClear}>
+          <X aria-hidden="true" />
+        </button>
+      </div>
+    </section>
   );
 }

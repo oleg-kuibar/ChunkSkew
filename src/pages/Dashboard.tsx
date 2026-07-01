@@ -39,19 +39,22 @@ const scenarioLinks = [
   {
     title: "Payment safe refresh",
     body: "Autosave a payment, force a required update, refresh safely, and submit without duplicates.",
-    href: "/payments/create/recipient",
+    href: "/debug/version-skew",
+    scenarioId: "payment-safe-refresh",
     icon: WalletCards
   },
   {
     title: "Missing lazy chunk",
     body: "Switch to broken mode and open a lazy review route to see controlled recovery.",
-    href: "/payments/create/review",
+    href: "/debug/version-skew",
+    scenarioId: "missing-chunk",
     icon: Bug
   },
   {
     title: "KYB draft compatibility",
     body: "Seed an incompatible KYB draft, then verify the app asks for review instead of submitting.",
-    href: "/kyb/review",
+    href: "/debug/version-skew",
+    scenarioId: "kyb-draft",
     icon: FileClock
   },
   {
@@ -87,7 +90,7 @@ export function DashboardPage({ routerMode }: { routerMode: RouterMode }) {
               <ShieldCheck aria-hidden="true" />
               Open lab controls
             </a>
-            <a className="button button-light" href={withRouter("/payments/create/recipient", routerMode)}>
+            <a className="button button-light" href={withRouter("/debug/version-skew", routerMode, "payment-safe-refresh")}>
               <WalletCards aria-hidden="true" />
               Try payment recovery
             </a>
@@ -129,12 +132,12 @@ export function DashboardPage({ routerMode }: { routerMode: RouterMode }) {
         {scenarioLinks.map((scenario) => {
           const Icon = scenario.icon;
           return (
-            <a className="learning-card learning-card-link" href={withRouter(scenario.href, routerMode)} key={scenario.title}>
+            <a className="learning-card learning-card-link" href={withRouter(scenario.href, routerMode, scenario.scenarioId)} key={scenario.title}>
               <Icon aria-hidden="true" />
               <strong>{scenario.title}</strong>
               <p>{scenario.body}</p>
               <span>
-                Open example
+                {scenario.scenarioId ? "Prepare example" : "Open controls"}
                 <ArrowRight aria-hidden="true" />
               </span>
             </a>
@@ -158,7 +161,11 @@ export function DashboardPage({ routerMode }: { routerMode: RouterMode }) {
   );
 }
 
-function withRouter(path: string, routerMode: RouterMode) {
+function withRouter(path: string, routerMode: RouterMode, scenarioId?: string) {
   const router = routerMode === "tanstack-router" ? "tanstack" : "react";
-  return `${path}?debug=1&router=${router}`;
+  const params = new URLSearchParams({ debug: "1", router });
+  if (scenarioId) {
+    params.set("scenario", scenarioId);
+  }
+  return `${path}?${params.toString()}`;
 }

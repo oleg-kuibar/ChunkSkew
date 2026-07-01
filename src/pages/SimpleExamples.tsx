@@ -11,6 +11,7 @@ const examples = [
     rule: "Always compare the loaded bundle, the session release, and the latest release as separate facts.",
     hook: "Use this before rendering badges, sending request headers, or deciding whether an update is pending.",
     code: "bundle !== session !== latest",
+    anchor: "src/shared/releaseIdentity.ts",
     href: "/debug/version-skew"
   },
   {
@@ -19,7 +20,9 @@ const examples = [
     rule: "Classify lazy import failures, reload once when safe, then stop and show a controlled fallback.",
     hook: "Use this around route imports, modal imports, Vite preload errors, and router error boundaries.",
     code: "try import() -> classify -> recover",
-    href: "/payments/create/review"
+    anchor: "src/shared/chunkRecoveryController.ts",
+    href: "/debug/version-skew",
+    scenarioId: "missing-chunk"
   },
   {
     title: "Safe refresh",
@@ -27,7 +30,9 @@ const examples = [
     rule: "Save draft and idempotency context before refreshing an old tab onto the latest release.",
     hook: "Use this from required update gates, sticky banners, and chunk failure fallbacks.",
     code: "save workflow -> prepare refresh -> reload",
-    href: "/payments/create/recipient"
+    anchor: "src/shared/versionCheckClient.ts",
+    href: "/debug/version-skew",
+    scenarioId: "payment-safe-refresh"
   },
   {
     title: "Idempotent mutation",
@@ -35,7 +40,9 @@ const examples = [
     rule: "Retry the same sensitive action with the same key and return the previous result.",
     hook: "Use this for payment submit, approval, card controls, KYB submit, vendors, roles, and API keys.",
     code: "same key -> same result",
-    href: "/payments/create/mfa"
+    anchor: "src/shared/idempotencyKeyStore.ts",
+    href: "/debug/version-skew",
+    scenarioId: "payment-safe-refresh"
   },
   {
     title: "Required update gate",
@@ -43,7 +50,9 @@ const examples = [
     rule: "Block new risky mutations only when the update is required or the API contract is incompatible.",
     hook: "Use this in mutation guards, not as a global page crash or surprise refresh.",
     code: "required ? block risky : allow",
-    href: "/debug/version-skew"
+    anchor: "src/shared/sensitiveMutationGuard.ts",
+    href: "/debug/version-skew",
+    scenarioId: "api-contract"
   },
   {
     title: "Asset strategy",
@@ -51,6 +60,7 @@ const examples = [
     rule: "Retain old chunks or pin clients to deployments so recovery is the backup, not the normal path.",
     hook: "Use this at the CDN/static-host layer with a defined compatibility window.",
     code: "retain assets + revalidate shell",
+    anchor: "src/shared/assetRetentionSimulator.ts",
     href: "/debug/version-skew"
   }
 ];
@@ -99,9 +109,13 @@ export function SimpleExamplesPage({ routerMode }: { routerMode: RouterMode }) {
               <strong>{example.title}</strong>
               <p>{example.rule}</p>
               <div className="example-code">{example.code}</div>
+              <div className="example-anchor">
+                <span>Study</span>
+                <code>{example.anchor}</code>
+              </div>
               <span>{example.hook}</span>
-              <a className="button button-light" href={withRouter(example.href, routerMode)}>
-                Open robust example
+              <a className="button button-light" href={withRouter(example.href, routerMode, example.scenarioId)}>
+                {example.scenarioId ? "Prepare robust example" : "Open robust example"}
               </a>
             </article>
           );
@@ -111,7 +125,11 @@ export function SimpleExamplesPage({ routerMode }: { routerMode: RouterMode }) {
   );
 }
 
-function withRouter(path: string, routerMode: RouterMode) {
+function withRouter(path: string, routerMode: RouterMode, scenarioId?: string) {
   const router = routerMode === "tanstack-router" ? "tanstack" : "react";
-  return `${path}?debug=1&router=${router}`;
+  const params = new URLSearchParams({ debug: "1", router });
+  if (scenarioId) {
+    params.set("scenario", scenarioId);
+  }
+  return `${path}?${params.toString()}`;
 }
