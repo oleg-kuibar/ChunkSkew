@@ -116,17 +116,24 @@ test("1. Baseline app loads", async ({ page }) => {
   await expect(page.getByRole("heading", { name: /Understand the failure/ })).toBeVisible();
   await expect(page.getByText("ChunkSkew Lab")).toBeVisible();
   await expect(page.getByText("The mental model")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Study simple examples" })).toHaveAttribute("href", "/examples?debug=1&router=react");
 });
 
 test("1b. Simple examples page teaches core patterns", async ({ page }) => {
   await prepare(page);
   await open(page, "/examples");
   await expect(page.getByRole("heading", { name: "Simple examples" })).toBeVisible();
+  const releaseStrip = page.locator('section[aria-label="Bundle session latest comparison"]');
+  await expect(releaseStrip).toContainText("Bundle");
+  await expect(releaseStrip).toContainText("Session");
+  await expect(releaseStrip).toContainText("Latest");
   await expect(page.getByTestId("simple-examples")).toContainText("Release identity");
   await expect(page.getByTestId("simple-examples")).toContainText("Idempotent mutation");
+  await expect(page.getByTestId("simple-examples")).toContainText("Step 1");
+  await expect(page.getByTestId("simple-examples")).toContainText("Step 6");
   await expect(page.getByTestId("simple-examples")).toContainText("session.releaseId !== latest.releaseId");
-  await expect(page.getByTestId("simple-examples")).toContainText("src/examples/simpleVersionSkewPatterns.ts");
-  await expect(page.getByTestId("simple-examples")).toContainText("tests/simple-patterns.spec.ts");
+  await expect(page.getByTestId("simple-proof-anchors")).toContainText("src/examples/simpleVersionSkewPatterns.ts");
+  await expect(page.getByTestId("simple-proof-anchors")).toContainText("tests/simple-patterns.spec.ts");
   await expect(page.getByTestId("simple-examples")).toContainText("src/shared/chunkRecoveryController.ts");
   await expect(page.getByTestId("router-mode-switch").getByRole("link", { name: "React" })).toHaveAttribute("aria-current", "page");
 
@@ -153,11 +160,14 @@ test("1d. Simple examples prepare setup-dependent robust examples", async ({ pag
   await expect(page.getByTestId("guided-scenario-missing-chunk")).toContainText("Recommended next");
 });
 
-test("2. Current release ID is visible in debug mode", async ({ page }) => {
+test("2. Bundle, session, and latest release IDs are visible in debug mode", async ({ page }) => {
   await prepare(page);
   await open(page);
-  await expect(page.getByText(/Release/).first()).toBeVisible();
-  await expect(page.getByTestId("version-debug-panel")).toBeVisible();
+  const debugPanel = page.getByTestId("version-debug-panel");
+  await expect(debugPanel).toBeVisible();
+  await expect(debugPanel).toContainText("Bundle");
+  await expect(debugPanel).toContainText("Session");
+  await expect(debugPanel).toContainText("Latest");
   await expect(page.getByTestId("build-version-stamp").first()).toBeVisible();
 });
 
@@ -171,6 +181,8 @@ test("3. Version debug panel works", async ({ page }) => {
   await expect(page.getByTestId("guided-scenario-missing-chunk")).toContainText("Opens /payments/create/review");
   await expect(page.getByTestId("deployment-modes")).toBeHidden();
   await openAdvancedDiagnostics(page);
+  await expect(page.getByText("Loaded bundle")).toBeVisible();
+  await expect(page.getByText("Session release")).toBeVisible();
   await expect(page.getByTestId("deployment-modes")).toContainText("asset-retention");
 });
 

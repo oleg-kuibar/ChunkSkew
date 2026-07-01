@@ -7,6 +7,7 @@ import { setLocalSkewMode } from "../shared/assetRetentionSimulator";
 import { readPreloadStatuses } from "../shared/preloadWorkflowChunks";
 import { cx } from "../shared/format";
 import { writeGuidedScenarioState } from "../shared/guidedScenarioState";
+import { getBundledReleaseIdentity } from "../shared/releaseIdentity";
 import { debugRouteHref } from "../shared/routerLinks";
 import { seedIncompatibleKybDraft } from "../shared/workflowDraftStore";
 import { clearTelemetryEvents } from "../shared/telemetry";
@@ -111,6 +112,7 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
     return () => window.clearInterval(interval);
   }, []);
   const versionState = getVersionState(routerMode);
+  const bundle = getBundledReleaseIdentity(routerMode);
   const statuses = readPreloadStatuses();
   const suggestedScenarioId =
     typeof window === "undefined" ? undefined : new URLSearchParams(window.location.search).get("scenario") ?? undefined;
@@ -227,7 +229,11 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
 
           <section className="detail-grid">
             <div className="summary-tile">
-              <span>Current release</span>
+              <span>Loaded bundle</span>
+              <strong>{bundle.releaseId}</strong>
+            </div>
+            <div className="summary-tile">
+              <span>Session release</span>
               <strong>{versionState.current.releaseId}</strong>
             </div>
             <div className="summary-tile">

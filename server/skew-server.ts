@@ -1,6 +1,6 @@
 import { createServer } from "node:http";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import express from "express";
 import { WebSocketServer } from "ws";
 import {
@@ -39,7 +39,8 @@ type SkewState = {
   updatedAt: string;
 };
 
-const statePath = resolve("server/skew-state.json");
+const seedStatePath = resolve("server/skew-state.json");
+const statePath = resolve(process.env.CHUNK_SKEW_STATE_PATH ?? ".chunk-skew/skew-state.json");
 const auditEvents: AuditEvent[] = [];
 const idempotencyRecords = new Map<string, IdempotencyRecord>();
 const sseClients = new Set<express.Response>();
@@ -57,14 +58,17 @@ function createDefaultSkewState(): SkewState {
 }
 
 function readState(): SkewState {
-  if (!existsSync(statePath)) {
-    return createDefaultSkewState();
+  for (const path of [statePath, seedStatePath]) {
+    if (existsSync(path)) {
+      return JSON.parse(readFileSync(path, "utf8")) as SkewState;
+    }
   }
 
-  return JSON.parse(readFileSync(statePath, "utf8")) as SkewState;
+  return createDefaultSkewState();
 }
 
 function writeState(next: SkewState) {
+  mkdirSync(dirname(statePath), { recursive: true });
   writeFileSync(statePath, `${JSON.stringify(next, null, 2)}\n`);
 }
 

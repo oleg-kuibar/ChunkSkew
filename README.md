@@ -8,6 +8,19 @@ This repo uses fake deterministic fintech data only. It does not import from, in
 
 ## Start Here
 
+Fast path for learning and proving the pattern:
+
+1. Open `/examples?debug=1`.
+2. Read the shared `Simple source` and `Verified by` proof anchors, then use each card's `Study` anchor for the robust implementation.
+3. Click **Prepare robust example** to jump into a guided recovery scenario.
+4. Use `/debug/version-skew?debug=1` and click **Reset simulation state** before replaying.
+5. Prove the path with:
+
+```bash
+pnpm test:e2e:windows test tests/simple-patterns.spec.ts --project=chromium --reporter=list
+pnpm test:e2e:windows test tests/version-skew.spec.ts --project=chromium --grep "Simple examples page teaches core patterns" --reporter=list
+```
+
 - [Knowledge map](docs/README.md): guide, pattern, example, and reference index.
 - [Rebuild audit](docs/audits/rebuild-audit.md): current friction and the target learning architecture.
 - [Build version skew guide](docs/guides/build-version-skew.md): the core explanation and mitigation model.
@@ -57,6 +70,8 @@ pnpm dev
 Open `/debug/version-skew?debug=1` and click **Reset simulation state**.
 
 That clears browser-side drafts, MFA state, idempotency keys, version overrides, preload state, telemetry, and local skew mode. It also resets backend skew mode, audit events, idempotency records, and mutable fake seed data.
+
+Live skew mode is written to ignored `.chunk-skew/skew-state.json`. The tracked `server/skew-state.json` is only the seed state, so retests should not dirty it.
 
 Manual browser-console fallback:
 

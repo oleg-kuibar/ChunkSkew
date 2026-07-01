@@ -86,7 +86,7 @@ export function SimpleExamplesPage({ routerMode }: { routerMode: RouterMode }) {
         <span className="badge badge-muted">Small rules, real hooks</span>
       </section>
 
-      <section className="example-state-strip" aria-label="Current release comparison">
+      <section className="example-state-strip" aria-label="Bundle session latest comparison">
         <div>
           <span>Bundle</span>
           <strong>{bundle.releaseId}</strong>
@@ -105,28 +105,34 @@ export function SimpleExamplesPage({ routerMode }: { routerMode: RouterMode }) {
         </div>
       </section>
 
+      <section className="example-proof-strip" data-testid="simple-proof-anchors" aria-label="Simple examples proof anchors">
+        <div className="example-anchor">
+          <span>Simple source</span>
+          <code>{simpleAnchor}</code>
+        </div>
+        <div className="example-anchor">
+          <span>Verified by</span>
+          <code>{testAnchor}</code>
+        </div>
+      </section>
+
       <section className="example-pattern-grid" data-testid="simple-examples">
-        {examples.map((example) => {
+        {examples.map((example, index) => {
           const Icon = example.icon;
           return (
             <article className="example-pattern-card" key={example.title}>
-              <Icon aria-hidden="true" />
+              <div className="example-card-top">
+                <Icon aria-hidden="true" />
+                <span className="status-chip">Step {index + 1}</span>
+              </div>
               <strong>{example.title}</strong>
               <p>{example.rule}</p>
               <pre className="example-code">
                 <code>{example.code}</code>
               </pre>
               <div className="example-anchor">
-                <span>Simple</span>
-                <code>{simpleAnchor}</code>
-              </div>
-              <div className="example-anchor">
                 <span>Study</span>
                 <code>{example.anchor}</code>
-              </div>
-              <div className="example-anchor">
-                <span>Verified</span>
-                <code>{testAnchor}</code>
               </div>
               <span>{example.hook}</span>
               <a className="button button-light" href={debugRouteHref(example.href, routerMode, example.scenarioId)}>

@@ -20,6 +20,7 @@ Change made in this pass:
 
 - Replaced the root dashboard with a learning-first lab page.
 - The first viewport now explains the four-step mental model: deploy, lazy route, missing chunk, safe recovery.
+- The primary actions now link to the ordered simple examples before the denser lab controls and payment recovery path.
 - Direct scenario links now point to payment recovery, missing chunk recovery, KYB draft recovery, and lab controls.
 - Scenario links that require setup now open lab controls with the matching guided card highlighted from the start page and simple examples page.
 
@@ -62,9 +63,13 @@ Change made in the next pass:
 
 - Added a guided scenario runner above the manual controls.
 - Added one-click preparation for payment recovery, missing chunk fallback, KYB draft review, and API contract blocking.
+- Moved live skew-mode writes to ignored runtime state so retests no longer leave tracked `server/skew-state.json` diffs.
+- Aligned CLI skew scripts and lab controls so they assign the same update severity for each mode.
+- Added a focused script test so CLI skew-mode rules stay aligned without touching tracked seed state.
 - Added lightweight setup progress in the guided banner so the active step matches the route opened by each scenario.
 - Exposed each guided scenario's skew mode and target route on the card so setup is visible before clicking.
 - Clarified in the guided runner that clean retests should reset simulation state before choosing a scenario.
+- Renamed release summary labels from ambiguous `current release` wording to `loaded bundle`, `session release`, and `latest release`.
 - Moved manual mode controls, release state, preload status, telemetry, and audit trail into a collapsible advanced diagnostics section.
 - Moved the release debug panel into a desktop right rail so it stays visible without covering reset or guided scenario controls.
 - Centralized debug/router/scenario URL generation in `src/shared/routerLinks.ts` so start-page, examples-page, guided-banner, and reset links cannot drift.
@@ -91,9 +96,10 @@ Change made in this pass:
 - Cards that need skew setup now prepare the matching guided scenario instead of jumping directly into an unprepared workflow.
 - Each card now names the implementation file to study after the minimal rule.
 - Each card now shows a tiny TypeScript-shaped check before linking to the broader implementation.
+- Each card now shows a step number so the examples read as an ordered learning path instead of an unordered catalog.
 - Added `src/examples/simpleVersionSkewPatterns.ts` as a tiny source file for copy/paste release, chunk, refresh, idempotency, gate, and asset-strategy examples.
 - Added a direct Playwright check for the tiny source examples so they stay runnable, not only rendered as text.
-- Added a visible `tests/simple-patterns.spec.ts` proof anchor on the simple examples page.
+- Added shared simple-source and `tests/simple-patterns.spec.ts` proof anchors on the simple examples page without repeating them on every card.
 - Updated the retest runbook and example docs to use guided scenarios as the primary path instead of old manual mode-switching steps.
 
 Future rebuild target:

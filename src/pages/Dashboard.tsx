@@ -2,6 +2,7 @@ import {
   AlertTriangle,
   ArrowRight,
   BadgeCheck,
+  BookOpenCheck,
   Bug,
   FileClock,
   GitBranch,
@@ -87,6 +88,10 @@ export function DashboardPage({ routerMode }: { routerMode: RouterMode }) {
             that keep sensitive workflows safe.
           </p>
           <div className="learning-actions">
+            <a className="button" href={debugRouteHref("/examples", routerMode)}>
+              <BookOpenCheck aria-hidden="true" />
+              Study simple examples
+            </a>
             <a className="button" href={debugRouteHref("/debug/version-skew", routerMode)}>
               <ShieldCheck aria-hidden="true" />
               Open lab controls

@@ -7,3 +7,4 @@ coverage
 src/routeTree.gen.ts
 *.log
 .codebase-memory/
+.chunk-skew/

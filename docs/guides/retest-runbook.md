@@ -18,6 +18,8 @@ http://localhost:5173/debug/version-skew?debug=1&router=react
 
 Click **Reset simulation state** on the debug page.
 
+The tracked `server/skew-state.json` file is only the seed state. Live mode changes and reset writes go to ignored `.chunk-skew/skew-state.json`, so retesting should not leave a tracked server-state diff.
+
 The reset clears:
 
 - Browser local/session storage for the POC namespace.

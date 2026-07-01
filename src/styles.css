@@ -875,6 +875,12 @@ textarea:focus {
   overflow-wrap: anywhere;
 }
 
+.example-proof-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
 .example-pattern-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -894,6 +900,13 @@ textarea:focus {
 
 .example-pattern-card svg {
   color: var(--blue);
+}
+
+.example-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .example-pattern-card p {
@@ -1307,6 +1320,7 @@ td code {
   .document-grid,
   .report-grid,
   .example-state-strip,
+  .example-proof-strip,
   .example-pattern-grid,
   .scenario-grid {
     grid-template-columns: 1fr;
