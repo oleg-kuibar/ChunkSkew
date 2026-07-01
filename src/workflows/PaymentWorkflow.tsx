@@ -7,7 +7,7 @@ import { formatCents, cx } from "../shared/format";
 import { getOrCreateIdempotencyKey, peekIdempotencyKey } from "../shared/idempotencyKeyStore";
 import { isMfaVerified, verifyMfa } from "../shared/mfaSimulation";
 import { getSessionSnapshot } from "../shared/sessionSimulation";
-import { guardSensitiveMutation } from "../shared/sensitiveMutationGuard";
+import { guardSensitiveMutation, handleBlockedMutationGuard } from "../shared/sensitiveMutationGuard";
 import { readJson } from "../shared/storage";
 import { trackTelemetry } from "../shared/telemetry";
 import type { RouterMode, WorkflowDraft } from "../shared/types";
@@ -50,45 +50,23 @@ const defaultDraft: PaymentDraft = {
   memo: "Materials deposit"
 };
 
-export function PaymentWorkflow({
+function usePaymentDraft({
+  idempotencyKey,
   routerMode,
-  step,
-  navigateStep
+  session,
+  step
 }: {
+  idempotencyKey: string;
   routerMode: RouterMode;
+  session: ReturnType<typeof getSessionSnapshot>;
   step: PaymentStep;
-  navigateStep: (step: PaymentStep) => void;
 }) {
-  const queryClient = useQueryClient();
-  const session = getSessionSnapshot();
   const restoredDraftSnapshot = useMemo(() => readJson<WorkflowDraft<PaymentDraft> | null>("draft:payment-create", null), []);
   const [draft, setDraft] = useState<PaymentDraft>(() =>
     restoredDraftSnapshot?.schemaVersion === 2 ? { ...defaultDraft, ...restoredDraftSnapshot.formValues } : defaultDraft
   );
   const [restored] = useState(Boolean(restoredDraftSnapshot?.schemaVersion === 2));
-  const [deduped, setDeduped] = useState(false);
-  const [blockedMessage, setBlockedMessage] = useState<string | null>(null);
-  const [requiredGateMessage, setRequiredGateMessage] = useState<string | null>(null);
   const [lastInteractionAt, setLastInteractionAt] = useState(Date.now());
-  const idempotencyKey = useMemo(() => getOrCreateIdempotencyKey("payment.submit", "payment-create"), []);
-  const vendorKey = useMemo(() => getOrCreateIdempotencyKey("vendor.create", "payment-create-vendor"), []);
-
-  const vendors = useQuery({ queryKey: ["vendors", routerMode], queryFn: () => api.vendors(routerMode) });
-  const accounts = useQuery({ queryKey: ["accounts", routerMode], queryFn: () => api.accounts(routerMode) });
-
-  useEffect(() => {
-    void preloadWorkflowChunks("payment", routerMode);
-  }, [routerMode]);
-
-  useEffect(() => {
-    if (restored) {
-      restoreWorkflowDraft<PaymentDraft>("payment-create", routerMode);
-    }
-  }, [restored, routerMode]);
-
-  useEffect(() => {
-    persistDraft(draft, step);
-  }, [draft, idempotencyKey, routerMode, session.organization.id, session.user.id, step]);
 
   function persistDraft(nextDraft: PaymentDraft, nextStep: PaymentStep) {
     saveWorkflowDraft({
@@ -104,6 +82,56 @@ export function PaymentWorkflow({
       mutationIntent: "payment.submit"
     });
   }
+
+  useEffect(() => {
+    if (restored) {
+      restoreWorkflowDraft<PaymentDraft>("payment-create", routerMode);
+    }
+  }, [restored, routerMode]);
+
+  useEffect(() => {
+    persistDraft(draft, step);
+  }, [draft, idempotencyKey, routerMode, session.organization.id, session.user.id, step]);
+
+  function updateDraft(next: Partial<PaymentDraft>) {
+    setLastInteractionAt(Date.now());
+    const nextDraft = { ...draft, ...next };
+    setDraft(nextDraft);
+    persistDraft(nextDraft, step);
+  }
+
+  return { draft, lastInteractionAt, restored, setDraft, setLastInteractionAt, updateDraft };
+}
+
+export function PaymentWorkflow({
+  routerMode,
+  step,
+  navigateStep
+}: {
+  routerMode: RouterMode;
+  step: PaymentStep;
+  navigateStep: (step: PaymentStep) => void;
+}) {
+  const queryClient = useQueryClient();
+  const session = getSessionSnapshot();
+  const [deduped, setDeduped] = useState(false);
+  const [blockedMessage, setBlockedMessage] = useState<string | null>(null);
+  const [requiredGateMessage, setRequiredGateMessage] = useState<string | null>(null);
+  const idempotencyKey = useMemo(() => getOrCreateIdempotencyKey("payment.submit", "payment-create"), []);
+  const vendorKey = useMemo(() => getOrCreateIdempotencyKey("vendor.create", "payment-create-vendor"), []);
+  const { draft, lastInteractionAt, restored, setDraft, setLastInteractionAt, updateDraft } = usePaymentDraft({
+    idempotencyKey,
+    routerMode,
+    session,
+    step
+  });
+
+  const vendors = useQuery({ queryKey: ["vendors", routerMode], queryFn: () => api.vendors(routerMode) });
+  const accounts = useQuery({ queryKey: ["accounts", routerMode], queryFn: () => api.accounts(routerMode) });
+
+  useEffect(() => {
+    void preloadWorkflowChunks("payment", routerMode);
+  }, [routerMode]);
 
   useEffect(() => {
     if (step === "review") {
@@ -142,13 +170,6 @@ export function PaymentWorkflow({
     }
   });
 
-  function updateDraft(next: Partial<PaymentDraft>) {
-    setLastInteractionAt(Date.now());
-    const nextDraft = { ...draft, ...next };
-    setDraft(nextDraft);
-    persistDraft(nextDraft, step);
-  }
-
   function nextStep() {
     const index = steps.indexOf(step);
     navigateStep(steps[Math.min(steps.length - 1, index + 1)]);
@@ -163,7 +184,8 @@ export function PaymentWorkflow({
     void recordAuditEvent(routerMode, "payment_submit.attempted", "User attempted to submit a payment.", {
       idempotencyKeyPresent: Boolean(idempotencyKey)
     }, "payment");
-    if (!isMfaVerified("payment.submit")) {
+    const mfaVerified = isMfaVerified("payment.submit");
+    if (!mfaVerified) {
       setBlockedMessage("Confirm the fake MFA challenge before submitting this payment.");
       return;
     }
@@ -174,16 +196,11 @@ export function PaymentWorkflow({
       currentRoute: window.location.pathname,
       dirtyForm: true,
       mutationPending: submitMutation.isPending,
-      mfaPending: !isMfaVerified("payment.submit"),
+      mfaPending: !mfaVerified,
       idempotencyKeyPresent: Boolean(peekIdempotencyKey("payment.submit", "payment-create")),
       lastInteractionAt
     });
-    if (!guard.allowed) {
-      if (guard.code === "required-update") {
-        setRequiredGateMessage(guard.reason ?? null);
-      } else {
-        setBlockedMessage(guard.reason ?? "This action is paused.");
-      }
+    if (handleBlockedMutationGuard(guard, "This action is paused.", setRequiredGateMessage, setBlockedMessage)) {
       return;
     }
     submitMutation.mutate();
@@ -201,12 +218,7 @@ export function PaymentWorkflow({
       idempotencyKeyPresent: Boolean(vendorKey),
       lastInteractionAt
     });
-    if (!guard.allowed) {
-      if (guard.code === "required-update") {
-        setRequiredGateMessage(guard.reason ?? null);
-      } else {
-        setBlockedMessage(guard.reason ?? "Vendor creation is paused.");
-      }
+    if (handleBlockedMutationGuard(guard, "Vendor creation is paused.", setRequiredGateMessage, setBlockedMessage)) {
       return;
     }
     vendorMutation.mutate();

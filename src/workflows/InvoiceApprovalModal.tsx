@@ -5,7 +5,7 @@ import { api } from "../shared/api";
 import type { Invoice } from "../shared/domain";
 import { getOrCreateIdempotencyKey } from "../shared/idempotencyKeyStore";
 import { getSessionSnapshot } from "../shared/sessionSimulation";
-import { guardSensitiveMutation } from "../shared/sensitiveMutationGuard";
+import { guardSensitiveMutation, handleBlockedMutationGuard } from "../shared/sensitiveMutationGuard";
 import type { RouterMode } from "../shared/types";
 import { saveWorkflowDraft } from "../shared/workflowDraftStore";
 import { DuplicateSubmitPreventedNotice, RequiredUpdateGate, SensitiveActionBlockedDialog } from "../components/UpdateSurfaces";
@@ -83,12 +83,7 @@ export function InvoiceApprovalModal({
       idempotencyKeyPresent: Boolean(idempotencyKey),
       lastInteractionAt: Date.now()
     });
-    if (!guard.allowed) {
-      if (guard.code === "required-update") {
-        setRequiredGate(guard.reason ?? null);
-      } else {
-        setBlocked(guard.reason ?? "This approval is paused.");
-      }
+    if (handleBlockedMutationGuard(guard, "This approval is paused.", setRequiredGate, setBlocked)) {
       return;
     }
     mutation.mutate();

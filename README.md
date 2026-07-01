@@ -17,8 +17,7 @@ Fast path for learning and proving the pattern:
 5. Prove the path with:
 
 ```bash
-pnpm test:e2e:windows test tests/simple-patterns.spec.ts --project=chromium --reporter=list
-pnpm test:e2e:windows test tests/version-skew.spec.ts --project=chromium --grep "Simple examples page teaches core patterns" --reporter=list
+pnpm test:learning:windows
 ```
 
 - [Knowledge map](docs/README.md): guide, pattern, example, and reference index.
@@ -97,6 +96,7 @@ pnpm simulate:api-contract-incompatible
 
 ```bash
 pnpm exec tsc --noEmit
+pnpm test:learning:windows
 pnpm test:e2e
 pnpm test:e2e:windows
 pnpm build

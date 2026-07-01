@@ -8,6 +8,7 @@ import type { RouterMode } from "../shared/types";
 
 const simpleAnchor = "src/examples/simpleVersionSkewPatterns.ts";
 const testAnchor = "tests/simple-patterns.spec.ts";
+const proofCommand = "pnpm test:learning:windows";
 
 const examples = [
   {
@@ -113,6 +114,10 @@ export function SimpleExamplesPage({ routerMode }: { routerMode: RouterMode }) {
         <div className="example-anchor">
           <span>Verified by</span>
           <code>{testAnchor}</code>
+        </div>
+        <div className="example-anchor">
+          <span>Proof command</span>
+          <code>{proofCommand}</code>
         </div>
       </section>
 

@@ -53,6 +53,10 @@ Change made in this pass:
 
 - Extracted KYB server snapshot-to-draft shaping into a named helper so the workflow effect reads as a recovery rule instead of a data-mapping block.
 - Reused one Card controls draft shape for autosave and submit, and gated autosave until the current card draft or matching server snapshot is applied.
+- Extracted the Card controls draft lifecycle into `useCardLimitDraft` so the route reads as fetch, restore/autosave, guard, render.
+- Extracted the Payment draft lifecycle into `usePaymentDraft` and named repeated guard-result handling so the workflow body reads closer to the user journey.
+- Extracted the KYB draft lifecycle into `useKybDraft` so migration, incompatible schema, server snapshot hydration, and autosave are easier to study together.
+- Centralized required-update-vs-blocked-dialog handling in `handleBlockedMutationGuard` so sensitive workflows share one guard-result shape.
 - Tightened version-state subscriptions so build version stamps react to version-state changes after the current render, not to unrelated autosave/idempotency storage writes.
 
 ### 4. Debug controls are powerful but dense
@@ -101,6 +105,7 @@ Change made in this pass:
 - Added a direct Playwright check for the tiny source examples so they stay runnable, not only rendered as text.
 - Added shared simple-source and `tests/simple-patterns.spec.ts` proof anchors on the simple examples page without repeating them on every card.
 - Updated the retest runbook and example docs to use guided scenarios as the primary path instead of old manual mode-switching steps.
+- Added `pnpm test:learning:windows` as the one-command proof for the tiny source examples plus the rendered learning page.
 
 Future rebuild target:
 

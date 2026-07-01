@@ -37,6 +37,23 @@ export interface GuardResult {
   code?: "required-update" | "permission-denied" | "session-expired";
 }
 
+export function handleBlockedMutationGuard(
+  guard: GuardResult,
+  fallback: string,
+  onRequiredUpdate: (message: string | null) => void,
+  onBlocked: (message: string) => void
+) {
+  if (guard.allowed) {
+    return false;
+  }
+  if (guard.code === "required-update") {
+    onRequiredUpdate(guard.reason ?? null);
+  } else {
+    onBlocked(guard.reason ?? fallback);
+  }
+  return true;
+}
+
 export function guardSensitiveMutation(input: GuardInput): GuardResult {
   const session = getSessionSnapshot();
   if (!session.authenticated) {

@@ -6,7 +6,7 @@ import { getOrCreateIdempotencyKey } from "../shared/idempotencyKeyStore";
 import { componentLazyImport } from "../shared/lazyRoute";
 import { preloadWorkflowChunks } from "../shared/preloadWorkflowChunks";
 import { getSessionSnapshot } from "../shared/sessionSimulation";
-import { guardSensitiveMutation } from "../shared/sensitiveMutationGuard";
+import { guardSensitiveMutation, handleBlockedMutationGuard } from "../shared/sensitiveMutationGuard";
 import { readJson } from "../shared/storage";
 import type { RouterMode, WorkflowDraft } from "../shared/types";
 import { restoreWorkflowDraft, saveWorkflowDraft } from "../shared/workflowDraftStore";
@@ -64,17 +64,19 @@ function draftFromKybSnapshot(snapshot: KybSnapshot): KybDraft {
   };
 }
 
-export function KybWorkflow({
+function useKybDraft({
+  idempotencyKey,
   routerMode,
-  step,
-  navigateStep
+  session,
+  snapshot,
+  step
 }: {
+  idempotencyKey: string;
   routerMode: RouterMode;
+  session: ReturnType<typeof getSessionSnapshot>;
+  snapshot?: KybSnapshot;
   step: KybStep;
-  navigateStep: (step: KybStep) => void;
 }) {
-  const session = getSessionSnapshot();
-  const queryClient = useQueryClient();
   const restoredDraftSnapshot = useMemo(() => readJson<WorkflowDraft<KybDraft> | null>("draft:kyb", null), []);
   const [draft, setDraft] = useState<KybDraft>(() =>
     restoredDraftSnapshot?.schemaVersion === 2 ? { ...defaultDraft, ...restoredDraftSnapshot.formValues } : defaultDraft
@@ -91,15 +93,6 @@ export function KybWorkflow({
   );
   const userEditedRef = useRef(false);
   const [userEdited, setUserEdited] = useState(false);
-  const [blocked, setBlocked] = useState<string | null>(null);
-  const [requiredGate, setRequiredGate] = useState<string | null>(null);
-  const [deduped, setDeduped] = useState(false);
-  const idempotencyKey = useMemo(() => getOrCreateIdempotencyKey("kyb.submit", "kyb"), []);
-  const kybQuery = useQuery({ queryKey: ["kyb", routerMode], queryFn: () => api.kyb(routerMode) });
-
-  useEffect(() => {
-    void preloadWorkflowChunks("kyb", routerMode);
-  }, [routerMode]);
 
   useEffect(() => {
     const restoredDraft = restoreWorkflowDraft<KybDraft>("kyb", routerMode);
@@ -141,23 +134,13 @@ export function KybWorkflow({
   }
 
   useEffect(() => {
-    if (!restored && !userEdited && !userEditedRef.current && kybQuery.data) {
+    if (!restored && !userEdited && !userEditedRef.current && snapshot) {
       setDraft((value) => ({
         ...value,
-        ...draftFromKybSnapshot(kybQuery.data)
+        ...draftFromKybSnapshot(snapshot)
       }));
     }
-  }, [kybQuery.data, restored, userEdited]);
-
-  const submitMutation = useMutation({
-    mutationFn: () => api.submitKyb(routerMode, idempotencyKey, draft),
-    meta: { sensitive: true, intent: "kyb.submit" },
-    onSuccess(response) {
-      setDeduped(response.deduped);
-      queryClient.invalidateQueries({ queryKey: ["kyb", routerMode] });
-      navigateStep("submitted");
-    }
-  });
+  }, [restored, snapshot, userEdited]);
 
   function updateDraft(next: Partial<KybDraft>) {
     const merged = { ...draft, ...next };
@@ -168,6 +151,47 @@ export function KybWorkflow({
       persistDraft(merged, step);
     }
   }
+
+  return { draft, incompatible, migrated, restored, setIncompatible, updateDraft };
+}
+
+export function KybWorkflow({
+  routerMode,
+  step,
+  navigateStep
+}: {
+  routerMode: RouterMode;
+  step: KybStep;
+  navigateStep: (step: KybStep) => void;
+}) {
+  const session = getSessionSnapshot();
+  const queryClient = useQueryClient();
+  const [blocked, setBlocked] = useState<string | null>(null);
+  const [requiredGate, setRequiredGate] = useState<string | null>(null);
+  const [deduped, setDeduped] = useState(false);
+  const idempotencyKey = useMemo(() => getOrCreateIdempotencyKey("kyb.submit", "kyb"), []);
+  const kybQuery = useQuery({ queryKey: ["kyb", routerMode], queryFn: () => api.kyb(routerMode) });
+  const { draft, incompatible, migrated, restored, setIncompatible, updateDraft } = useKybDraft({
+    idempotencyKey,
+    routerMode,
+    session,
+    snapshot: kybQuery.data,
+    step
+  });
+
+  useEffect(() => {
+    void preloadWorkflowChunks("kyb", routerMode);
+  }, [routerMode]);
+
+  const submitMutation = useMutation({
+    mutationFn: () => api.submitKyb(routerMode, idempotencyKey, draft),
+    meta: { sensitive: true, intent: "kyb.submit" },
+    onSuccess(response) {
+      setDeduped(response.deduped);
+      queryClient.invalidateQueries({ queryKey: ["kyb", routerMode] });
+      navigateStep("submitted");
+    }
+  });
 
   function submit() {
     const guard = guardSensitiveMutation({
@@ -181,12 +205,7 @@ export function KybWorkflow({
       idempotencyKeyPresent: Boolean(idempotencyKey),
       lastInteractionAt: Date.now()
     });
-    if (!guard.allowed) {
-      if (guard.code === "required-update") {
-        setRequiredGate(guard.reason ?? null);
-      } else {
-        setBlocked(guard.reason ?? "KYB submission is paused.");
-      }
+    if (handleBlockedMutationGuard(guard, "KYB submission is paused.", setRequiredGate, setBlocked)) {
       return;
     }
     submitMutation.mutate();

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { api } from "../../shared/api";
 import { formatCents } from "../../shared/format";
 import { getOrCreateIdempotencyKey } from "../../shared/idempotencyKeyStore";
-import { guardSensitiveMutation } from "../../shared/sensitiveMutationGuard";
+import { guardSensitiveMutation, handleBlockedMutationGuard } from "../../shared/sensitiveMutationGuard";
 import { DuplicateSubmitPreventedNotice, RequiredUpdateGate, SensitiveActionBlockedDialog } from "../../components/UpdateSurfaces";
 
 export function TanStackCardDetail({ cardId }: { cardId: string }) {
@@ -37,12 +37,7 @@ export function TanStackCardDetail({ cardId }: { cardId: string }) {
       idempotencyKeyPresent: true,
       lastInteractionAt: Date.now()
     });
-    if (!guard.allowed) {
-      if (guard.code === "required-update") {
-        setRequiredGate(guard.reason ?? null);
-      } else {
-        setBlocked(guard.reason ?? "Card changes are paused.");
-      }
+    if (handleBlockedMutationGuard(guard, "Card changes are paused.", setRequiredGate, setBlocked)) {
       return;
     }
     mutation.mutate();

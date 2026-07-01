@@ -134,6 +134,7 @@ test("1b. Simple examples page teaches core patterns", async ({ page }) => {
   await expect(page.getByTestId("simple-examples")).toContainText("session.releaseId !== latest.releaseId");
   await expect(page.getByTestId("simple-proof-anchors")).toContainText("src/examples/simpleVersionSkewPatterns.ts");
   await expect(page.getByTestId("simple-proof-anchors")).toContainText("tests/simple-patterns.spec.ts");
+  await expect(page.getByTestId("simple-proof-anchors")).toContainText("pnpm test:learning:windows");
   await expect(page.getByTestId("simple-examples")).toContainText("src/shared/chunkRecoveryController.ts");
   await expect(page.getByTestId("router-mode-switch").getByRole("link", { name: "React" })).toHaveAttribute("aria-current", "page");
 
@@ -387,6 +388,14 @@ test("19. Card freeze mutation is blocked when required update is pending", asyn
   await open(page, "/cards/card_ops_01");
   await forceRequiredUpdate(page);
   await page.getByRole("button", { name: "Freeze card" }).click();
+  await expect(page.getByTestId("required-update-gate")).toBeVisible();
+});
+
+test("19a. Admin API key generation is blocked when required update is pending", async ({ page }) => {
+  await prepare(page, "react", "asset-retention");
+  await open(page, "/settings");
+  await forceRequiredUpdate(page);
+  await page.getByRole("button", { name: "Generate test key" }).click();
   await expect(page.getByTestId("required-update-gate")).toBeVisible();
 });
 

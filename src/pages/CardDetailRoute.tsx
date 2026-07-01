@@ -6,7 +6,7 @@ import { api } from "../shared/api";
 import { formatCents } from "../shared/format";
 import { getOrCreateIdempotencyKey } from "../shared/idempotencyKeyStore";
 import { getSessionSnapshot } from "../shared/sessionSimulation";
-import { guardSensitiveMutation } from "../shared/sensitiveMutationGuard";
+import { guardSensitiveMutation, handleBlockedMutationGuard } from "../shared/sensitiveMutationGuard";
 import { restoreWorkflowDraft, saveWorkflowDraft } from "../shared/workflowDraftStore";
 import {
   DuplicateSubmitPreventedNotice,
@@ -20,6 +20,15 @@ interface CardLimitDraft {
   spendLimitCents: number;
   categories: string[];
 }
+
+type CardControlAction = "freeze" | "unfreeze" | "limit";
+type CardLimitSource = CardLimitDraft & { id: string };
+
+const cardIntentByAction = {
+  freeze: "card.freeze",
+  unfreeze: "card.unfreeze",
+  limit: "card.limit.update"
+} as const;
 
 function cardLimitDraftId(cardId: string) {
   return `card-limit-${cardId}`;
@@ -39,24 +48,26 @@ function limitDraftFromControls(spendLimit: number, categories: string): CardLim
   };
 }
 
-export function Component() {
-  const params = useParams();
-  const cardId = params.cardId ?? "";
-  const draftId = cardLimitDraftId(cardId);
-  const routerMode = "react-router" as const;
-  const session = getSessionSnapshot();
-  const queryClient = useQueryClient();
-  const query = useQuery({ queryKey: ["card", routerMode, cardId], queryFn: () => api.card(routerMode, cardId) });
+function useCardLimitDraft({
+  cardId,
+  card,
+  draftId,
+  limitKey,
+  routerMode,
+  session
+}: {
+  cardId: string;
+  card?: CardLimitSource;
+  draftId: string;
+  limitKey: string;
+  routerMode: "react-router";
+  session: ReturnType<typeof getSessionSnapshot>;
+}) {
   const [spendLimit, setSpendLimit] = useState(0);
   const [categories, setCategories] = useState("Travel, Software");
   const [restored, setRestored] = useState(false);
-  const [blocked, setBlocked] = useState<string | null>(null);
-  const [requiredGate, setRequiredGate] = useState<string | null>(null);
-  const [deduped, setDeduped] = useState(false);
   const [readyDraftId, setReadyDraftId] = useState<string | null>(null);
-  const freezeKey = useMemo(() => getOrCreateIdempotencyKey("card.freeze", cardId), [cardId]);
-  const unfreezeKey = useMemo(() => getOrCreateIdempotencyKey("card.unfreeze", cardId), [cardId]);
-  const limitKey = useMemo(() => getOrCreateIdempotencyKey("card.limit.update", cardId), [cardId]);
+  const formValues = useMemo(() => limitDraftFromControls(spendLimit, categories), [categories, spendLimit]);
 
   useEffect(() => {
     setRestored(false);
@@ -75,13 +86,13 @@ export function Component() {
     if (readyDraftId === draftId) {
       return;
     }
-    if (query.data?.id === cardId) {
-      const controls = controlsFromLimitDraft(query.data);
+    if (card?.id === cardId) {
+      const controls = controlsFromLimitDraft(card);
       setSpendLimit(controls.spendLimit);
       setCategories(controls.categories);
       setReadyDraftId(draftId);
     }
-  }, [cardId, draftId, query.data, readyDraftId]);
+  }, [card, cardId, draftId, readyDraftId]);
 
   useEffect(() => {
     if (readyDraftId !== draftId) {
@@ -93,13 +104,39 @@ export function Component() {
       routerMode,
       currentPath: `/cards/${cardId}`,
       currentStep: "controls",
-      formValues: limitDraftFromControls(spendLimit, categories),
+      formValues,
       userId: session.user.id,
       organizationId: session.organization.id,
       idempotencyKey: limitKey,
       mutationIntent: "card.limit.update"
     });
-  }, [cardId, categories, draftId, limitKey, readyDraftId, routerMode, session.organization.id, session.user.id, spendLimit]);
+  }, [cardId, draftId, formValues, limitKey, readyDraftId, routerMode, session.organization.id, session.user.id]);
+
+  return { categories, formValues, restored, setCategories, setSpendLimit, spendLimit };
+}
+
+export function Component() {
+  const params = useParams();
+  const cardId = params.cardId ?? "";
+  const draftId = cardLimitDraftId(cardId);
+  const routerMode = "react-router" as const;
+  const session = getSessionSnapshot();
+  const queryClient = useQueryClient();
+  const query = useQuery({ queryKey: ["card", routerMode, cardId], queryFn: () => api.card(routerMode, cardId) });
+  const [blocked, setBlocked] = useState<string | null>(null);
+  const [requiredGate, setRequiredGate] = useState<string | null>(null);
+  const [deduped, setDeduped] = useState(false);
+  const freezeKey = useMemo(() => getOrCreateIdempotencyKey("card.freeze", cardId), [cardId]);
+  const unfreezeKey = useMemo(() => getOrCreateIdempotencyKey("card.unfreeze", cardId), [cardId]);
+  const limitKey = useMemo(() => getOrCreateIdempotencyKey("card.limit.update", cardId), [cardId]);
+  const { categories, formValues, restored, setCategories, setSpendLimit, spendLimit } = useCardLimitDraft({
+    cardId,
+    card: query.data,
+    draftId,
+    limitKey,
+    routerMode,
+    session
+  });
 
   const cardAction = useMutation({
     mutationFn: (action: "freeze" | "unfreeze") => api.cardAction(routerMode, cardId, action, action === "freeze" ? freezeKey : unfreezeKey),
@@ -113,7 +150,7 @@ export function Component() {
 
   const limitMutation = useMutation({
     mutationFn: () =>
-      api.updateCardLimits(routerMode, cardId, limitKey, limitDraftFromControls(spendLimit, categories)),
+      api.updateCardLimits(routerMode, cardId, limitKey, formValues),
     meta: { sensitive: true, intent: "card.limit.update" },
     onSuccess(response) {
       setDeduped(response.deduped);
@@ -122,8 +159,8 @@ export function Component() {
     }
   });
 
-  function guarded(action: "freeze" | "unfreeze" | "limit") {
-    const intent = action === "limit" ? "card.limit.update" : action === "freeze" ? "card.freeze" : "card.unfreeze";
+  function guarded(action: CardControlAction) {
+    const intent = cardIntentByAction[action];
     const guard = guardSensitiveMutation({
       routerMode,
       intent,
@@ -135,12 +172,7 @@ export function Component() {
       idempotencyKeyPresent: true,
       lastInteractionAt: Date.now()
     });
-    if (!guard.allowed) {
-      if (guard.code === "required-update") {
-        setRequiredGate(guard.reason ?? null);
-      } else {
-        setBlocked(guard.reason ?? "Card changes are paused.");
-      }
+    if (handleBlockedMutationGuard(guard, "Card changes are paused.", setRequiredGate, setBlocked)) {
       return;
     }
     if (action === "limit") {

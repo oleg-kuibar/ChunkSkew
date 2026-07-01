@@ -90,8 +90,9 @@ Manual path:
 
 ```bash
 pnpm exec tsc --noEmit
+pnpm test:learning:windows
 pnpm test:e2e:windows
 pnpm build
 ```
 
-The canonical behavior lives in `tests/version-skew.spec.ts`.
+The shortest proof for the learning path is `pnpm test:learning:windows`. The full behavior suite lives in `tests/version-skew.spec.ts`.

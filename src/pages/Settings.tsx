@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { api } from "../shared/api";
 import { getOrCreateIdempotencyKey } from "../shared/idempotencyKeyStore";
 import { expireSession, getSessionSnapshot, switchRole } from "../shared/sessionSimulation";
-import { guardSensitiveMutation } from "../shared/sensitiveMutationGuard";
+import { guardSensitiveMutation, handleBlockedMutationGuard } from "../shared/sensitiveMutationGuard";
 import type { RouterMode, SessionSnapshot } from "../shared/types";
 import { DuplicateSubmitPreventedNotice, RequiredUpdateGate, SensitiveActionBlockedDialog } from "../components/UpdateSurfaces";
 
@@ -48,12 +48,7 @@ export function SettingsPage({ routerMode }: { routerMode: RouterMode }) {
       idempotencyKeyPresent: true,
       lastInteractionAt: Date.now()
     });
-    if (!guard.allowed) {
-      if (guard.code === "required-update") {
-        setRequiredGate(guard.reason ?? null);
-      } else {
-        setBlocked(guard.reason ?? "Role changes are paused.");
-      }
+    if (handleBlockedMutationGuard(guard, "Role changes are paused.", setRequiredGate, setBlocked)) {
       return;
     }
     changeRoleMutation.mutate(role);
@@ -76,12 +71,7 @@ export function SettingsPage({ routerMode }: { routerMode: RouterMode }) {
       idempotencyKeyPresent: true,
       lastInteractionAt: Date.now()
     });
-    if (!guard.allowed) {
-      if (guard.code === "required-update") {
-        setRequiredGate(guard.reason ?? null);
-      } else {
-        setBlocked(guard.reason ?? "Admin changes are paused.");
-      }
+    if (handleBlockedMutationGuard(guard, "Admin changes are paused.", setRequiredGate, setBlocked)) {
       return;
     }
     generateKey.mutate();

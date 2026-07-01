@@ -31,6 +31,8 @@
     "simulate:retain-old-assets": "node scripts/set-skew-mode.mjs asset-retention",
     "simulate:expire-compat-window": "node scripts/set-skew-mode.mjs compatibility-window-expired",
     "simulate:api-contract-incompatible": "node scripts/set-skew-mode.mjs api-contract-incompatible",
+    "test:learning": "playwright test tests/simple-patterns.spec.ts tests/version-skew.spec.ts --project=chromium --grep \"simple version skew patterns|Simple examples page teaches core patterns\"",
+    "test:learning:windows": "node scripts/windows-playwright-e2e.cjs test tests/simple-patterns.spec.ts tests/version-skew.spec.ts --project=chromium --grep \"simple version skew patterns|Simple examples page teaches core patterns\" --reporter=list",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:windows-smoke": "node scripts/windows-playwright-smoke.cjs",
