@@ -22,7 +22,7 @@ Captured steps:
 4. Payment required update: saved work, build identity, and safe refresh are explicit.
 5. KYB incompatible draft: review-required fallback is calm and prevents unsafe submit.
 
-Observed UX risk: the update toast can overlap or visually compete with the right-side release debug panel on desktop.
+Observed UX risk fixed in the follow-up pass: the update toast now offsets away from the right-side release debug panel on desktop, with a focused Playwright regression.
 
 ## Measured Cognitive Snapshot
 
@@ -118,11 +118,12 @@ Change made in the next pass:
 - Renamed release summary labels from ambiguous `current release` wording to `loaded bundle`, `session release`, and `latest release`.
 - Moved manual mode controls, release state, preload status, telemetry, and audit trail into a collapsible advanced diagnostics section.
 - Moved the release debug panel into a desktop right rail so it stays visible without covering reset or guided scenario controls.
+- Added current-step status and a `Return to example` action to the guided scenario banner so users can visit lab controls and get back to the prepared workflow.
 - Centralized debug/router/scenario URL generation in `src/shared/routerLinks.ts` so start-page, examples-page, guided-banner, and reset links cannot drift.
+- Updated the retest runbook to use the guided banner's `Return to example` path instead of telling testers to manually reconstruct the route.
 
 Remaining rebuild target:
 
-- Add richer per-step completion states only if the current lightweight guided scenario banner is not enough after more retesting.
 - Keep the current diagnostics table for verification, but keep it opt-in behind the guided scenario path.
 
 ### 5. Examples need a "minimal path" variant
@@ -148,6 +149,7 @@ Change made in this pass:
 - Added shared simple-source and `tests/simple-patterns.spec.ts` proof anchors on the simple examples page without repeating them on every card.
 - Updated the retest runbook and example docs to use guided scenarios as the primary path instead of old manual mode-switching steps.
 - Added `pnpm test:learning:windows` as the one-command proof for the tiny source examples plus the rendered learning page.
+- Aligned the root README, knowledge map, and examples index with the guided setup flow so new readers see auto-reset, diagnostics, and `Return to example` before manual reset instructions.
 
 Future rebuild target:
 

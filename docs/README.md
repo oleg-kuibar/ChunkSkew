@@ -4,7 +4,7 @@ This documentation turns the runnable POC into a searchable knowledge repo for b
 
 Use it in three modes:
 
-- Learn the failure mode: open `/examples?debug=1`, then read [Build Version Skew](guides/build-version-skew.md).
+- Learn the failure mode: open `/examples?debug=1`, use **Prepare robust example**, then read [Build Version Skew](guides/build-version-skew.md).
 - Implement the pattern: use the [Pattern Index](patterns/README.md).
 - Reproduce the behavior: use the [Example Index](examples/README.md) and [Retest Runbook](guides/retest-runbook.md).
 

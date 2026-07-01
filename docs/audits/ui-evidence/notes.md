@@ -20,7 +20,8 @@ Screenshots were captured from the local app on July 1, 2026 with debug mode ena
 
 ## UX Risks
 
-- The update toast overlaps or visually competes with the right-side release debug panel in desktop screenshots.
+- Captured issue: the update toast overlapped or visually competed with the right-side release debug panel in desktop screenshots.
+- Follow-up fix: `.debug-panel-open .update-toast` now offsets the toast away from the release debug panel, with a Playwright regression covering the desktop layout.
 - Debug surfaces still contain many labels, badges, and code-like values; the guided path helps, but the diagnostic layer remains dense.
 - Build/version labels are useful for retesting, but should remain compact so workflow content stays primary.
 

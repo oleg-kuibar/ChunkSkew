@@ -12,8 +12,8 @@ Fast path for learning and proving the pattern:
 
 1. Open `/examples?debug=1`.
 2. Read the shared `Simple source` and `Verified by` proof anchors, then use each card's `Study` anchor for the robust implementation.
-3. Click **Prepare robust example** to jump into a guided recovery scenario.
-4. Use `/debug/version-skew?debug=1` and click **Reset simulation state** before replaying.
+3. Click **Prepare robust example** to jump into a guided recovery scenario; guided cards reset simulation state before setup.
+4. Use **Lab controls** for diagnostics, then **Return to example** in the guided banner to continue the prepared workflow.
 5. Prove the path with:
 
 ```bash
@@ -67,6 +67,8 @@ pnpm dev
 ## Reset State To Retest
 
 Open `/debug/version-skew?debug=1` and click **Reset simulation state**.
+
+Guided scenario cards reset automatically before they prepare a scenario, so a manual reset is only needed before custom/manual replay.
 
 That clears browser-side drafts, MFA state, idempotency keys, version overrides, preload state, telemetry, and local skew mode. It also resets backend skew mode, audit events, idempotency records, and mutable fake seed data.
 

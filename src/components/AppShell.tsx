@@ -177,14 +177,16 @@ function GuidedScenarioBanner({
   }
   const currentPath = typeof window === "undefined" ? "" : window.location.pathname;
   const isTargetRoute = currentPath === scenario.href;
-  const activeStepIndex = isTargetRoute ? scenario.targetStepIndex ?? scenario.steps.length - 1 : 0;
+  const lastStepIndex = Math.max(scenario.steps.length - 1, 0);
+  const activeStepIndex = Math.min(scenario.targetStepIndex ?? lastStepIndex, lastStepIndex);
+  const status = `${isTargetRoute ? "Current" : "Ready"}: step ${activeStepIndex + 1} of ${scenario.steps.length}`;
 
   return (
     <section className="guided-scenario-banner" data-testid="guided-scenario-banner" aria-label="Active guided scenario">
       <ListChecks aria-hidden="true" />
       <div>
         <strong>{scenario.title}</strong>
-        <small data-testid="guided-scenario-status">{isTargetRoute ? "Setup complete" : "Setup pending"}</small>
+        <small data-testid="guided-scenario-status">{status}</small>
         <span>{scenario.outcome}</span>
         <ol>
           {scenario.steps.map((step, index) => (
@@ -195,6 +197,11 @@ function GuidedScenarioBanner({
         </ol>
       </div>
       <div className="guided-scenario-actions">
+        {!isTargetRoute ? (
+          <a className="button" href={debugRouteHref(scenario.href, routerMode)}>
+            Return to example
+          </a>
+        ) : null}
         <a className="button button-light" href={debugRouteHref("/debug/version-skew", routerMode)}>
           Lab controls
         </a>

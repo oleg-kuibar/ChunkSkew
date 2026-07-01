@@ -144,7 +144,21 @@ test("1b. Simple examples page teaches core patterns", async ({ page }) => {
   await expect(page.getByTestId("router-mode-switch").getByRole("link", { name: "TanStack" })).toHaveAttribute("aria-current", "page");
 });
 
-test("1c. Start page routes payment recovery through guided controls", async ({ page }) => {
+test("1c. Update toast does not cover release debug panel", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await prepare(page);
+  await open(page, "/examples");
+  await expect(page.locator(".update-toast")).toBeVisible();
+  await expect(page.getByTestId("version-debug-panel")).toBeVisible();
+
+  const toast = await page.locator(".update-toast").boundingBox();
+  const panel = await page.getByTestId("version-debug-panel").boundingBox();
+  expect(toast).not.toBeNull();
+  expect(panel).not.toBeNull();
+  expect(toast!.x + toast!.width).toBeLessThanOrEqual(panel!.x);
+});
+
+test("1d. Start page routes payment recovery through guided controls", async ({ page }) => {
   await prepare(page);
   await open(page);
   await page.getByRole("link", { name: "Try payment recovery" }).click();
@@ -152,7 +166,7 @@ test("1c. Start page routes payment recovery through guided controls", async ({ 
   await expect(page.getByTestId("guided-scenario-payment-safe-refresh")).toContainText("Recommended next");
 });
 
-test("1d. Simple examples prepare setup-dependent robust examples", async ({ page }) => {
+test("1e. Simple examples prepare setup-dependent robust examples", async ({ page }) => {
   await prepare(page);
   await open(page, "/examples");
   const chunkRecoveryCard = page.getByTestId("simple-examples").locator("article").filter({ hasText: "Chunk recovery" });
@@ -219,10 +233,25 @@ test("3c. Guided scenario runner opens missing chunk recovery", async ({ page })
   await page.getByRole("button", { name: "Prepare missing chunk fallback" }).click();
   await expect(page).toHaveURL(/payments\/create\/review/);
   await expect(page.getByTestId("guided-scenario-banner")).toContainText("Missing chunk fallback");
-  await expect(page.getByTestId("guided-scenario-status")).toContainText("Setup complete");
+  await expect(page.getByTestId("guided-scenario-status")).toContainText("Current: step 3 of 3");
   await expect(page.getByTestId("guided-scenario-banner")).toContainText("Confirm fallback and reload-loop prevention");
   await expect(page.getByTestId("chunk-failure-fallback")).toBeVisible();
   await expect.poll(() => page.evaluate(() => window.localStorage.getItem("chunk-skew-finance:current-release-overrides"))).toBeNull();
+});
+
+test("3d. Guided scenario banner returns from lab controls to the prepared example", async ({ page }) => {
+  await prepare(page, "react", "asset-retention");
+  await open(page, "/debug/version-skew");
+  await page.getByRole("button", { name: "Prepare payment recovery" }).click();
+  await expect(page).toHaveURL(/payments\/create\/recipient/);
+  await expect(page.getByTestId("guided-scenario-status")).toContainText("Current: step 2 of 3");
+
+  await page.getByTestId("guided-scenario-banner").getByRole("link", { name: "Lab controls" }).click();
+  await expect(page).toHaveURL(/debug\/version-skew/);
+  await expect(page.getByTestId("guided-scenario-status")).toContainText("Ready: step 2 of 3");
+
+  await page.getByTestId("guided-scenario-banner").getByRole("link", { name: "Return to example" }).click();
+  await expect(page).toHaveURL(/payments\/create\/recipient/);
 });
 
 test("3b. Reset simulation state clears recovered release overrides", async ({ page }) => {

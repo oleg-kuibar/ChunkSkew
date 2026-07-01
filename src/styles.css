@@ -1035,6 +1035,11 @@ td code {
   pointer-events: none;
 }
 
+.app-shell:has(> .version-debug-panel) .update-toast,
+.debug-panel-open .update-toast {
+  right: calc(292px + 24px);
+}
+
 .update-toast * {
   pointer-events: none;
 }
@@ -1346,6 +1351,11 @@ td code {
     position: static;
     width: auto;
     margin: 16px;
+  }
+
+  .app-shell:has(> .version-debug-panel) .update-toast,
+  .debug-panel-open .update-toast {
+    right: 16px;
   }
 }
 

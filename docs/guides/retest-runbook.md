@@ -67,7 +67,7 @@ Manual path:
 3. Enter a memo.
 4. Continue to MFA.
 5. Use **Lab controls** in the guided banner, open **Advanced diagnostics**, then select `broken`.
-6. Return to `/payments/create/mfa?debug=1&router=react` and try to submit the payment.
+6. Click **Return to example** in the guided banner, continue back to MFA if needed, and try to submit the payment.
 7. Confirm the required update gate appears.
 8. Click **Refresh safely**.
 9. Confirm the payment flow resumes and the memo is restored.
