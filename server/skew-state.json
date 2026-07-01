@@ -1,0 +1,9 @@
+{
+  "mode": "broken",
+  "activeReleaseId": "release-a",
+  "latestReleaseId": "release-b",
+  "updateSeverity": "required",
+  "apiContractVersion": "2026-06",
+  "compatibilityWindowExpiresAt": "2026-06-29T22:21:13.979Z",
+  "updatedAt": "2026-06-26T22:21:13.979Z"
+}

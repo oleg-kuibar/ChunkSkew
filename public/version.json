@@ -1,0 +1,20 @@
+{
+  "releaseId": "dev-2026-07-01",
+  "buildTime": "2026-07-01T16:24:07.813Z",
+  "gitSha": "dev",
+  "deploymentId": "deployment-dev-2026-07-01",
+  "minimumSupportedClientRelease": "dev-2026-07-01",
+  "updateSeverity": "optional",
+  "routerMode": "react-router",
+  "assetBasePath": "/",
+  "compatibilityWindowExpiresAt": "2026-07-04T16:24:07.813Z",
+  "featureFlagSnapshotVersion": "ff-dev-2026-07-01",
+  "apiContractVersion": "2026-06",
+  "draftSchemaVersions": {
+    "payment": 2,
+    "kyb": 2,
+    "card": 2,
+    "invoice": 2,
+    "vendor": 2
+  }
+}

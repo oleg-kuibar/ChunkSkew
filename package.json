@@ -1,0 +1,66 @@
+{
+  "name": "chunk-skew-fintech-poc",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Knowledge repo and standalone React/Vite POC for build version skew, stale chunk recovery, safe refresh, and fintech workflow safety.",
+  "keywords": [
+    "build-version-skew",
+    "version-skew",
+    "stale-chunks",
+    "chunkloaderror",
+    "vite-preload-error",
+    "safe-refresh",
+    "asset-retention",
+    "deployment-affinity",
+    "react-router",
+    "tanstack-router",
+    "idempotency"
+  ],
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "dev:mock": "node --import tsx server/skew-server.ts",
+    "dev:full": "concurrently -k -n mock,vite \"pnpm dev:mock\" \"pnpm dev\"",
+    "prebuild": "node scripts/generate-version.mjs",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "build:release-a": "node scripts/build-release.mjs release-a",
+    "build:release-b": "node scripts/build-release.mjs release-b",
+    "serve:skew": "node --import tsx server/skew-server.ts --static",
+    "simulate:delete-old-assets": "node scripts/set-skew-mode.mjs broken",
+    "simulate:retain-old-assets": "node scripts/set-skew-mode.mjs asset-retention",
+    "simulate:expire-compat-window": "node scripts/set-skew-mode.mjs compatibility-window-expired",
+    "simulate:api-contract-incompatible": "node scripts/set-skew-mode.mjs api-contract-incompatible",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:windows-smoke": "node scripts/windows-playwright-smoke.cjs",
+    "test:e2e:windows": "node scripts/windows-playwright-e2e.cjs"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.81.5",
+    "@tanstack/react-router": "^1.132.6",
+    "@tanstack/router-plugin": "^1.132.6",
+    "@vitejs/plugin-react": "^4.6.0",
+    "concurrently": "^9.2.0",
+    "express": "^4.21.2",
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.30.1",
+    "tsx": "^4.20.3",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.53.1",
+    "@types/express": "^4.17.23",
+    "@types/node": "^22.15.34",
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
+    "@types/ws": "^8.18.1",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
