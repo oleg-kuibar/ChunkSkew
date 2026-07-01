@@ -44,12 +44,18 @@ location.href = "/debug/version-skew?debug=1&router=react"
 ## Reproduce Missing Chunk Recovery
 
 1. Reset state.
+2. Click **Prepare missing chunk fallback** in the guided scenarios.
+3. The lab switches to `broken` mode and opens `/payments/create/review`.
+4. The simulated lazy chunk failure should show a controlled fallback.
+5. The fallback should say that entered information was saved when autosave was active.
+6. Telemetry should include `chunk_load_failed`.
+
+Manual path:
+
+1. Reset state.
 2. Select `broken` or `no-affinity`.
 3. Open `/payments/create/recipient?debug=1&router=react`.
 4. Continue through the payment flow to the review step.
-5. The simulated lazy chunk failure should show a controlled fallback.
-6. The fallback should say that entered information was saved when autosave was active.
-7. Telemetry should include `chunk_load_failed`.
 
 ## Reproduce Safe Refresh With Autosaved Payment
 

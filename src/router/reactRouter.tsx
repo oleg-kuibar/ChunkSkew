@@ -2,6 +2,7 @@ import { Link, Outlet, createBrowserRouter } from "react-router-dom";
 import { AppShell } from "../components/AppShell";
 import { ChunkFailureFallback } from "../components/UpdateSurfaces";
 import { DashboardPage } from "../pages/Dashboard";
+import { SimpleExamplesPage } from "../pages/SimpleExamples";
 import { InvoicesPage } from "../pages/Invoices";
 import { CardsPage } from "../pages/Cards";
 import { TransactionsPage } from "../pages/Transactions";
@@ -37,6 +38,7 @@ export function createReactRouter() {
       errorElement: <ErrorElement />,
       children: [
         { index: true, element: <DashboardPage routerMode="react-router" /> },
+        { path: "examples", element: <SimpleExamplesPage routerMode="react-router" /> },
         {
           path: "payments/create/review",
           lazy: reactRouterLazy("payment-review", "payment", () => import("../pages/PaymentReviewRoute")),

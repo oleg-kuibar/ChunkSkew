@@ -1,126 +1,164 @@
-import { useQuery } from "@tanstack/react-query";
-import { AlertCircle, ArrowRight, BadgeDollarSign, CreditCard, FileCheck2, Landmark } from "lucide-react";
-import { api } from "../shared/api";
-import { formatCents, formatDate } from "../shared/format";
+import {
+  AlertTriangle,
+  ArrowRight,
+  BadgeCheck,
+  Bug,
+  FileClock,
+  GitBranch,
+  RefreshCcw,
+  Route,
+  ShieldCheck,
+  WalletCards
+} from "lucide-react";
 import type { RouterMode } from "../shared/types";
 
+const labSteps = [
+  {
+    icon: GitBranch,
+    title: "1. Release B deploys",
+    body: "The browser keeps running the old bundle while the server starts advertising the latest release."
+  },
+  {
+    icon: Route,
+    title: "2. A lazy route loads",
+    body: "A payment review, invoice detail, KYB review, or report route asks for a chunk from the old build."
+  },
+  {
+    icon: AlertTriangle,
+    title: "3. The chunk is missing",
+    body: "The app classifies the import/preload failure, saves workflow context, and avoids a generic crash."
+  },
+  {
+    icon: RefreshCcw,
+    title: "4. Recovery is safe",
+    body: "Drafts and idempotency keys survive refresh so risky mutations are not submitted twice."
+  }
+];
+
+const scenarioLinks = [
+  {
+    title: "Payment safe refresh",
+    body: "Autosave a payment, force a required update, refresh safely, and submit without duplicates.",
+    href: "/payments/create/recipient",
+    icon: WalletCards
+  },
+  {
+    title: "Missing lazy chunk",
+    body: "Switch to broken mode and open a lazy review route to see controlled recovery.",
+    href: "/payments/create/review",
+    icon: Bug
+  },
+  {
+    title: "KYB draft compatibility",
+    body: "Seed an incompatible KYB draft, then verify the app asks for review instead of submitting.",
+    href: "/kyb/review",
+    icon: FileClock
+  },
+  {
+    title: "Version skew controls",
+    body: "Reset state, switch deployment modes, inspect release identity, and review preload status.",
+    href: "/debug/version-skew",
+    icon: ShieldCheck
+  }
+];
+
+const patternLinks = [
+  "release identity",
+  "update policy",
+  "chunk recovery",
+  "autosave",
+  "idempotency",
+  "asset retention"
+];
+
 export function DashboardPage({ routerMode }: { routerMode: RouterMode }) {
-  const query = useQuery({ queryKey: ["dashboard", routerMode], queryFn: () => api.dashboard(routerMode) });
-
-  if (query.isLoading) {
-    return <div className="loading-panel">Loading finance workspace...</div>;
-  }
-
-  if (query.isError || !query.data) {
-    return <div className="empty-state">Unable to load dashboard.</div>;
-  }
-
-  const totalBalance = query.data.accounts.reduce((sum, account) => sum + account.balanceCents, 0);
-
   return (
     <div className="page-stack">
-      <section className="page-heading">
-        <div>
-          <p className="eyebrow">Business banking operations</p>
-          <h1>Dashboard</h1>
+      <section className="learning-hero">
+        <div className="learning-hero-copy">
+          <p className="eyebrow">Build version skew lab</p>
+          <h1>Understand the failure. Practice the recovery. Keep the examples simple.</h1>
+          <p>
+            This app shows what happens when an old browser tab meets a new deployment, then demonstrates the small set of patterns
+            that keep sensitive workflows safe.
+          </p>
+          <div className="learning-actions">
+            <a className="button" href={withRouter("/debug/version-skew", routerMode)}>
+              <ShieldCheck aria-hidden="true" />
+              Open lab controls
+            </a>
+            <a className="button button-light" href={withRouter("/payments/create/recipient", routerMode)}>
+              <WalletCards aria-hidden="true" />
+              Try payment recovery
+            </a>
+          </div>
         </div>
-        <span className="badge badge-muted">All data is fake</span>
+        <div className="learning-summary" aria-label="Core recovery promise">
+          <BadgeCheck aria-hidden="true" />
+          <strong>Simple rule</strong>
+          <span>Detect release skew, preserve workflow state, block risky mutation only when required, then refresh safely.</span>
+        </div>
       </section>
 
-      <section className="metric-grid">
-        <article className="metric-card">
-          <Landmark aria-hidden="true" />
-          <span>Total balance</span>
-          <strong>{formatCents(totalBalance)}</strong>
-        </article>
-        <article className="metric-card">
-          <FileCheck2 aria-hidden="true" />
-          <span>Pending approvals</span>
-          <strong>{query.data.pendingApprovals.length}</strong>
-        </article>
-        <article className="metric-card">
-          <AlertCircle aria-hidden="true" />
-          <span>Risk alerts</span>
-          <strong>{query.data.riskAlerts.length}</strong>
-        </article>
-        <article className="metric-card">
-          <CreditCard aria-hidden="true" />
-          <span>Card reviews</span>
-          <strong>{query.data.cardsRequiringAttention.length}</strong>
-        </article>
+      <section className="learning-grid" aria-labelledby="mental-model-heading">
+        <header className="section-header wide-panel">
+          <div>
+            <h2 id="mental-model-heading">The mental model</h2>
+            <p>Four checkpoints explain most of the problem and most of the fix.</p>
+          </div>
+        </header>
+        {labSteps.map((step) => {
+          const Icon = step.icon;
+          return (
+            <article className="learning-card" key={step.title}>
+              <Icon aria-hidden="true" />
+              <strong>{step.title}</strong>
+              <p>{step.body}</p>
+            </article>
+          );
+        })}
       </section>
 
-      <section className="dashboard-grid">
-        <div className="panel">
-          <header className="panel-header">
-            <h2>Accounts</h2>
-          </header>
-          <div className="list">
-            {query.data.accounts.map((account) => (
-              <div className="list-row" key={account.id}>
-                <div>
-                  <strong>{account.name}</strong>
-                  <span>{account.maskedNumber}</span>
-                </div>
-                <b>{formatCents(account.balanceCents)}</b>
-              </div>
-            ))}
+      <section className="learning-grid" aria-labelledby="examples-heading">
+        <header className="section-header wide-panel">
+          <div>
+            <h2 id="examples-heading">Robust examples</h2>
+            <p>Each path is a working scenario backed by tests and fake deterministic data.</p>
           </div>
-        </div>
+        </header>
+        {scenarioLinks.map((scenario) => {
+          const Icon = scenario.icon;
+          return (
+            <a className="learning-card learning-card-link" href={withRouter(scenario.href, routerMode)} key={scenario.title}>
+              <Icon aria-hidden="true" />
+              <strong>{scenario.title}</strong>
+              <p>{scenario.body}</p>
+              <span>
+                Open example
+                <ArrowRight aria-hidden="true" />
+              </span>
+            </a>
+          );
+        })}
+      </section>
 
-        <div className="panel">
-          <header className="panel-header">
-            <h2>Approvals due</h2>
-            <ArrowRight aria-hidden="true" />
-          </header>
-          <div className="list">
-            {query.data.invoicesDueSoon.map((invoice) => (
-              <div className="list-row" key={invoice.id}>
-                <div>
-                  <strong>{invoice.vendorName}</strong>
-                  <span>Due {formatDate(invoice.dueDate)}</span>
-                </div>
-                <b>{formatCents(invoice.amountCents)}</b>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="panel">
-          <header className="panel-header">
-            <h2>Recent transactions</h2>
-          </header>
-          <div className="list">
-            {query.data.recentTransactions.map((transaction) => (
-              <div className="list-row" key={transaction.id}>
-                <div>
-                  <strong>{transaction.description}</strong>
-                  <span>{transaction.status} · risk {transaction.riskScore}</span>
-                </div>
-                <b>{formatCents(transaction.amountCents)}</b>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="panel">
-          <header className="panel-header">
-            <h2>Risk alerts</h2>
-            <BadgeDollarSign aria-hidden="true" />
-          </header>
-          <div className="list">
-            {query.data.riskAlerts.map((alert) => (
-              <div className="list-row" key={alert.id}>
-                <div>
-                  <strong>{alert.title}</strong>
-                  <span>{alert.entity}</span>
-                </div>
-                <span className="status-chip">{alert.severity}</span>
-              </div>
-            ))}
-          </div>
+      <section className="panel">
+        <header className="panel-header">
+          <h2>Pattern vocabulary</h2>
+        </header>
+        <div className="tag-row">
+          {patternLinks.map((pattern) => (
+            <span className="status-chip" key={pattern}>
+              {pattern}
+            </span>
+          ))}
         </div>
       </section>
     </div>
   );
+}
+
+function withRouter(path: string, routerMode: RouterMode) {
+  const router = routerMode === "tanstack-router" ? "tanstack" : "react";
+  return `${path}?debug=1&router=${router}`;
 }

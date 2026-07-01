@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { AppShell } from "../components/AppShell";
 import { ChunkFailureFallback } from "../components/UpdateSurfaces";
 import { DashboardPage } from "../pages/Dashboard";
+import { SimpleExamplesPage } from "../pages/SimpleExamples";
 import { InvoicesPage } from "../pages/Invoices";
 import { CardsPage } from "../pages/Cards";
 import { TransactionsPage } from "../pages/Transactions";
@@ -42,6 +43,12 @@ const dashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
   component: () => <DashboardPage routerMode="tanstack-router" />
+});
+
+const examplesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/examples",
+  component: () => <SimpleExamplesPage routerMode="tanstack-router" />
 });
 
 const paymentRoute = createRoute({
@@ -214,6 +221,7 @@ const pendingRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   dashboardRoute,
+  examplesRoute,
   paymentRoute,
   invoicesRoute,
   invoiceDetailRoute,

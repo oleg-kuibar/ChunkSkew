@@ -107,8 +107,21 @@ async function waitForPreloadRoute(page: Page, route: string) {
 test("1. Baseline app loads", async ({ page }) => {
   await prepare(page);
   await open(page);
-  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
-  await expect(page.getByText("Northstar Ops")).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Understand the failure/ })).toBeVisible();
+  await expect(page.getByText("ChunkSkew Lab")).toBeVisible();
+  await expect(page.getByText("The mental model")).toBeVisible();
+});
+
+test("1b. Simple examples page teaches core patterns", async ({ page }) => {
+  await prepare(page);
+  await open(page, "/examples");
+  await expect(page.getByRole("heading", { name: "Simple examples" })).toBeVisible();
+  await expect(page.getByTestId("simple-examples")).toContainText("Release identity");
+  await expect(page.getByTestId("simple-examples")).toContainText("Idempotent mutation");
+
+  await prepare(page, "tanstack");
+  await open(page, "/examples", "tanstack");
+  await expect(page.getByRole("heading", { name: "Simple examples" })).toBeVisible();
 });
 
 test("2. Current release ID is visible in debug mode", async ({ page }) => {
@@ -123,7 +136,16 @@ test("3. Version debug panel works", async ({ page }) => {
   await prepare(page);
   await open(page, "/debug/version-skew");
   await expect(page.getByRole("heading", { name: "Version skew controls" })).toBeVisible();
+  await expect(page.getByTestId("guided-scenarios")).toContainText("Pick one scenario");
   await expect(page.getByTestId("deployment-modes")).toContainText("asset-retention");
+});
+
+test("3c. Guided scenario runner opens missing chunk recovery", async ({ page }) => {
+  await prepare(page, "react", "asset-retention");
+  await open(page, "/debug/version-skew");
+  await page.getByRole("button", { name: "Prepare missing chunk fallback" }).click();
+  await expect(page).toHaveURL(/payments\/create\/review/);
+  await expect(page.getByTestId("chunk-failure-fallback")).toBeVisible();
 });
 
 test("3b. Reset simulation state clears recovered release overrides", async ({ page }) => {
@@ -152,11 +174,18 @@ test("3b. Reset simulation state clears recovered release overrides", async ({ p
     window.sessionStorage.setItem("chunk-skew-finance:current-release-override:react-router", "release-b");
   });
   await page.getByRole("button", { name: "Reset simulation state" }).click();
+  await page.waitForLoadState("domcontentloaded");
   await expect(page.getByRole("heading", { name: "Version skew controls" })).toBeVisible();
   await expect(page.getByTestId("build-version-stamp").first()).toContainText("Bundle dev-local");
   await expect(page.getByTestId("build-version-stamp").first()).not.toContainText("session release-b");
   await expect
-    .poll(() => page.evaluate(() => window.localStorage.getItem("chunk-skew-finance:current-release-overrides")))
+    .poll(async () => {
+      try {
+        return await page.evaluate(() => window.localStorage.getItem("chunk-skew-finance:current-release-overrides"));
+      } catch {
+        return "__navigation_pending__";
+      }
+    })
     .toBeNull();
 });
 

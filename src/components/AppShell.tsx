@@ -1,6 +1,7 @@
 import {
   Activity,
   BadgeDollarSign,
+  BookOpenCheck,
   Building2,
   ClipboardCheck,
   CreditCard,
@@ -22,15 +23,16 @@ import { BuildVersionStamp, RouterModeBadge, UpdateBanner, UpdateToast, VersionD
 export type LinkRenderer = (props: { to: string; children: ReactNode; className?: string }) => ReactNode;
 
 const navItems = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/payments/create/recipient", label: "Payments", icon: BadgeDollarSign },
-  { to: "/invoices", label: "Invoices", icon: ClipboardCheck },
-  { to: "/cards", label: "Cards", icon: CreditCard },
-  { to: "/kyb/business", label: "KYB", icon: Building2 },
-  { to: "/transactions", label: "Transactions", icon: Activity },
-  { to: "/settings", label: "Settings", icon: Users },
+  { to: "/", label: "Start here", icon: LayoutDashboard },
+  { to: "/examples", label: "Simple examples", icon: BookOpenCheck },
+  { to: "/payments/create/recipient", label: "Payment example", icon: BadgeDollarSign },
+  { to: "/invoices", label: "Invoice example", icon: ClipboardCheck },
+  { to: "/cards", label: "Card example", icon: CreditCard },
+  { to: "/kyb/business", label: "KYB example", icon: Building2 },
+  { to: "/transactions", label: "Report example", icon: Activity },
+  { to: "/settings", label: "Session and roles", icon: Users },
   { to: "/audit", label: "Audit log", icon: FileClock },
-  { to: "/debug/version-skew", label: "Version skew", icon: Gauge }
+  { to: "/debug/version-skew", label: "Lab controls", icon: Gauge }
 ];
 
 export function AppShell({
@@ -54,8 +56,8 @@ export function AppShell({
         <div className="brand">
           <Landmark aria-hidden="true" />
           <div>
-            <strong>Northstar Ops</strong>
-            <span>Fake finance workspace</span>
+            <strong>ChunkSkew Lab</strong>
+            <span>Build version skew examples</span>
           </div>
         </div>
         <nav aria-label="Primary">

@@ -9,6 +9,7 @@ This repo uses fake deterministic fintech data only. It does not import from, in
 ## Start Here
 
 - [Knowledge map](docs/README.md): guide, pattern, example, and reference index.
+- [Rebuild audit](docs/audits/rebuild-audit.md): current friction and the target learning architecture.
 - [Build version skew guide](docs/guides/build-version-skew.md): the core explanation and mitigation model.
 - [Retest runbook](docs/guides/retest-runbook.md): how to reset state and replay the demos.
 - [Pattern index](docs/patterns/README.md): reusable implementation patterns with code anchors.
@@ -39,6 +40,7 @@ Open:
 
 - React Router mode: `http://localhost:5173/?debug=1&router=react`
 - TanStack Router mode: `http://localhost:5173/?debug=1&router=tanstack`
+- Simple examples: `http://localhost:5173/examples?debug=1`
 - Version skew controls: `http://localhost:5173/debug/version-skew?debug=1`
 
 If you prefer separate terminals:

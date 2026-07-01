@@ -10,6 +10,7 @@ Use it in three modes:
 
 ## Guides
 
+- [Rebuild Audit](audits/rebuild-audit.md): current UX/code friction and the target learning architecture.
 - [Build Version Skew](guides/build-version-skew.md): what breaks, why lazy chunks fail, and the layered mitigation model.
 - [Retest Runbook](guides/retest-runbook.md): reset state, reproduce stale chunk failure, and verify recovery.
 - [Production Rollout Guide](guides/production-rollout-guide.md): a practical rollout sequence for real apps.
@@ -27,6 +28,7 @@ Use it in three modes:
 ## Examples
 
 - [Example Index](examples/README.md)
+- App route: `/examples?debug=1`
 - [Payment Safe Refresh](examples/payment-safe-refresh.md)
 - [KYB Draft Recovery](examples/kyb-draft-recovery.md)
 - [Router Chunk Failure](examples/router-chunk-failure.md)
