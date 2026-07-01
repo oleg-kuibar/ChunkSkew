@@ -29,6 +29,7 @@ Use it in three modes:
 
 - [Example Index](examples/README.md)
 - App route: `/examples?debug=1`
+- Simple source: [`../src/examples/simpleVersionSkewPatterns.ts`](../src/examples/simpleVersionSkewPatterns.ts)
 - [Payment Safe Refresh](examples/payment-safe-refresh.md)
 - [KYB Draft Recovery](examples/kyb-draft-recovery.md)
 - [Router Chunk Failure](examples/router-chunk-failure.md)

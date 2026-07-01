@@ -104,6 +104,7 @@ docs/
 server/         Mock backend, release bus, skew-mode simulator
 src/
   components/   Update surfaces, badges, audit UI, error boundaries
+  examples/     Tiny copy-paste version skew patterns
   pages/        Fintech screens and debug controls
   router/       React Router and TanStack Router shells
   shared/       Release, recovery, policy, telemetry, drafts, guards

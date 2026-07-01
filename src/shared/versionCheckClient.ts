@@ -186,10 +186,22 @@ function startReleaseBus(routerMode: RouterMode) {
 }
 
 export function subscribeVersionState(callback: () => void) {
-  const handler = () => callback();
+  let active = true;
+  const handler = (event: Event) => {
+    const changedKey = (event as CustomEvent<{ key?: string }>).detail?.key;
+    if (changedKey && changedKey !== stateKey) {
+      return;
+    }
+    queueMicrotask(() => {
+      if (active) {
+        callback();
+      }
+    });
+  };
   emitter.addEventListener("version-state", handler);
   window.addEventListener("chunk-skew-storage", handler);
   return () => {
+    active = false;
     emitter.removeEventListener("version-state", handler);
     window.removeEventListener("chunk-skew-storage", handler);
   };

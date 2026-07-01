@@ -48,6 +48,12 @@ The main UI components are not algorithmically complex, but the project asks the
 
 The rebuild should progressively disclose these concepts. The first screen should teach only the small model, then examples should reveal deeper details.
 
+Change made in this pass:
+
+- Extracted KYB server snapshot-to-draft shaping into a named helper so the workflow effect reads as a recovery rule instead of a data-mapping block.
+- Reused one Card controls draft shape for autosave and submit, and gated autosave until the current card draft or matching server snapshot is applied.
+- Tightened version-state subscriptions so build version stamps react to version-state changes after the current render, not to unrelated autosave/idempotency storage writes.
+
 ### 4. Debug controls are powerful but dense
 
 `VersionSkewDebugPage` combines mode switching, release state, draft seeding, telemetry clearing, full reset, preload table, and audit table. This is useful for tests, but cognitively dense.
@@ -82,10 +88,12 @@ Change made in this pass:
 - Cards that need skew setup now prepare the matching guided scenario instead of jumping directly into an unprepared workflow.
 - Each card now names the implementation file to study after the minimal rule.
 - Each card now shows a tiny TypeScript-shaped check before linking to the broader implementation.
+- Added `src/examples/simpleVersionSkewPatterns.ts` as a tiny source file for copy/paste release, chunk, refresh, idempotency, gate, and asset-strategy examples.
+- Added a direct Playwright check for the tiny source examples so they stay runnable, not only rendered as text.
 
 Future rebuild target:
 
-- Add `src/examples/simple-*` modules only if the implementation anchors still feel too broad for readers who want copy/paste code snippets.
+- Expand `src/examples/simpleVersionSkewPatterns.ts` only if readers need runnable examples beyond the current tiny functions.
 
 ## Target Information Architecture
 

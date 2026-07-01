@@ -125,6 +125,7 @@ test("1b. Simple examples page teaches core patterns", async ({ page }) => {
   await expect(page.getByTestId("simple-examples")).toContainText("Release identity");
   await expect(page.getByTestId("simple-examples")).toContainText("Idempotent mutation");
   await expect(page.getByTestId("simple-examples")).toContainText("session.releaseId !== latest.releaseId");
+  await expect(page.getByTestId("simple-examples")).toContainText("src/examples/simpleVersionSkewPatterns.ts");
   await expect(page.getByTestId("simple-examples")).toContainText("src/shared/chunkRecoveryController.ts");
   await expect(page.getByTestId("router-mode-switch").getByRole("link", { name: "React" })).toHaveAttribute("aria-current", "page");
 
@@ -370,6 +371,56 @@ test("19. Card freeze mutation is blocked when required update is pending", asyn
   await forceRequiredUpdate(page);
   await page.getByRole("button", { name: "Freeze card" }).click();
   await expect(page.getByTestId("required-update-gate")).toBeVisible();
+});
+
+test("19b. Card control draft restores after reload", async ({ page }) => {
+  await prepare(page);
+  await open(page, "/cards/card_ops_01");
+  await page.getByLabel("Spend limit").fill("4321");
+  await page.getByLabel("Merchant categories").fill("Travel, Meals");
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const raw = window.localStorage.getItem("chunk-skew-finance:draft:card-limit-card_ops_01");
+        return raw ? JSON.parse(raw).formValues : null;
+      })
+    )
+    .toEqual({ spendLimitCents: 432100, categories: ["Travel", "Meals"] });
+  await page.reload();
+  await expect(page.getByLabel("Spend limit")).toHaveValue("4321");
+  await expect(page.getByLabel("Merchant categories")).toHaveValue("Travel, Meals");
+});
+
+test("19c. Card route change applies the current card before autosave", async ({ page }) => {
+  await prepare(page);
+  await open(page, "/cards/card_ops_01");
+  await page.getByLabel("Spend limit").fill("4321");
+  await page.getByLabel("Merchant categories").fill("Travel, Meals");
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const raw = window.localStorage.getItem("chunk-skew-finance:draft:card-limit-card_ops_01");
+        return raw ? JSON.parse(raw).formValues : null;
+      })
+    )
+    .toEqual({ spendLimitCents: 432100, categories: ["Travel", "Meals"] });
+
+  await page.evaluate(() => {
+    window.history.pushState(null, "", "/cards/card_ops_02?debug=1&router=react");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  });
+
+  await expect(page.getByRole("heading", { name: "Diego Rivera" })).toBeVisible();
+  await expect(page.getByLabel("Spend limit")).toHaveValue("7500");
+  await expect(page.getByLabel("Merchant categories")).toHaveValue("Fuel, Materials");
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const raw = window.localStorage.getItem("chunk-skew-finance:draft:card-limit-card_ops_02");
+        return raw ? JSON.parse(raw).formValues : null;
+      })
+    )
+    .toEqual({ spendLimitCents: 750000, categories: ["Fuel", "Materials"] });
 });
 
 test("20. KYB draft restores after reload", async ({ page }) => {

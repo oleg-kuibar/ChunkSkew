@@ -49,6 +49,21 @@ const defaultDraft: KybDraft = {
   uploadedDocumentIds: ["doc_articles"]
 };
 
+type KybSnapshot = Awaited<ReturnType<typeof api.kyb>>;
+
+function draftFromKybSnapshot(snapshot: KybSnapshot): KybDraft {
+  return {
+    legalName: snapshot.businessDetails.legalName,
+    taxIdMask: snapshot.businessDetails.taxIdMask,
+    address: snapshot.businessDetails.address,
+    owners: snapshot.owners.map((owner) => ({
+      name: owner.name,
+      ownershipPercent: owner.ownershipPercent
+    })),
+    uploadedDocumentIds: snapshot.documents.filter((doc) => doc.status === "uploaded").map((doc) => doc.id)
+  };
+}
+
 export function KybWorkflow({
   routerMode,
   step,
@@ -129,14 +144,7 @@ export function KybWorkflow({
     if (!restored && !userEdited && !userEditedRef.current && kybQuery.data) {
       setDraft((value) => ({
         ...value,
-        legalName: kybQuery.data.businessDetails.legalName,
-        taxIdMask: kybQuery.data.businessDetails.taxIdMask,
-        address: kybQuery.data.businessDetails.address,
-        owners: kybQuery.data.owners.map((owner) => ({
-          name: owner.name,
-          ownershipPercent: owner.ownershipPercent
-        })),
-        uploadedDocumentIds: kybQuery.data.documents.filter((doc) => doc.status === "uploaded").map((doc) => doc.id)
+        ...draftFromKybSnapshot(kybQuery.data)
       }));
     }
   }, [kybQuery.data, restored, userEdited]);
@@ -152,15 +160,13 @@ export function KybWorkflow({
   });
 
   function updateDraft(next: Partial<KybDraft>) {
+    const merged = { ...draft, ...next };
     userEditedRef.current = true;
     setUserEdited(true);
-    setDraft((value) => {
-      const merged = { ...value, ...next };
-      if (draftReadyToSave && !incompatible) {
-        persistDraft(merged, step);
-      }
-      return merged;
-    });
+    setDraft(merged);
+    if (draftReadyToSave && !incompatible) {
+      persistDraft(merged, step);
+    }
   }
 
   function submit() {

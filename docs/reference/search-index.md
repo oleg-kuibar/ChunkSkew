@@ -46,6 +46,9 @@ This page intentionally repeats common search terms so people can find the right
 - draft restore after app update
 - idempotency key preserved after refresh
 - duplicate submit prevention
+- copy-paste version skew examples
+- minimal version skew patterns
+- simple version skew source
 
 ## Deployment Terms
 
@@ -78,3 +81,4 @@ This page intentionally repeats common search terms so people can find the right
 - [Retest Runbook](../guides/retest-runbook.md)
 - [Pattern Index](../patterns/README.md)
 - [Example Index](../examples/README.md)
+- [Simple Version Skew Patterns](../../src/examples/simpleVersionSkewPatterns.ts)

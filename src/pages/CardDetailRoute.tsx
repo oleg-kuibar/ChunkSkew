@@ -16,9 +16,33 @@ import {
   WorkflowAutosaveRestoredNotice
 } from "../components/UpdateSurfaces";
 
+interface CardLimitDraft {
+  spendLimitCents: number;
+  categories: string[];
+}
+
+function cardLimitDraftId(cardId: string) {
+  return `card-limit-${cardId}`;
+}
+
+function controlsFromLimitDraft(draft: CardLimitDraft) {
+  return {
+    spendLimit: draft.spendLimitCents / 100,
+    categories: draft.categories.join(", ")
+  };
+}
+
+function limitDraftFromControls(spendLimit: number, categories: string): CardLimitDraft {
+  return {
+    spendLimitCents: Math.round(spendLimit * 100),
+    categories: categories.split(",").map((item) => item.trim()).filter(Boolean)
+  };
+}
+
 export function Component() {
   const params = useParams();
   const cardId = params.cardId ?? "";
+  const draftId = cardLimitDraftId(cardId);
   const routerMode = "react-router" as const;
   const session = getSessionSnapshot();
   const queryClient = useQueryClient();
@@ -29,48 +53,53 @@ export function Component() {
   const [blocked, setBlocked] = useState<string | null>(null);
   const [requiredGate, setRequiredGate] = useState<string | null>(null);
   const [deduped, setDeduped] = useState(false);
-  const [draftApplied, setDraftApplied] = useState(false);
+  const [readyDraftId, setReadyDraftId] = useState<string | null>(null);
   const freezeKey = useMemo(() => getOrCreateIdempotencyKey("card.freeze", cardId), [cardId]);
   const unfreezeKey = useMemo(() => getOrCreateIdempotencyKey("card.unfreeze", cardId), [cardId]);
   const limitKey = useMemo(() => getOrCreateIdempotencyKey("card.limit.update", cardId), [cardId]);
 
   useEffect(() => {
-    const restoredDraft = restoreWorkflowDraft<{ spendLimitCents: number; categories: string[] }>(`card-limit-${cardId}`, routerMode);
+    setRestored(false);
+    setReadyDraftId(null);
+    const restoredDraft = restoreWorkflowDraft<CardLimitDraft>(draftId, routerMode);
     if (restoredDraft.status === "restored") {
-      setSpendLimit(restoredDraft.draft.formValues.spendLimitCents / 100);
-      setCategories(restoredDraft.draft.formValues.categories.join(", "));
+      const controls = controlsFromLimitDraft(restoredDraft.draft.formValues);
+      setSpendLimit(controls.spendLimit);
+      setCategories(controls.categories);
       setRestored(true);
-      setDraftApplied(true);
+      setReadyDraftId(draftId);
     }
-  }, [cardId, routerMode]);
+  }, [draftId, routerMode]);
 
   useEffect(() => {
-    if (draftApplied) {
+    if (readyDraftId === draftId) {
       return;
     }
-    if (query.data) {
-      setSpendLimit(query.data.spendLimitCents / 100);
-      setCategories(query.data.categories.join(", "));
+    if (query.data?.id === cardId) {
+      const controls = controlsFromLimitDraft(query.data);
+      setSpendLimit(controls.spendLimit);
+      setCategories(controls.categories);
+      setReadyDraftId(draftId);
     }
-  }, [draftApplied, query.data]);
+  }, [cardId, draftId, query.data, readyDraftId]);
 
   useEffect(() => {
+    if (readyDraftId !== draftId) {
+      return;
+    }
     saveWorkflowDraft({
-      id: `card-limit-${cardId}`,
+      id: draftId,
       workflowType: "card",
       routerMode,
       currentPath: `/cards/${cardId}`,
       currentStep: "controls",
-      formValues: {
-        spendLimitCents: Math.round(spendLimit * 100),
-        categories: categories.split(",").map((item) => item.trim()).filter(Boolean)
-      },
+      formValues: limitDraftFromControls(spendLimit, categories),
       userId: session.user.id,
       organizationId: session.organization.id,
       idempotencyKey: limitKey,
       mutationIntent: "card.limit.update"
     });
-  }, [cardId, categories, limitKey, routerMode, session.organization.id, session.user.id, spendLimit]);
+  }, [cardId, categories, draftId, limitKey, readyDraftId, routerMode, session.organization.id, session.user.id, spendLimit]);
 
   const cardAction = useMutation({
     mutationFn: (action: "freeze" | "unfreeze") => api.cardAction(routerMode, cardId, action, action === "freeze" ? freezeKey : unfreezeKey),
@@ -84,10 +113,7 @@ export function Component() {
 
   const limitMutation = useMutation({
     mutationFn: () =>
-      api.updateCardLimits(routerMode, cardId, limitKey, {
-        spendLimitCents: Math.round(spendLimit * 100),
-        categories: categories.split(",").map((item) => item.trim()).filter(Boolean)
-      }),
+      api.updateCardLimits(routerMode, cardId, limitKey, limitDraftFromControls(spendLimit, categories)),
     meta: { sensitive: true, intent: "card.limit.update" },
     onSuccess(response) {
       setDeduped(response.deduped);
