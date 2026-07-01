@@ -125,6 +125,82 @@ function canSaveKybDraft(state: KybDraftState) {
   return state.readyToSave && !state.incompatible;
 }
 
+function hydrateKybDraftFromServer(
+  state: KybDraftState,
+  userEdited: boolean,
+  userEditedRef: boolean,
+  snapshot?: KybSnapshot
+): KybDraftState {
+  if (!shouldHydrateKybFromServer(state.restored, userEdited, userEditedRef, snapshot)) {
+    return state;
+  }
+  return {
+    ...state,
+    draft: {
+      ...state.draft,
+      ...draftFromKybSnapshot(snapshot)
+    }
+  };
+}
+
+function saveKybDraft({
+  draft,
+  idempotencyKey,
+  organizationId,
+  routerMode,
+  step,
+  userId
+}: {
+  draft: KybDraft;
+  idempotencyKey: string;
+  organizationId: string;
+  routerMode: RouterMode;
+  step: KybStep;
+  userId: string;
+}) {
+  saveWorkflowDraft({
+    id: "kyb",
+    workflowType: "kyb",
+    routerMode,
+    currentPath: `/kyb/${step}`,
+    currentStep: step,
+    formValues: draft,
+    userId,
+    organizationId,
+    idempotencyKey,
+    mutationIntent: "kyb.submit"
+  });
+}
+
+function saveKybDraftIfReady(
+  state: KybDraftState,
+  draft: KybDraft,
+  step: KybStep,
+  {
+    idempotencyKey,
+    organizationId,
+    routerMode,
+    userId
+  }: {
+    idempotencyKey: string;
+    organizationId: string;
+    routerMode: RouterMode;
+    userId: string;
+  }
+) {
+  if (!canSaveKybDraft(state)) {
+    return;
+  }
+  saveKybDraft({
+    draft,
+    idempotencyKey,
+    organizationId,
+    routerMode,
+    step,
+    userId
+  });
+}
+
 function useKybDraft({
   idempotencyKey,
   routerMode,
@@ -148,47 +224,29 @@ function useKybDraft({
   }, [routerMode]);
 
   useEffect(() => {
-    if (!canSaveKybDraft(draftState)) {
-      return;
-    }
-    persistDraft(draftState.draft, step);
+    saveKybDraftIfReady(draftState, draftState.draft, step, {
+      idempotencyKey,
+      organizationId: session.organization.id,
+      routerMode,
+      userId: session.user.id
+    });
   }, [draftState, idempotencyKey, routerMode, session.organization.id, session.user.id, step]);
 
-  function persistDraft(nextDraft: KybDraft, nextStep: KybStep) {
-    saveWorkflowDraft({
-      id: "kyb",
-      workflowType: "kyb",
-      routerMode,
-      currentPath: `/kyb/${nextStep}`,
-      currentStep: nextStep,
-      formValues: nextDraft,
-      userId: session.user.id,
-      organizationId: session.organization.id,
-      idempotencyKey,
-      mutationIntent: "kyb.submit"
-    });
-  }
-
   useEffect(() => {
-    if (shouldHydrateKybFromServer(draftState.restored, userEdited, userEditedRef.current, snapshot)) {
-      setDraftState((value) => ({
-        ...value,
-        draft: {
-          ...value.draft,
-          ...draftFromKybSnapshot(snapshot)
-        }
-      }));
-    }
-  }, [draftState.restored, snapshot, userEdited]);
+    setDraftState((value) => hydrateKybDraftFromServer(value, userEdited, userEditedRef.current, snapshot));
+  }, [snapshot, userEdited]);
 
   function updateDraft(next: Partial<KybDraft>) {
     const merged = { ...draftState.draft, ...next };
     userEditedRef.current = true;
     setUserEdited(true);
     setDraftState((value) => ({ ...value, draft: merged }));
-    if (canSaveKybDraft(draftState)) {
-      persistDraft(merged, step);
-    }
+    saveKybDraftIfReady(draftState, merged, step, {
+      idempotencyKey,
+      organizationId: session.organization.id,
+      routerMode,
+      userId: session.user.id
+    });
   }
 
   return {

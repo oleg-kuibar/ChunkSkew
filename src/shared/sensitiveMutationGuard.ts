@@ -3,7 +3,7 @@ import { recordAuditEvent } from "./auditLogClient";
 import { getSessionSnapshot } from "./sessionSimulation";
 import { trackTelemetry } from "./telemetry";
 import { decideUpdatePolicy } from "./updatePolicyEngine";
-import type { RouterMode, SensitiveMutationIntent, WorkflowType } from "./types";
+import type { RouterMode, SensitiveMutationIntent, TelemetryEventName, WorkflowType } from "./types";
 
 const permissionByIntent: Record<SensitiveMutationIntent, string> = {
   "payment.submit": "payments:create",
@@ -16,6 +16,13 @@ const permissionByIntent: Record<SensitiveMutationIntent, string> = {
   "vendor.create": "payments:create",
   "role.change": "admin:write",
   "api-key.generate": "api-keys:create"
+};
+
+const requiredUpdateTelemetryByWorkflow: Partial<Record<WorkflowType, TelemetryEventName>> = {
+  payment: "payment_submit_blocked_required_update",
+  invoice: "invoice_approval_blocked_required_update",
+  card: "card_update_blocked_required_update",
+  kyb: "kyb_submit_blocked_required_update"
 };
 
 export interface GuardInput {
@@ -35,6 +42,67 @@ export interface GuardResult {
   reason?: string;
   policyCopy?: string;
   code?: "required-update" | "permission-denied" | "session-expired";
+}
+
+function sessionExpiredResult(input: GuardInput): GuardResult {
+  void recordAuditEvent(input.routerMode, "mutation.blocked.session_expired", "A sensitive action was blocked because the session expired.", {
+    intent: input.intent,
+    workflowType: input.workflowType
+  }, input.workflowType);
+  return {
+    allowed: false,
+    code: "session-expired",
+    reason: "Your session expired. Re-authenticate before continuing."
+  };
+}
+
+function permissionDeniedResult(input: GuardInput, permission: string): GuardResult {
+  void recordAuditEvent(input.routerMode, "mutation.blocked.permission_denied", "A sensitive action was blocked by permission policy.", {
+    intent: input.intent,
+    permission
+  }, input.workflowType);
+  return {
+    allowed: false,
+    code: "permission-denied",
+    reason: permissionDeniedMessage(permission)
+  };
+}
+
+function requiredUpdateResult(input: GuardInput, policy: ReturnType<typeof decideUpdatePolicy>): GuardResult {
+  const eventName = requiredUpdateTelemetryByWorkflow[input.workflowType];
+  if (eventName) {
+    trackTelemetry(eventName, input.routerMode, { intent: input.intent }, input.workflowType);
+  }
+  void recordAuditEvent(input.routerMode, "update_required.blocked_mutation", "A required update blocked a sensitive mutation.", {
+    intent: input.intent,
+    decision: policy.decision
+  }, input.workflowType);
+  return {
+    allowed: false,
+    code: "required-update",
+    reason: policy.copy,
+    policyCopy: policy.copy
+  };
+}
+
+function updatePolicyForMutation(input: GuardInput) {
+  return decideUpdatePolicy({
+    routerMode: input.routerMode,
+    currentRoute: input.currentRoute,
+    workflowType: input.workflowType,
+    routeIsLazyLoaded: true,
+    dirtyForm: input.dirtyForm,
+    mutationPending: input.mutationPending,
+    navigationPending: false,
+    mfaPending: input.mfaPending,
+    idempotencyKeyPresent: input.idempotencyKeyPresent,
+    lastInteractionAt: input.lastInteractionAt,
+    sensitiveWorkflow: input.workflowType !== "none",
+    requiredWorkflowChunksPreloaded: true,
+    oldAssetRetentionActive: false,
+    deploymentAffinityActive: false,
+    apiContractCompatible: true
+  });
 }
 
 export function handleBlockedMutationGuard(
@@ -57,69 +125,17 @@ export function handleBlockedMutationGuard(
 export function guardSensitiveMutation(input: GuardInput): GuardResult {
   const session = getSessionSnapshot();
   if (!session.authenticated) {
-    void recordAuditEvent(input.routerMode, "mutation.blocked.session_expired", "A sensitive action was blocked because the session expired.", {
-      intent: input.intent,
-      workflowType: input.workflowType
-    }, input.workflowType);
-    return {
-      allowed: false,
-      code: "session-expired",
-      reason: "Your session expired. Re-authenticate before continuing."
-    };
+    return sessionExpiredResult(input);
   }
 
   const permission = permissionByIntent[input.intent];
   if (!can(permission)) {
-    void recordAuditEvent(input.routerMode, "mutation.blocked.permission_denied", "A sensitive action was blocked by permission policy.", {
-      intent: input.intent,
-      permission
-    }, input.workflowType);
-    return {
-      allowed: false,
-      code: "permission-denied",
-      reason: permissionDeniedMessage(permission)
-    };
+    return permissionDeniedResult(input, permission);
   }
 
-  const policy = decideUpdatePolicy({
-    routerMode: input.routerMode,
-    currentRoute: input.currentRoute,
-    workflowType: input.workflowType,
-    routeIsLazyLoaded: true,
-    dirtyForm: input.dirtyForm,
-    mutationPending: input.mutationPending,
-    navigationPending: false,
-    mfaPending: input.mfaPending,
-    idempotencyKeyPresent: input.idempotencyKeyPresent,
-    lastInteractionAt: input.lastInteractionAt,
-    sensitiveWorkflow: input.workflowType !== "none",
-    requiredWorkflowChunksPreloaded: true,
-    oldAssetRetentionActive: false,
-    deploymentAffinityActive: false,
-    apiContractCompatible: true
-  });
-
+  const policy = updatePolicyForMutation(input);
   if (policy.blocksMutation) {
-    const telemetryByWorkflow = {
-      payment: "payment_submit_blocked_required_update",
-      invoice: "invoice_approval_blocked_required_update",
-      card: "card_update_blocked_required_update",
-      kyb: "kyb_submit_blocked_required_update"
-    } as const;
-    const eventName = telemetryByWorkflow[input.workflowType as keyof typeof telemetryByWorkflow];
-    if (eventName) {
-      trackTelemetry(eventName, input.routerMode, { intent: input.intent }, input.workflowType);
-    }
-    void recordAuditEvent(input.routerMode, "update_required.blocked_mutation", "A required update blocked a sensitive mutation.", {
-      intent: input.intent,
-      decision: policy.decision
-    }, input.workflowType);
-    return {
-      allowed: false,
-      code: "required-update",
-      reason: policy.copy,
-      policyCopy: policy.copy
-    };
+    return requiredUpdateResult(input, policy);
   }
 
   return { allowed: true };

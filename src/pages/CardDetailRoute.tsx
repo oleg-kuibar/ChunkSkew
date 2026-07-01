@@ -21,8 +21,24 @@ interface CardLimitDraft {
   categories: string[];
 }
 
+interface CardLimitControls {
+  spendLimit: number;
+  categories: string;
+}
+
+interface CardLimitDraftState {
+  controls: CardLimitControls;
+  restored: boolean;
+  readyDraftId: string | null;
+}
+
 type CardControlAction = "freeze" | "unfreeze" | "limit";
 type CardLimitSource = CardLimitDraft & { id: string };
+
+const defaultCardLimitControls: CardLimitControls = {
+  spendLimit: 0,
+  categories: "Travel, Software"
+};
 
 const cardIntentByAction = {
   freeze: "card.freeze",
@@ -34,18 +50,117 @@ function cardLimitDraftId(cardId: string) {
   return `card-limit-${cardId}`;
 }
 
-function controlsFromLimitDraft(draft: CardLimitDraft) {
+function controlsFromLimitDraft(draft: CardLimitDraft): CardLimitControls {
   return {
     spendLimit: draft.spendLimitCents / 100,
     categories: draft.categories.join(", ")
   };
 }
 
-function limitDraftFromControls(spendLimit: number, categories: string): CardLimitDraft {
+function limitDraftFromControls({ categories, spendLimit }: CardLimitControls): CardLimitDraft {
   return {
     spendLimitCents: Math.round(spendLimit * 100),
     categories: categories.split(",").map((item) => item.trim()).filter(Boolean)
   };
+}
+
+function restoredCardLimitDraftState(draftId: string, routerMode: "react-router"): CardLimitDraftState {
+  const restoredDraft = restoreWorkflowDraft<CardLimitDraft>(draftId, routerMode);
+  const controls = restoredDraft.status === "restored" ? controlsFromLimitDraft(restoredDraft.draft.formValues) : null;
+  return {
+    controls: controls ?? defaultCardLimitControls,
+    restored: Boolean(controls),
+    readyDraftId: controls ? draftId : null
+  };
+}
+
+function hydrateCardLimitDraftState(
+  state: CardLimitDraftState,
+  draftId: string,
+  cardId: string,
+  card?: CardLimitSource
+): CardLimitDraftState {
+  const controls = state.readyDraftId === draftId || card?.id !== cardId ? null : controlsFromLimitDraft(card);
+  return controls ? { controls, restored: state.restored, readyDraftId: draftId } : state;
+}
+
+function canSaveCardLimitDraft(state: CardLimitDraftState, draftId: string) {
+  return state.readyDraftId === draftId;
+}
+
+function saveCardLimitDraft({
+  cardId,
+  draftId,
+  formValues,
+  limitKey,
+  organizationId,
+  routerMode,
+  userId
+}: {
+  cardId: string;
+  draftId: string;
+  formValues: CardLimitDraft;
+  limitKey: string;
+  organizationId: string;
+  routerMode: "react-router";
+  userId: string;
+}) {
+  saveWorkflowDraft({
+    id: draftId,
+    workflowType: "card",
+    routerMode,
+    currentPath: `/cards/${cardId}`,
+    currentStep: "controls",
+    formValues,
+    userId,
+    organizationId,
+    idempotencyKey: limitKey,
+    mutationIntent: "card.limit.update"
+  });
+}
+
+function blockCardActionIfNeeded({
+  action,
+  mutationPending,
+  onBlocked,
+  onRequiredUpdate,
+  routerMode
+}: {
+  action: CardControlAction;
+  mutationPending: boolean;
+  onBlocked: (message: string) => void;
+  onRequiredUpdate: (message: string | null) => void;
+  routerMode: "react-router";
+}) {
+  const guard = guardSensitiveMutation({
+    routerMode,
+    intent: cardIntentByAction[action],
+    workflowType: "card",
+    currentRoute: window.location.pathname,
+    dirtyForm: action === "limit",
+    mutationPending,
+    mfaPending: false,
+    idempotencyKeyPresent: true,
+    lastInteractionAt: Date.now()
+  });
+  return handleBlockedMutationGuard(guard, "Card changes are paused.", onRequiredUpdate, onBlocked);
+}
+
+function runCardControlAction(
+  action: CardControlAction,
+  {
+    runLimit,
+    runStatusAction
+  }: {
+    runLimit: () => void;
+    runStatusAction: (action: Exclude<CardControlAction, "limit">) => void;
+  }
+) {
+  if (action === "limit") {
+    runLimit();
+    return;
+  }
+  runStatusAction(action);
 }
 
 function useCardLimitDraft({
@@ -63,56 +178,49 @@ function useCardLimitDraft({
   routerMode: "react-router";
   session: ReturnType<typeof getSessionSnapshot>;
 }) {
-  const [spendLimit, setSpendLimit] = useState(0);
-  const [categories, setCategories] = useState("Travel, Software");
-  const [restored, setRestored] = useState(false);
-  const [readyDraftId, setReadyDraftId] = useState<string | null>(null);
-  const formValues = useMemo(() => limitDraftFromControls(spendLimit, categories), [categories, spendLimit]);
+  const [draftState, setDraftState] = useState<CardLimitDraftState>(() => restoredCardLimitDraftState(draftId, routerMode));
+  const formValues = useMemo(() => limitDraftFromControls(draftState.controls), [draftState.controls]);
+  const draftReadyToSave = canSaveCardLimitDraft(draftState, draftId);
 
   useEffect(() => {
-    setRestored(false);
-    setReadyDraftId(null);
-    const restoredDraft = restoreWorkflowDraft<CardLimitDraft>(draftId, routerMode);
-    if (restoredDraft.status === "restored") {
-      const controls = controlsFromLimitDraft(restoredDraft.draft.formValues);
-      setSpendLimit(controls.spendLimit);
-      setCategories(controls.categories);
-      setRestored(true);
-      setReadyDraftId(draftId);
-    }
+    setDraftState(restoredCardLimitDraftState(draftId, routerMode));
   }, [draftId, routerMode]);
 
   useEffect(() => {
-    if (readyDraftId === draftId) {
-      return;
-    }
-    if (card?.id === cardId) {
-      const controls = controlsFromLimitDraft(card);
-      setSpendLimit(controls.spendLimit);
-      setCategories(controls.categories);
-      setReadyDraftId(draftId);
-    }
-  }, [card, cardId, draftId, readyDraftId]);
+    setDraftState((state) => hydrateCardLimitDraftState(state, draftId, cardId, card));
+  }, [card, cardId, draftId]);
 
   useEffect(() => {
-    if (readyDraftId !== draftId) {
+    if (!draftReadyToSave) {
       return;
     }
-    saveWorkflowDraft({
-      id: draftId,
-      workflowType: "card",
-      routerMode,
-      currentPath: `/cards/${cardId}`,
-      currentStep: "controls",
+    saveCardLimitDraft({
+      cardId,
+      draftId,
       formValues,
-      userId: session.user.id,
+      limitKey,
       organizationId: session.organization.id,
-      idempotencyKey: limitKey,
-      mutationIntent: "card.limit.update"
+      routerMode,
+      userId: session.user.id
     });
-  }, [cardId, draftId, formValues, limitKey, readyDraftId, routerMode, session.organization.id, session.user.id]);
+  }, [cardId, draftId, draftReadyToSave, formValues, limitKey, routerMode, session.organization.id, session.user.id]);
 
-  return { categories, formValues, restored, setCategories, setSpendLimit, spendLimit };
+  function setSpendLimit(spendLimit: number) {
+    setDraftState((state) => ({ ...state, controls: { ...state.controls, spendLimit } }));
+  }
+
+  function setCategories(categories: string) {
+    setDraftState((state) => ({ ...state, controls: { ...state.controls, categories } }));
+  }
+
+  return {
+    categories: draftState.controls.categories,
+    formValues,
+    restored: draftState.restored,
+    setCategories,
+    setSpendLimit,
+    spendLimit: draftState.controls.spendLimit
+  };
 }
 
 export function Component() {
@@ -160,26 +268,19 @@ export function Component() {
   });
 
   function guarded(action: CardControlAction) {
-    const intent = cardIntentByAction[action];
-    const guard = guardSensitiveMutation({
-      routerMode,
-      intent,
-      workflowType: "card",
-      currentRoute: window.location.pathname,
-      dirtyForm: action === "limit",
+    if (blockCardActionIfNeeded({
+      action,
       mutationPending: cardAction.isPending || limitMutation.isPending,
-      mfaPending: false,
-      idempotencyKeyPresent: true,
-      lastInteractionAt: Date.now()
-    });
-    if (handleBlockedMutationGuard(guard, "Card changes are paused.", setRequiredGate, setBlocked)) {
+      onBlocked: setBlocked,
+      onRequiredUpdate: setRequiredGate,
+      routerMode
+    })) {
       return;
     }
-    if (action === "limit") {
-      limitMutation.mutate();
-    } else {
-      cardAction.mutate(action);
-    }
+    runCardControlAction(action, {
+      runLimit: () => limitMutation.mutate(),
+      runStatusAction: (statusAction) => cardAction.mutate(statusAction)
+    });
   }
 
   if (query.isLoading) {

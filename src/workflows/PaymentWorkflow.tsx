@@ -10,7 +10,7 @@ import { getSessionSnapshot } from "../shared/sessionSimulation";
 import { guardSensitiveMutation, handleBlockedMutationGuard } from "../shared/sensitiveMutationGuard";
 import { readJson } from "../shared/storage";
 import { trackTelemetry } from "../shared/telemetry";
-import type { RouterMode, WorkflowDraft } from "../shared/types";
+import type { RouterMode, SensitiveMutationIntent, WorkflowDraft, WorkflowType } from "../shared/types";
 import { clearWorkflowDraft, restoreWorkflowDraft, saveWorkflowDraft } from "../shared/workflowDraftStore";
 import {
   DuplicateSubmitPreventedNotice,
@@ -49,6 +49,76 @@ const defaultDraft: PaymentDraft = {
   paymentDate: "2026-07-02",
   memo: "Materials deposit"
 };
+
+function blockPaymentActionIfNeeded({
+  fallback,
+  idempotencyKeyPresent,
+  intent,
+  lastInteractionAt,
+  mutationPending,
+  onBlocked,
+  onRequiredUpdate,
+  routerMode,
+  workflowType
+}: {
+  fallback: string;
+  idempotencyKeyPresent: boolean;
+  intent: SensitiveMutationIntent;
+  lastInteractionAt: number;
+  mutationPending: boolean;
+  onBlocked: (message: string) => void;
+  onRequiredUpdate: (message: string | null) => void;
+  routerMode: RouterMode;
+  workflowType: WorkflowType;
+}) {
+  const guard = guardSensitiveMutation({
+    routerMode,
+    intent,
+    workflowType,
+    currentRoute: window.location.pathname,
+    dirtyForm: true,
+    mutationPending,
+    mfaPending: false,
+    idempotencyKeyPresent,
+    lastInteractionAt
+  });
+  return handleBlockedMutationGuard(guard, fallback, onRequiredUpdate, onBlocked);
+}
+
+function blockPaymentSubmitIfNeeded({
+  idempotencyKey,
+  lastInteractionAt,
+  mutationPending,
+  onBlocked,
+  onRequiredUpdate,
+  routerMode
+}: {
+  idempotencyKey: string;
+  lastInteractionAt: number;
+  mutationPending: boolean;
+  onBlocked: (message: string) => void;
+  onRequiredUpdate: (message: string | null) => void;
+  routerMode: RouterMode;
+}) {
+  void recordAuditEvent(routerMode, "payment_submit.attempted", "User attempted to submit a payment.", {
+    idempotencyKeyPresent: Boolean(idempotencyKey)
+  }, "payment");
+  if (!isMfaVerified("payment.submit")) {
+    onBlocked("Confirm the fake MFA challenge before submitting this payment.");
+    return true;
+  }
+  return blockPaymentActionIfNeeded({
+    fallback: "This action is paused.",
+    idempotencyKeyPresent: Boolean(peekIdempotencyKey("payment.submit", "payment-create")),
+    intent: "payment.submit",
+    lastInteractionAt,
+    mutationPending,
+    onBlocked,
+    onRequiredUpdate,
+    routerMode,
+    workflowType: "payment"
+  });
+}
 
 function usePaymentDraft({
   idempotencyKey,
@@ -181,44 +251,31 @@ export function PaymentWorkflow({
   }
 
   function submitPayment() {
-    void recordAuditEvent(routerMode, "payment_submit.attempted", "User attempted to submit a payment.", {
-      idempotencyKeyPresent: Boolean(idempotencyKey)
-    }, "payment");
-    const mfaVerified = isMfaVerified("payment.submit");
-    if (!mfaVerified) {
-      setBlockedMessage("Confirm the fake MFA challenge before submitting this payment.");
-      return;
-    }
-    const guard = guardSensitiveMutation({
-      routerMode,
-      intent: "payment.submit",
-      workflowType: "payment",
-      currentRoute: window.location.pathname,
-      dirtyForm: true,
+    if (blockPaymentSubmitIfNeeded({
+      idempotencyKey,
+      lastInteractionAt,
       mutationPending: submitMutation.isPending,
-      mfaPending: !mfaVerified,
-      idempotencyKeyPresent: Boolean(peekIdempotencyKey("payment.submit", "payment-create")),
-      lastInteractionAt
-    });
-    if (handleBlockedMutationGuard(guard, "This action is paused.", setRequiredGateMessage, setBlockedMessage)) {
+      onBlocked: setBlockedMessage,
+      onRequiredUpdate: setRequiredGateMessage,
+      routerMode
+    })) {
       return;
     }
     submitMutation.mutate();
   }
 
   function createVendor() {
-    const guard = guardSensitiveMutation({
-      routerMode,
-      intent: "vendor.create",
-      workflowType: "vendor",
-      currentRoute: window.location.pathname,
-      dirtyForm: true,
-      mutationPending: vendorMutation.isPending,
-      mfaPending: false,
+    if (blockPaymentActionIfNeeded({
+      fallback: "Vendor creation is paused.",
       idempotencyKeyPresent: Boolean(vendorKey),
-      lastInteractionAt
-    });
-    if (handleBlockedMutationGuard(guard, "Vendor creation is paused.", setRequiredGateMessage, setBlockedMessage)) {
+      intent: "vendor.create",
+      lastInteractionAt,
+      mutationPending: vendorMutation.isPending,
+      onBlocked: setBlockedMessage,
+      onRequiredUpdate: setRequiredGateMessage,
+      routerMode,
+      workflowType: "vendor"
+    })) {
       return;
     }
     vendorMutation.mutate();

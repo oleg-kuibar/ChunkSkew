@@ -10,6 +10,102 @@ import type { RouterMode } from "../shared/types";
 import { saveWorkflowDraft } from "../shared/workflowDraftStore";
 import { DuplicateSubmitPreventedNotice, RequiredUpdateGate, SensitiveActionBlockedDialog } from "../components/UpdateSurfaces";
 
+type InvoiceModalAction = "approve" | "reject";
+
+function invoiceIntent(action: InvoiceModalAction) {
+  return action === "approve" ? "invoice.approve" : "invoice.reject";
+}
+
+function saveRejectInvoiceDraft({
+  idempotencyKey,
+  invoiceId,
+  note,
+  organizationId,
+  routerMode,
+  userId
+}: {
+  idempotencyKey: string;
+  invoiceId: string;
+  note: string;
+  organizationId: string;
+  routerMode: RouterMode;
+  userId: string;
+}) {
+  saveWorkflowDraft({
+    id: `invoice-reject-${invoiceId}`,
+    workflowType: "invoice",
+    routerMode,
+    currentPath: `/invoices/${invoiceId}`,
+    currentStep: "reject-modal",
+    formValues: { note },
+    userId,
+    organizationId,
+    idempotencyKey,
+    mutationIntent: "invoice.reject"
+  });
+}
+
+function saveRejectInvoiceDraftIfNeeded({
+  action,
+  idempotencyKey,
+  invoiceId,
+  note,
+  organizationId,
+  routerMode,
+  userId
+}: {
+  action: InvoiceModalAction;
+  idempotencyKey: string;
+  invoiceId: string;
+  note: string;
+  organizationId: string;
+  routerMode: RouterMode;
+  userId: string;
+}) {
+  if (action !== "reject") {
+    return;
+  }
+  saveRejectInvoiceDraft({
+    idempotencyKey,
+    invoiceId,
+    note,
+    organizationId,
+    routerMode,
+    userId
+  });
+}
+
+function blockInvoiceActionIfNeeded({
+  action,
+  idempotencyKey,
+  mutationPending,
+  note,
+  onBlocked,
+  onRequiredUpdate,
+  routerMode
+}: {
+  action: InvoiceModalAction;
+  idempotencyKey: string;
+  mutationPending: boolean;
+  note: string;
+  onBlocked: (message: string) => void;
+  onRequiredUpdate: (message: string | null) => void;
+  routerMode: RouterMode;
+}) {
+  const guard = guardSensitiveMutation({
+    routerMode,
+    intent: invoiceIntent(action),
+    workflowType: "invoice",
+    currentRoute: window.location.pathname,
+    dirtyForm: action === "reject" && note.length > 0,
+    mutationPending,
+    mfaPending: false,
+    idempotencyKeyPresent: Boolean(idempotencyKey),
+    lastInteractionAt: Date.now()
+  });
+  return handleBlockedMutationGuard(guard, "This approval is paused.", onRequiredUpdate, onBlocked);
+}
+
 export function InvoiceApprovalModal({
   invoice,
   routerMode,
@@ -18,7 +114,7 @@ export function InvoiceApprovalModal({
 }: {
   invoice: Invoice;
   routerMode: RouterMode;
-  action: "approve" | "reject";
+  action: InvoiceModalAction;
   onClose: () => void;
 }) {
   const queryClient = useQueryClient();
@@ -30,20 +126,15 @@ export function InvoiceApprovalModal({
   const idempotencyKey = useMemo(() => getOrCreateIdempotencyKey(`invoice.${action}`, invoice.id), [action, invoice.id]);
 
   useEffect(() => {
-    if (action === "reject") {
-      saveWorkflowDraft({
-        id: `invoice-reject-${invoice.id}`,
-        workflowType: "invoice",
-        routerMode,
-        currentPath: `/invoices/${invoice.id}`,
-        currentStep: "reject-modal",
-        formValues: { note },
-        userId: session.user.id,
-        organizationId: session.organization.id,
-        idempotencyKey,
-        mutationIntent: "invoice.reject"
-      });
-    }
+    saveRejectInvoiceDraftIfNeeded({
+      action,
+      idempotencyKey,
+      invoiceId: invoice.id,
+      note,
+      organizationId: session.organization.id,
+      routerMode,
+      userId: session.user.id
+    });
   }, [action, idempotencyKey, invoice.id, note, routerMode, session.organization.id, session.user.id]);
 
   const mutation = useMutation({
@@ -72,18 +163,15 @@ export function InvoiceApprovalModal({
   });
 
   function submit() {
-    const guard = guardSensitiveMutation({
-      routerMode,
-      intent: action === "approve" ? "invoice.approve" : "invoice.reject",
-      workflowType: "invoice",
-      currentRoute: window.location.pathname,
-      dirtyForm: action === "reject" && note.length > 0,
+    if (blockInvoiceActionIfNeeded({
+      action,
+      idempotencyKey,
       mutationPending: mutation.isPending,
-      mfaPending: false,
-      idempotencyKeyPresent: Boolean(idempotencyKey),
-      lastInteractionAt: Date.now()
-    });
-    if (handleBlockedMutationGuard(guard, "This approval is paused.", setRequiredGate, setBlocked)) {
+      note,
+      onBlocked: setBlocked,
+      onRequiredUpdate: setRequiredGate,
+      routerMode
+    })) {
       return;
     }
     mutation.mutate();

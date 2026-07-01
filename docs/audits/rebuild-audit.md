@@ -10,6 +10,20 @@ This audit records the current implementation and UI/UX friction before deeper r
 - The Playwright suite covers the most important safety behaviors.
 - The docs now make the repo discoverable for build version skew search terms.
 
+## UI Evidence
+
+Desktop screenshots for the learning path and recovery states are saved in `docs/audits/ui-evidence/`; notes are in `docs/audits/ui-evidence/notes.md`.
+
+Captured steps:
+
+1. Start page: clear mental model and scenario entry points.
+2. Simple examples: ordered minimal patterns with proof and source anchors.
+3. Guided lab controls: reset, skew mode, and target route are visible before setup.
+4. Payment required update: saved work, build identity, and safe refresh are explicit.
+5. KYB incompatible draft: review-required fallback is calm and prevents unsafe submit.
+
+Observed UX risk: the update toast can overlap or visually compete with the right-side release debug panel on desktop.
+
 ## Measured Cognitive Snapshot
 
 Measured from the codebase graph after the latest fast index.
@@ -18,11 +32,14 @@ Measured from the codebase graph after the latest fast index.
 | --- | --- | ---: | --- |
 | Guided lab | `VersionSkewDebugPage` | 0 | The page now renders controls while named helpers own scenario preparation. |
 | Guided lab | `prepareGuidedScenario` / `finishGuidedScenario` | 0 / 1 | Reset, mode setup, seeding, and navigation are named as the learner sees them. |
-| Payment | `PaymentWorkflow` / `usePaymentDraft` | 4 / 1 | The main safe-refresh path is readable enough to use as the primary walkthrough. |
-| KYB | `KybWorkflow` / `useKybDraft` | 2 / 3 | Draft migration, restore, and save rules are now named helpers instead of one dense hook body. |
-| Card controls | `CardDetailRoute.Component` / `useCardLimitDraft` | 4 / 4 | Autosave and card mutation safety are contained, but still denser than the debug path. |
+| Payment | `PaymentWorkflow` / `usePaymentDraft` | 3 / 1 | The primary walkthrough keeps rendering local while submit/vendor guard envelopes are named helpers. |
+| Invoice approval | `InvoiceApprovalModal` | 2 | Reject-note autosave and approve/reject guard rules are named; optimistic rollback remains local. |
+| KYB | `KybWorkflow` / `useKybDraft` | 2 / 0 | The workflow renders steps while restore, hydrate, save-if-ready, and schema fallback rules are named helpers. |
+| Card controls | `CardDetailRoute.Component` / `useCardLimitDraft` | 3 / 1 | The route still renders the card UI, while draft and action guard rules are named helpers. |
+| Transaction monitoring | `TransactionsPage` / `TransactionReportRoute.Component` | 0 / 0 | The list, lazy drawer, and heavy report are already simple enough as supporting examples. |
+| Settings | `SettingsPage` | 2 | Role switching, session expiry, and API key generation are compact but still guarded by shared mutation safety. |
 | Release UI | `BuildVersionStamp` | 0 | Bundle, session, and latest release labels are now explicit without extra branching. |
-| Mutation safety | `guardSensitiveMutation` / `handleBlockedMutationGuard` | 5 / 2 | Shared guard logic is centralized; policy and telemetry branching remain intentionally concentrated. |
+| Mutation safety | `guardSensitiveMutation` / `handleBlockedMutationGuard` | 3 / 2 | Session, permission, update policy, and blocked-result packaging now read as named decisions. |
 
 ## Main Friction
 
@@ -68,11 +85,18 @@ Change made in this pass:
 - Extracted KYB server snapshot-to-draft shaping into a named helper so the workflow effect reads as a recovery rule instead of a data-mapping block.
 - Reused one Card controls draft shape for autosave and submit, and gated autosave until the current card draft or matching server snapshot is applied.
 - Extracted the Card controls draft lifecycle into `useCardLimitDraft` so the route reads as fetch, restore/autosave, guard, render.
+- Reworked the Card controls autosave hook around one draft state so restore, server hydration, save gating, and save payload are separate named rules.
+- Named the Card controls action guard and action runner so saving limits and freeze/unfreeze follow the same readable guard-then-mutate shape as payments.
 - Extracted the Payment draft lifecycle into `usePaymentDraft` and named repeated guard-result handling so the workflow body reads closer to the user journey.
+- Named the Payment submit/vendor mutation guard envelopes so the primary safe-refresh walkthrough reads as audit/MFA check, update gate check, then mutate.
+- Named the Invoice approval reject-draft save and approve/reject guard rules so the lazy modal reads as autosave, optimistic mutation, guard, render.
 - Extracted the KYB draft lifecycle into `useKybDraft` so migration, incompatible schema, server snapshot hydration, and autosave are easier to study together.
+- Split KYB hydrate and save-if-ready rules out of `useKybDraft` so the schema migration example now reads as a flat restore/save/hydrate/update loop.
 - Centralized required-update-vs-blocked-dialog handling in `handleBlockedMutationGuard` so sensitive workflows share one guard-result shape.
 - Tightened version-state subscriptions so build version stamps react to version-state changes after the current render, not to unrelated autosave/idempotency storage writes.
 - Made every build stamp show `Bundle / Session / Latest` explicitly, and only mark the badge fully current when all three identities match.
+- Split sensitive mutation guard outcomes into named session, permission, update policy, and required-update result helpers so the shared safety path reads like the production checklist.
+- Expanded the cognitive snapshot to include invoice approval, transaction monitoring, and settings so the audit covers the supporting examples, not only the primary walkthrough.
 
 ### 4. Debug controls are powerful but dense
 
