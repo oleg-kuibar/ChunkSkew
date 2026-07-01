@@ -16,7 +16,9 @@ http://localhost:5173/debug/version-skew?debug=1&router=react
 
 ## Reset State
 
-Click **Reset simulation state** on the debug page.
+Click **Reset simulation state** on the debug page when replaying a manual path or clearing the whole lab.
+
+Guided scenario cards reset automatically before they prepare a scenario, so you do not need a separate reset click before **Prepare payment recovery**, **Prepare missing chunk fallback**, **Prepare KYB draft review**, or **Prepare API contract block**.
 
 The tracked `server/skew-state.json` file is only the seed state. Live mode changes and reset writes go to ignored `.chunk-skew/skew-state.json`, so retesting should not leave a tracked server-state diff.
 
@@ -45,12 +47,11 @@ location.href = "/debug/version-skew?debug=1&router=react"
 
 ## Reproduce Missing Chunk Recovery
 
-1. Reset state.
-2. Click **Prepare missing chunk fallback** in the guided scenarios.
-3. The lab switches to `broken` mode and opens `/payments/create/review`.
-4. The simulated lazy chunk failure should show a controlled fallback.
-5. The fallback should say that entered information was saved when autosave was active.
-6. Telemetry should include `chunk_load_failed`.
+1. Click **Prepare missing chunk fallback** in the guided scenarios.
+2. The lab resets, switches to `broken` mode, and opens `/payments/create/review`.
+3. The simulated lazy chunk failure should show a controlled fallback.
+4. The fallback should say that entered information was saved when autosave was active.
+5. Telemetry should include `chunk_load_failed`.
 
 Manual path:
 
@@ -61,8 +62,8 @@ Manual path:
 
 ## Reproduce Safe Refresh With Autosaved Payment
 
-1. Reset state.
-2. Click **Prepare payment recovery** in the guided scenarios.
+1. Click **Prepare payment recovery** in the guided scenarios.
+2. The lab resets, switches to retained assets, and opens the payment workflow.
 3. Enter a memo.
 4. Continue to MFA.
 5. Use **Lab controls** in the guided banner, open **Advanced diagnostics**, then select `broken`.
@@ -70,20 +71,20 @@ Manual path:
 7. Confirm the required update gate appears.
 8. Click **Refresh safely**.
 9. Confirm the payment flow resumes and the memo is restored.
-10. Confirm the build stamp shows bundle and session separately, for example `Bundle dev-local · session release-b`.
+10. Confirm the build stamp shows bundle, session, and latest separately, for example `Bundle dev-local / Session release-b / Latest release-b`.
 
 ## Reproduce API Contract Blocking
 
-1. Reset state.
-2. Click **Prepare API contract block** in the guided scenarios.
+1. Click **Prepare API contract block** in the guided scenarios.
+2. The lab resets, switches to API-contract-incompatible mode, and opens the risky payment step.
 3. Verify MFA.
 4. Attempt the risky payment mutation.
 5. The policy should block mutation or move the workflow into read-only behavior.
 
 ## Reproduce KYB Draft Recovery
 
-1. Reset state.
-2. Click **Prepare KYB draft review** in the guided scenarios.
+1. Click **Prepare KYB draft review** in the guided scenarios.
+2. The lab resets, seeds an incompatible draft, and opens KYB review.
 3. The UI should show a review-required fallback, not crash or submit automatically.
 
 ## Verify With Tests

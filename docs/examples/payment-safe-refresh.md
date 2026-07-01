@@ -10,24 +10,23 @@ Prove that a required update does not lose the payment draft and does not create
 
 1. Start `pnpm dev:full`.
 2. Open `/debug/version-skew?debug=1&router=react`.
-3. Click **Reset simulation state**.
-4. Click **Prepare payment recovery**.
-5. Enter a memo.
-6. Continue through amount, schedule, review, and MFA.
-7. Use **Lab controls** in the guided banner, open **Advanced diagnostics**, and select `broken`.
-8. Return to `/payments/create/mfa?debug=1&router=react`.
-9. Click **Submit payment**.
-10. Confirm `RequiredUpdateGate` blocks the risky mutation.
-11. Click **Refresh safely**.
-12. Confirm the payment workflow resumes.
-13. Confirm the memo is restored.
-14. Submit payment.
-15. Retry with the same idempotency key and confirm the server dedupes.
+3. Click **Prepare payment recovery**. The card resets simulation state, sets retained assets, and opens the payment workflow.
+4. Enter a memo.
+5. Continue through amount, schedule, review, and MFA.
+6. Use **Lab controls** in the guided banner, open **Advanced diagnostics**, and select `broken`.
+7. Return to `/payments/create/mfa?debug=1&router=react`.
+8. Click **Submit payment**.
+9. Confirm `RequiredUpdateGate` blocks the risky mutation.
+10. Click **Refresh safely**.
+11. Confirm the payment workflow resumes.
+12. Confirm the memo is restored.
+13. Submit payment.
+14. Retry with the same idempotency key and confirm the server dedupes.
 
 ## Expected UI
 
 - Required update gate appears before mutation.
-- Build stamp distinguishes bundle and session, for example `Bundle dev-local · session release-b`.
+- Build stamp distinguishes bundle, recovered session, and latest release, for example `Bundle dev-local / Session release-b / Latest release-b`.
 - Draft restored notice appears after reload where applicable.
 - Duplicate-submit notice appears for idempotent replay.
 

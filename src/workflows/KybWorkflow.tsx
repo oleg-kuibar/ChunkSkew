@@ -51,6 +51,14 @@ const defaultDraft: KybDraft = {
 
 type KybSnapshot = Awaited<ReturnType<typeof api.kyb>>;
 
+interface KybDraftState {
+  draft: KybDraft;
+  restored: boolean;
+  migrated: boolean;
+  incompatible: string | null;
+  readyToSave: boolean;
+}
+
 function draftFromKybSnapshot(snapshot: KybSnapshot): KybDraft {
   return {
     legalName: snapshot.businessDetails.legalName,
@@ -62,6 +70,59 @@ function draftFromKybSnapshot(snapshot: KybSnapshot): KybDraft {
     })),
     uploadedDocumentIds: snapshot.documents.filter((doc) => doc.status === "uploaded").map((doc) => doc.id)
   };
+}
+
+function incompatibleKybDraftReason(draft: WorkflowDraft<KybDraft> | null) {
+  if (!draft || draft.schemaVersion === 1 || draft.schemaVersion === 2) {
+    return null;
+  }
+  return `Draft schema ${draft.schemaVersion} is not compatible with schema 2.`;
+}
+
+function initialKybDraftState(restoredDraftSnapshot: WorkflowDraft<KybDraft> | null): KybDraftState {
+  const currentSchema = restoredDraftSnapshot?.schemaVersion;
+  const restoredFormValues = currentSchema === 2 ? restoredDraftSnapshot?.formValues : null;
+  return {
+    draft: restoredFormValues ? { ...defaultDraft, ...restoredFormValues } : defaultDraft,
+    restored: currentSchema === 2,
+    migrated: false,
+    incompatible: incompatibleKybDraftReason(restoredDraftSnapshot),
+    readyToSave: !restoredDraftSnapshot || currentSchema === 2
+  };
+}
+
+function restoreKybDraftState(routerMode: RouterMode): KybDraftState {
+  const restoredDraft = restoreWorkflowDraft<KybDraft>("kyb", routerMode);
+  if (restoredDraft.status === "restored") {
+    return {
+      draft: { ...defaultDraft, ...restoredDraft.draft.formValues },
+      restored: true,
+      migrated: restoredDraft.migrated,
+      incompatible: null,
+      readyToSave: true
+    };
+  }
+  if (restoredDraft.status === "incompatible") {
+    return {
+      ...initialKybDraftState(null),
+      incompatible: restoredDraft.reason,
+      readyToSave: false
+    };
+  }
+  return initialKybDraftState(null);
+}
+
+function shouldHydrateKybFromServer(
+  restored: boolean,
+  userEdited: boolean,
+  userEditedRef: boolean,
+  snapshot?: KybSnapshot
+): snapshot is KybSnapshot {
+  return !restored && !userEdited && !userEditedRef && Boolean(snapshot);
+}
+
+function canSaveKybDraft(state: KybDraftState) {
+  return state.readyToSave && !state.incompatible;
 }
 
 function useKybDraft({
@@ -78,45 +139,20 @@ function useKybDraft({
   step: KybStep;
 }) {
   const restoredDraftSnapshot = useMemo(() => readJson<WorkflowDraft<KybDraft> | null>("draft:kyb", null), []);
-  const [draft, setDraft] = useState<KybDraft>(() =>
-    restoredDraftSnapshot?.schemaVersion === 2 ? { ...defaultDraft, ...restoredDraftSnapshot.formValues } : defaultDraft
-  );
-  const [restored, setRestored] = useState(Boolean(restoredDraftSnapshot?.schemaVersion === 2));
-  const [migrated, setMigrated] = useState(false);
-  const [incompatible, setIncompatible] = useState<string | null>(() =>
-    restoredDraftSnapshot && restoredDraftSnapshot.schemaVersion !== 1 && restoredDraftSnapshot.schemaVersion !== 2
-      ? `Draft schema ${restoredDraftSnapshot.schemaVersion} is not compatible with schema 2.`
-      : null
-  );
-  const [draftReadyToSave, setDraftReadyToSave] = useState(
-    !restoredDraftSnapshot || restoredDraftSnapshot.schemaVersion === 2
-  );
+  const [draftState, setDraftState] = useState<KybDraftState>(() => initialKybDraftState(restoredDraftSnapshot));
   const userEditedRef = useRef(false);
   const [userEdited, setUserEdited] = useState(false);
 
   useEffect(() => {
-    const restoredDraft = restoreWorkflowDraft<KybDraft>("kyb", routerMode);
-    if (restoredDraft.status === "restored") {
-      setDraft({ ...defaultDraft, ...restoredDraft.draft.formValues });
-      setRestored(true);
-      setMigrated(restoredDraft.migrated);
-      setDraftReadyToSave(true);
-    }
-    if (restoredDraft.status === "incompatible") {
-      setIncompatible(restoredDraft.reason);
-      setDraftReadyToSave(false);
-    }
-    if (restoredDraft.status === "missing") {
-      setDraftReadyToSave(true);
-    }
+    setDraftState(restoreKybDraftState(routerMode));
   }, [routerMode]);
 
   useEffect(() => {
-    if (!draftReadyToSave || incompatible) {
+    if (!canSaveKybDraft(draftState)) {
       return;
     }
-    persistDraft(draft, step);
-  }, [draft, draftReadyToSave, idempotencyKey, incompatible, routerMode, session.organization.id, session.user.id, step]);
+    persistDraft(draftState.draft, step);
+  }, [draftState, idempotencyKey, routerMode, session.organization.id, session.user.id, step]);
 
   function persistDraft(nextDraft: KybDraft, nextStep: KybStep) {
     saveWorkflowDraft({
@@ -134,25 +170,35 @@ function useKybDraft({
   }
 
   useEffect(() => {
-    if (!restored && !userEdited && !userEditedRef.current && snapshot) {
-      setDraft((value) => ({
+    if (shouldHydrateKybFromServer(draftState.restored, userEdited, userEditedRef.current, snapshot)) {
+      setDraftState((value) => ({
         ...value,
-        ...draftFromKybSnapshot(snapshot)
+        draft: {
+          ...value.draft,
+          ...draftFromKybSnapshot(snapshot)
+        }
       }));
     }
-  }, [restored, snapshot, userEdited]);
+  }, [draftState.restored, snapshot, userEdited]);
 
   function updateDraft(next: Partial<KybDraft>) {
-    const merged = { ...draft, ...next };
+    const merged = { ...draftState.draft, ...next };
     userEditedRef.current = true;
     setUserEdited(true);
-    setDraft(merged);
-    if (draftReadyToSave && !incompatible) {
+    setDraftState((value) => ({ ...value, draft: merged }));
+    if (canSaveKybDraft(draftState)) {
       persistDraft(merged, step);
     }
   }
 
-  return { draft, incompatible, migrated, restored, setIncompatible, updateDraft };
+  return {
+    draft: draftState.draft,
+    incompatible: draftState.incompatible,
+    migrated: draftState.migrated,
+    restored: draftState.restored,
+    setIncompatible: (message: string | null) => setDraftState((value) => ({ ...value, incompatible: message })),
+    updateDraft
+  };
 }
 
 export function KybWorkflow({

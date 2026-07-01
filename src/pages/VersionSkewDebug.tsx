@@ -72,6 +72,8 @@ const guidedScenarios = [
   }
 ];
 
+type GuidedScenario = (typeof guidedScenarios)[number];
+
 interface DebugState {
   mode: SkewMode;
   activeReleaseId: string;
@@ -79,6 +81,33 @@ interface DebugState {
   updateSeverity: string;
   apiContractVersion: string;
   version: ReleaseMetadata;
+}
+
+async function prepareGuidedScenario(routerMode: RouterMode, scenario: GuidedScenario) {
+  await apiFetch<DebugState>("/api/debug/version-skew/reset", routerMode, { method: "POST" });
+  resetBrowserSimulationState(routerMode);
+  const data = await apiFetch<DebugState>("/api/debug/version-skew/mode", routerMode, {
+    method: "POST",
+    body: JSON.stringify({ mode: scenario.mode })
+  });
+  return { data, scenario };
+}
+
+function finishGuidedScenario(routerMode: RouterMode, data: DebugState, scenario: GuidedScenario) {
+  setLocalSkewMode(routerMode, data.mode);
+  applyReleasePayload(routerMode, data.version);
+  if (scenario.seedKybDraft) {
+    seedIncompatibleKybDraft(routerMode);
+  }
+  writeGuidedScenarioState({
+    id: scenario.id,
+    title: scenario.title,
+    outcome: scenario.outcome,
+    href: scenario.href,
+    steps: scenario.steps,
+    targetStepIndex: scenario.targetStepIndex
+  });
+  window.location.assign(debugRouteHref(scenario.href, routerMode));
 }
 
 export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode }) {
@@ -107,6 +136,10 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
       window.location.assign(debugRouteHref("/debug/version-skew", routerMode));
     }
   });
+  const scenarioMutation = useMutation({
+    mutationFn: (scenario: GuidedScenario) => prepareGuidedScenario(routerMode, scenario),
+    onSuccess: ({ data, scenario }) => finishGuidedScenario(routerMode, data, scenario)
+  });
   useEffect(() => {
     const interval = window.setInterval(() => setTick((value) => value + 1), 2000);
     return () => window.clearInterval(interval);
@@ -116,26 +149,7 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
   const statuses = readPreloadStatuses();
   const suggestedScenarioId =
     typeof window === "undefined" ? undefined : new URLSearchParams(window.location.search).get("scenario") ?? undefined;
-  const runGuidedScenario = (scenario: (typeof guidedScenarios)[number]) => {
-    mutation.mutate(scenario.mode, {
-      onSuccess(data) {
-        setLocalSkewMode(routerMode, data.mode);
-        applyReleasePayload(routerMode, data.version);
-        if (scenario.seedKybDraft) {
-          seedIncompatibleKybDraft(routerMode);
-        }
-        writeGuidedScenarioState({
-          id: scenario.id,
-          title: scenario.title,
-          outcome: scenario.outcome,
-          href: scenario.href,
-          steps: scenario.steps,
-          targetStepIndex: scenario.targetStepIndex
-        });
-        window.location.assign(debugRouteHref(scenario.href, routerMode));
-      }
-    });
-  };
+  const runGuidedScenario = (scenario: GuidedScenario) => scenarioMutation.mutate(scenario);
 
   return (
     <div className="page-stack">
@@ -164,7 +178,7 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
           <div>
             <p className="eyebrow">Guided path</p>
             <h2>Pick one scenario</h2>
-            <p>For a clean retest, reset simulation state first. Then each card sets the lab mode and opens a focused example.</p>
+            <p>Each card starts from a clean reset, sets the lab mode, and opens a focused example.</p>
           </div>
         </header>
         <div className="scenario-grid">
@@ -178,6 +192,7 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
                 {suggested ? <span className="status-chip">Recommended next</span> : null}
                 <p>{scenario.outcome}</p>
                 <div className="scenario-meta" aria-label={`${scenario.title} setup`}>
+                  <span>Reset included</span>
                   <span>
                     Mode <code>{scenario.mode}</code>
                   </span>
@@ -190,9 +205,9 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
                     <li key={step}>{step}</li>
                   ))}
                 </ol>
-                <button className="button button-light" type="button" disabled={mutation.isPending} onClick={() => runGuidedScenario(scenario)}>
+                <button className="button button-light" type="button" disabled={mutation.isPending || scenarioMutation.isPending} onClick={() => runGuidedScenario(scenario)}>
                   <Play aria-hidden="true" />
-                  {scenario.action}
+                  {scenarioMutation.isPending ? "Preparing..." : scenario.action}
                 </button>
               </article>
             );

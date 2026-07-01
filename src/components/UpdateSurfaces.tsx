@@ -43,8 +43,10 @@ export function BuildVersionStamp({
   const latest = shortRelease(state.latest.releaseId);
   const sessionMatchesBundle = state.current.releaseId === bundle.releaseId;
   const sessionMatchesLatest = state.current.releaseId === state.latest.releaseId;
+  const bundleMatchesLatest = bundle.releaseId === state.latest.releaseId;
+  const fullyCurrent = sessionMatchesBundle && sessionMatchesLatest && bundleMatchesLatest;
   const updatePending = !sessionMatchesLatest;
-  const status = sessionMatchesLatest ? "session current" : `${state.updateSeverity} pending`;
+  const status = fullyCurrent ? "current" : sessionMatchesLatest ? "session recovered" : `${state.updateSeverity} pending`;
   const title = [
     `Bundle: ${bundle.releaseId}`,
     `Session: ${state.current.releaseId}`,
@@ -58,15 +60,13 @@ export function BuildVersionStamp({
 
   return (
     <span
-      className={cx("badge badge-build", !updatePending && "badge-build-current", state.requiredUpdatePending && "badge-build-required")}
+      className={cx("badge badge-build", fullyCurrent && "badge-build-current", state.requiredUpdatePending && "badge-build-required")}
       title={title}
       data-testid="build-version-stamp"
     >
       <GitBranch aria-hidden="true" />
       <span>
-        {label} {bundleRelease}
-        {!sessionMatchesBundle ? ` · session ${sessionRelease}` : ""}
-        {updatePending ? ` -> latest ${latest}` : ""}
+        {label} {bundleRelease} / Session {sessionRelease} / Latest {latest}
       </span>
       {!compact ? <small>{status}</small> : null}
     </span>

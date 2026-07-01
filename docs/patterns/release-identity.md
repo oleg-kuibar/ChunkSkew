@@ -27,9 +27,9 @@ Track separate identities:
 Show labels that do not lie:
 
 ```text
-Bundle dev-local
-Bundle dev-local · session release-b
-Bundle release-a -> latest release-b
+Bundle dev-local / Session dev-local / Latest release-b
+Bundle dev-local / Session release-b / Latest release-b
+Bundle release-a / Session release-a / Latest release-b
 ```
 
 Avoid ambiguous labels such as:

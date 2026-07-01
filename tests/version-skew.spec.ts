@@ -169,7 +169,11 @@ test("2. Bundle, session, and latest release IDs are visible in debug mode", asy
   await expect(debugPanel).toContainText("Bundle");
   await expect(debugPanel).toContainText("Session");
   await expect(debugPanel).toContainText("Latest");
-  await expect(page.getByTestId("build-version-stamp").first()).toBeVisible();
+  const buildStamp = page.getByTestId("build-version-stamp").first();
+  await expect(buildStamp).toBeVisible();
+  await expect(buildStamp).toContainText("Bundle");
+  await expect(buildStamp).toContainText("Session");
+  await expect(buildStamp).toContainText("Latest");
 });
 
 test("3. Version debug panel works", async ({ page }) => {
@@ -177,7 +181,8 @@ test("3. Version debug panel works", async ({ page }) => {
   await open(page, "/debug/version-skew");
   await expect(page.getByRole("heading", { name: "Version skew controls" })).toBeVisible();
   await expect(page.getByTestId("guided-scenarios")).toContainText("Pick one scenario");
-  await expect(page.getByTestId("guided-scenarios")).toContainText("reset simulation state first");
+  await expect(page.getByTestId("guided-scenarios")).toContainText("starts from a clean reset");
+  await expect(page.getByTestId("guided-scenario-missing-chunk")).toContainText("Reset included");
   await expect(page.getByTestId("guided-scenario-missing-chunk")).toContainText("Mode broken");
   await expect(page.getByTestId("guided-scenario-missing-chunk")).toContainText("Opens /payments/create/review");
   await expect(page.getByTestId("deployment-modes")).toBeHidden();
@@ -190,12 +195,34 @@ test("3. Version debug panel works", async ({ page }) => {
 test("3c. Guided scenario runner opens missing chunk recovery", async ({ page }) => {
   await prepare(page, "react", "asset-retention");
   await open(page, "/debug/version-skew");
+  await page.evaluate(() => {
+    window.localStorage.setItem(
+      "chunk-skew-finance:current-release-overrides",
+      JSON.stringify({
+        "react-router": {
+          releaseId: "release-b",
+          buildTime: new Date().toISOString(),
+          gitSha: "test",
+          deploymentId: "deployment-release-b",
+          minimumSupportedClientRelease: "release-b",
+          updateSeverity: "required",
+          routerMode: "react-router",
+          assetBasePath: "/releases/release-b/",
+          compatibilityWindowExpiresAt: new Date(Date.now() + 86400000).toISOString(),
+          featureFlagSnapshotVersion: "ff-release-b",
+          apiContractVersion: "2026-06",
+          draftSchemaVersions: { payment: 2, kyb: 2, card: 2, invoice: 2, vendor: 2 }
+        }
+      })
+    );
+  });
   await page.getByRole("button", { name: "Prepare missing chunk fallback" }).click();
   await expect(page).toHaveURL(/payments\/create\/review/);
   await expect(page.getByTestId("guided-scenario-banner")).toContainText("Missing chunk fallback");
   await expect(page.getByTestId("guided-scenario-status")).toContainText("Setup complete");
   await expect(page.getByTestId("guided-scenario-banner")).toContainText("Confirm fallback and reload-loop prevention");
   await expect(page.getByTestId("chunk-failure-fallback")).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.localStorage.getItem("chunk-skew-finance:current-release-overrides"))).toBeNull();
 });
 
 test("3b. Reset simulation state clears recovered release overrides", async ({ page }) => {
@@ -227,7 +254,8 @@ test("3b. Reset simulation state clears recovered release overrides", async ({ p
   await page.waitForLoadState("domcontentloaded");
   await expect(page.getByRole("heading", { name: "Version skew controls" })).toBeVisible();
   await expect(page.getByTestId("build-version-stamp").first()).toContainText("Bundle dev-local");
-  await expect(page.getByTestId("build-version-stamp").first()).not.toContainText("session release-b");
+  await expect(page.getByTestId("build-version-stamp").first()).toContainText("Session dev-local");
+  await expect(page.getByTestId("build-version-stamp").first()).not.toContainText("Session release-b");
   await expect
     .poll(async () => {
       try {
@@ -284,7 +312,8 @@ test("7b. Refresh safely resumes an autosaved payment workflow", async ({ page }
   await page.getByTestId("required-update-gate").getByRole("button", { name: "Refresh safely" }).click();
   await expect(page.getByText("Confirm this payment")).toBeVisible();
   await expect(page.getByTestId("build-version-stamp").first()).toContainText("Bundle dev-local");
-  await expect(page.getByTestId("build-version-stamp").first()).toContainText("session release-b");
+  await expect(page.getByTestId("build-version-stamp").first()).toContainText("Session release-b");
+  await expect(page.getByTestId("build-version-stamp").first()).toContainText("Latest release-b");
   await expect(page.getByTestId("required-update-gate")).toHaveCount(0);
   await page.getByRole("button", { name: "recipient" }).click();
   await expect(page.getByLabel("Memo")).toHaveValue("Safe refresh keeps this memo");

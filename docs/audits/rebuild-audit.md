@@ -10,6 +10,20 @@ This audit records the current implementation and UI/UX friction before deeper r
 - The Playwright suite covers the most important safety behaviors.
 - The docs now make the repo discoverable for build version skew search terms.
 
+## Measured Cognitive Snapshot
+
+Measured from the codebase graph after the latest fast index.
+
+| Area | Symbol | Cognitive score | Reading signal |
+| --- | --- | ---: | --- |
+| Guided lab | `VersionSkewDebugPage` | 0 | The page now renders controls while named helpers own scenario preparation. |
+| Guided lab | `prepareGuidedScenario` / `finishGuidedScenario` | 0 / 1 | Reset, mode setup, seeding, and navigation are named as the learner sees them. |
+| Payment | `PaymentWorkflow` / `usePaymentDraft` | 4 / 1 | The main safe-refresh path is readable enough to use as the primary walkthrough. |
+| KYB | `KybWorkflow` / `useKybDraft` | 2 / 3 | Draft migration, restore, and save rules are now named helpers instead of one dense hook body. |
+| Card controls | `CardDetailRoute.Component` / `useCardLimitDraft` | 4 / 4 | Autosave and card mutation safety are contained, but still denser than the debug path. |
+| Release UI | `BuildVersionStamp` | 0 | Bundle, session, and latest release labels are now explicit without extra branching. |
+| Mutation safety | `guardSensitiveMutation` / `handleBlockedMutationGuard` | 5 / 2 | Shared guard logic is centralized; policy and telemetry branching remain intentionally concentrated. |
+
 ## Main Friction
 
 ### 1. The first screen taught finance, not version skew
@@ -58,6 +72,7 @@ Change made in this pass:
 - Extracted the KYB draft lifecycle into `useKybDraft` so migration, incompatible schema, server snapshot hydration, and autosave are easier to study together.
 - Centralized required-update-vs-blocked-dialog handling in `handleBlockedMutationGuard` so sensitive workflows share one guard-result shape.
 - Tightened version-state subscriptions so build version stamps react to version-state changes after the current render, not to unrelated autosave/idempotency storage writes.
+- Made every build stamp show `Bundle / Session / Latest` explicitly, and only mark the badge fully current when all three identities match.
 
 ### 4. Debug controls are powerful but dense
 
@@ -72,7 +87,10 @@ Change made in the next pass:
 - Added a focused script test so CLI skew-mode rules stay aligned without touching tracked seed state.
 - Added lightweight setup progress in the guided banner so the active step matches the route opened by each scenario.
 - Exposed each guided scenario's skew mode and target route on the card so setup is visible before clicking.
-- Clarified in the guided runner that clean retests should reset simulation state before choosing a scenario.
+- Clarified in the guided runner that scenario cards start from a clean reset.
+- Changed guided scenario cards to reset browser and backend simulation state automatically before applying their scenario mode.
+- Added `Reset included` to each guided scenario card so the setup contract is visible at the click target.
+- Named the scenario lifecycle as `prepareGuidedScenario` and `finishGuidedScenario` so the debug page no longer hides reset/setup/navigation inside one inline mutation block.
 - Renamed release summary labels from ambiguous `current release` wording to `loaded bundle`, `session release`, and `latest release`.
 - Moved manual mode controls, release state, preload status, telemetry, and audit trail into a collapsible advanced diagnostics section.
 - Moved the release debug panel into a desktop right rail so it stays visible without covering reset or guided scenario controls.

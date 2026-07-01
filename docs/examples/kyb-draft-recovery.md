@@ -10,9 +10,8 @@ Prove that incompatible KYB drafts do not crash the app and are not silently sub
 
 1. Start `pnpm dev:full`.
 2. Open `/debug/version-skew?debug=1&router=react`.
-3. Click **Reset simulation state**.
-4. Click **Prepare KYB draft review**.
-5. Confirm the app shows a review-required fallback.
+3. Click **Prepare KYB draft review**. The card resets simulation state, seeds the incompatible draft, and opens KYB review.
+4. Confirm the app shows a review-required fallback.
 
 ## Expected Behavior
 

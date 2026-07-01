@@ -58,7 +58,7 @@ Safe refresh is not live patching the running JavaScript. It is a controlled rel
 In this POC, `prepareSafeRefresh(routerMode)` stores the latest release as the recovered session release, updates the version state, and then the UI reloads. The build stamp still distinguishes the real loaded bundle from the simulated session release:
 
 ```text
-Bundle dev-local · session release-b
+Bundle dev-local / Session release-b / Latest release-b
 ```
 
 That distinction is important: the browser bundle did not magically change before reload; the recovery state changed so the workflow can continue in the simulation.
