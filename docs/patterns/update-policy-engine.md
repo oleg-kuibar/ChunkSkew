@@ -40,6 +40,8 @@ The policy can return:
 ## Code Anchor
 
 - `decideUpdatePolicy(input)` in `src/shared/updatePolicyEngine.ts`
+- `decideUpdatePolicyForState(input, versionState)` in `src/shared/updatePolicyEngine.ts`
+- `tests/update-policy.spec.ts`
 
 ## Rules Of Thumb
 

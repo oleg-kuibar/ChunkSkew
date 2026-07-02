@@ -112,6 +112,10 @@ export function guidedScenarioTitle(scenarioId: GuidedScenarioId) {
   return guidedScenarioCatalog.find((scenario) => scenario.id === scenarioId)?.title ?? scenarioId;
 }
 
+export function guidedScenarioSetupLabel(scenarioId: GuidedScenarioId) {
+  return `Open ${guidedScenarioTitle(scenarioId)} setup`;
+}
+
 export interface SimplePatternDefinition {
   slug: string;
   stepTitle: string;

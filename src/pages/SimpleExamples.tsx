@@ -1,13 +1,12 @@
 import { Braces, FileWarning, GitBranch, KeyRound, RefreshCcw, ShieldCheck, type LucideIcon } from "lucide-react";
-import { useEffect, useState } from "react";
-import { getBundledReleaseIdentity } from "../shared/releaseIdentity";
+import { useEffect } from "react";
+import { BuildVersionStamp } from "../components/UpdateSurfaces";
 import { debugRouteHref } from "../shared/routerLinks";
-import { getVersionState, subscribeVersionState } from "../shared/versionCheckClient";
-import { guidedScenarioTitle, simplePatternCatalog, type SimplePatternSlug } from "../examples/simpleVersionSkewPatterns";
+import { guidedScenarioSetupLabel, simplePatternCatalog, type SimplePatternSlug } from "../examples/simpleVersionSkewPatterns";
 import type { RouterMode } from "../shared/types";
 
 const simpleAnchor = "simpleVersionSkewPatterns.ts";
-const testAnchor = "simple-patterns.spec.ts";
+const testAnchor = "simple-patterns.spec.ts + update-policy.spec.ts";
 const proofCommand = "pnpm test:learning:windows";
 
 const exampleIcons: Record<SimplePatternSlug, LucideIcon> = {
@@ -20,16 +19,12 @@ const exampleIcons: Record<SimplePatternSlug, LucideIcon> = {
 };
 
 export function SimpleExamplesPage({ routerMode }: { routerMode: RouterMode }) {
-  const [, setTick] = useState(0);
-  useEffect(() => subscribeVersionState(() => setTick((value) => value + 1)), []);
   useEffect(() => {
     const id = window.location.hash.slice(1);
     if (id) {
       window.requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ block: "center" }));
     }
   }, []);
-  const bundle = getBundledReleaseIdentity(routerMode);
-  const versionState = getVersionState(routerMode);
 
   return (
     <div className="page-stack">
@@ -38,25 +33,9 @@ export function SimpleExamplesPage({ routerMode }: { routerMode: RouterMode }) {
           <p className="eyebrow">Minimal patterns</p>
           <h1>Simple examples</h1>
         </div>
-        <span className="badge badge-muted">Small rules, robust paths</span>
-      </section>
-
-      <section className="example-state-strip" aria-label="Bundle session latest comparison">
-        <div>
-          <span>Bundle</span>
-          <strong>{bundle.releaseId}</strong>
-        </div>
-        <div>
-          <span>Session</span>
-          <strong>{versionState.current.releaseId}</strong>
-        </div>
-        <div>
-          <span>Latest</span>
-          <strong>{versionState.latest.releaseId}</strong>
-        </div>
-        <div>
-          <span>Update</span>
-          <strong>{versionState.updateAvailable ? versionState.updateSeverity : "none"}</strong>
+        <div className="heading-badges">
+          <span className="badge badge-muted">Small rules, robust paths</span>
+          <BuildVersionStamp routerMode={routerMode} compact />
         </div>
       </section>
 
@@ -98,7 +77,7 @@ export function SimpleExamplesPage({ routerMode }: { routerMode: RouterMode }) {
                 <strong>Robust path:</strong> {example.hook}
               </span>
               <a className="button button-light" href={debugRouteHref("/debug/version-skew", routerMode, example.scenarioId)}>
-                {example.scenarioId ? `Open ${guidedScenarioTitle(example.scenarioId)} setup` : "Open lab controls"}
+                {example.scenarioId ? guidedScenarioSetupLabel(example.scenarioId) : "Open lab controls"}
               </a>
             </article>
           );

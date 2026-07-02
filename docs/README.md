@@ -13,7 +13,7 @@ Use it in three modes:
 | Step | Where | What to prove |
 | --- | --- | --- |
 | 1 | `/?debug=1` | The four-step mental model and ordered pattern checklist are understandable before source reading, with direct links into matching simple examples. |
-| 2 | `/examples?debug=1` | Each minimal rule has tiny source, a test anchor, a robust path, and a named proof setup. |
+| 2 | `/examples?debug=1` | Each minimal rule has tiny source, source and policy proof anchors, a robust path, and a named proof setup. |
 | 3 | **Open [proof] setup** | The app resets state, sets the lab mode, and opens the prepared workflow. |
 | 4 | **Lab controls** and **Return to example** | Diagnostics stay opt-in while the prepared workflow remains recoverable. |
 | 5 | [Production Checklist](reference/production-checklist.md) | The demo maps to rollout gates for a real React/Vite SPA. |
@@ -40,6 +40,7 @@ Use it in three modes:
 - [Example Index](examples/README.md)
 - App route: `/examples?debug=1`
 - Simple source: [`../src/examples/simpleVersionSkewPatterns.ts`](../src/examples/simpleVersionSkewPatterns.ts)
+- Pure policy proof: [`../tests/update-policy.spec.ts`](../tests/update-policy.spec.ts)
 - [Payment Safe Refresh](examples/payment-safe-refresh.md)
 - [KYB Draft Recovery](examples/kyb-draft-recovery.md)
 - [Router Chunk Failure](examples/router-chunk-failure.md)

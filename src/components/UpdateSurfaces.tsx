@@ -45,8 +45,7 @@ export function BuildVersionStamp({
   const sessionMatchesLatest = state.current.releaseId === state.latest.releaseId;
   const bundleMatchesLatest = bundle.releaseId === state.latest.releaseId;
   const fullyCurrent = sessionMatchesBundle && sessionMatchesLatest && bundleMatchesLatest;
-  const updatePending = !sessionMatchesLatest;
-  const status = fullyCurrent ? "current" : sessionMatchesLatest ? "session recovered" : `${state.updateSeverity} pending`;
+  const status = fullyCurrent ? "in sync" : sessionMatchesLatest ? "session recovered" : `${state.updateSeverity} pending`;
   const title = [
     `Bundle: ${bundle.releaseId}`,
     `Session: ${state.current.releaseId}`,
@@ -307,15 +306,15 @@ export function VersionDebugPanel({ routerMode }: { routerMode: RouterMode }) {
       </header>
       <dl>
         <div>
-          <dt>Bundle</dt>
+          <dt>Loaded bundle</dt>
           <dd>{bundle.releaseId}</dd>
         </div>
         <div>
-          <dt>Session</dt>
+          <dt>Session release</dt>
           <dd>{state.current.releaseId}</dd>
         </div>
         <div>
-          <dt>Latest</dt>
+          <dt>Latest release</dt>
           <dd>{state.latest.releaseId}</dd>
         </div>
         <div>

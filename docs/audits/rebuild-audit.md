@@ -98,7 +98,12 @@ Change made in this pass:
 - Centralized required-update-vs-blocked-dialog handling in `handleBlockedMutationGuard` so sensitive workflows share one guard-result shape.
 - Tightened version-state subscriptions so build version stamps react to version-state changes after the current render, not to unrelated autosave/idempotency storage writes.
 - Made every build stamp show `Bundle / Session / Latest` explicitly, and only mark the badge fully current when all three identities match.
+- Replaced remaining vague `current release` copy with session-specific wording and an `in sync` stamp state.
+- Aligned the always-visible release debug rail with `Loaded bundle`, `Session release`, and `Latest release` labels.
+- Reused the shared build stamp on `/examples` instead of keeping a second local release strip.
 - Split sensitive mutation guard outcomes into named session, permission, update policy, and required-update result helpers so the shared safety path reads like the production checklist.
+- Collapsed repeated update-policy result boilerplate so `decideUpdatePolicy` reads as ordered product rules.
+- Added a pure update-policy proof so core decisions can be tested without browser storage setup.
 - Expanded the cognitive snapshot to include invoice approval, transaction monitoring, and settings so the audit covers the supporting examples, not only the primary walkthrough.
 
 ### 4. Debug controls are powerful but dense
@@ -160,6 +165,7 @@ Change made in this pass:
 - Added `src/examples/simpleVersionSkewPatterns.ts` as a tiny source file for copy/paste release, chunk, refresh, idempotency, gate, and asset-strategy examples.
 - Added a direct Playwright check for the tiny source examples so they stay runnable, not only rendered as text.
 - Added shared simple-source and `tests/simple-patterns.spec.ts` proof anchors on the simple examples page without repeating them on every card.
+- Added `tests/update-policy.spec.ts` to the visible `/examples` proof anchors now that the learning command covers pure policy decisions.
 - Shortened visible proof filenames on `/examples` so the first viewport stays readable while docs still link the full source paths.
 - Labeled each simple card's realistic workflow bridge as `Robust path` with shorter text so the page reads as rule, code, source, robust path, action.
 - Updated the retest runbook and example docs to use guided scenarios as the primary path instead of old manual mode-switching steps.
@@ -175,6 +181,7 @@ Change made in this pass:
 - Removed repeated Lab controls hrefs from the simple-pattern catalog; the catalog now stores the rule and optional guided proof id only.
 - Verified that every simple example's guided scenario id exists in the shared scenario catalog so named setup links cannot silently drift.
 - Changed simple-example and start-page setup buttons to name the guided proof scenario they open, instead of using a generic `Open guided setup` label.
+- Centralized that setup button label in the shared catalog so the start page, `/examples`, and tests use one phrase.
 - Added a TypeScript catalog contract so mistyped simple-example guided scenario ids fail at compile time before they reach the UI.
 - Added a start-page scenario catalog proof so the first robust examples stay intentionally ordered with the rest of the learning path.
 - Added a primary guided scenario proof so the recommended payment recovery walkthrough is explicit in source and tests.
@@ -217,7 +224,7 @@ This matrix is the completion check for the rebuild goal. A row is only strong w
 | --- | --- | --- |
 | Explain build version skew from the first screen. | Start page has the four-step mental model plus **Solve in this order** links into matching simple examples. | `tests/version-skew.spec.ts` baseline and ordered deep-link assertions. |
 | Run one scenario without source reading. | `/examples?debug=1` cards use named setup buttons; Lab controls cards show reset, mode, and starting step before navigation. | `tests/version-skew.spec.ts` simple examples, guided scenario, and debug panel assertions. |
-| Minimal plus realistic examples for each pattern. | Pattern Index maps minimal rules to robust proofs; `/examples` links tiny source to guided workflow proofs. | `tests/simple-patterns.spec.ts` and `tests/version-skew.spec.ts` learning assertions. |
+| Minimal plus realistic examples for each pattern. | Pattern Index maps minimal rules to robust proofs; `/examples` links tiny source and policy decisions to guided workflow proofs. | `tests/simple-patterns.spec.ts`, `tests/update-policy.spec.ts`, and `tests/version-skew.spec.ts` learning assertions. |
 | Debug controls stay out of the primary path. | Manual modes, release state, preload table, telemetry, and audit table live under **Advanced diagnostics**. | `Version debug panel works` expects diagnostics hidden until opened. |
 | Reset/retest behavior is obvious. | Reset reloads with a success strip and build stamp returns to `Session dev-local`. | `Reset simulation state clears recovered release overrides`. |
 | Vocabulary matches across UI, docs, and tests. | Root README, Knowledge Map, Pattern Index, Example Index, Search Index, and Production Checklist use the same **Solve in this order**, named setup buttons, **Lab controls**, and **Return to example** path. | `pnpm test:learning:windows` plus docs review. |

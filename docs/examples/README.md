@@ -4,7 +4,7 @@ Examples connect the reusable patterns to product workflows.
 
 - Simple examples workbench: open `/examples?debug=1` for the smallest release identity, chunk recovery, safe refresh, update gate, idempotency, and asset strategy examples.
 - Guided cards reset automatically, open the prepared workflow, and expose **Return to example** after you visit Lab controls.
-- Simple source: [`../../src/examples/simpleVersionSkewPatterns.ts`](../../src/examples/simpleVersionSkewPatterns.ts) keeps the copy-paste patterns runnable and covered by `tests/simple-patterns.spec.ts`.
+- Simple source: [`../../src/examples/simpleVersionSkewPatterns.ts`](../../src/examples/simpleVersionSkewPatterns.ts) keeps copy-paste patterns runnable; `tests/simple-patterns.spec.ts` and `tests/update-policy.spec.ts` prove the minimal source and policy decisions.
 - [Payment Safe Refresh](payment-safe-refresh.md): required update, autosaved payment, idempotency key, safe refresh.
 - [KYB Draft Recovery](kyb-draft-recovery.md): draft schema compatibility and review-required fallback.
 - [Router Chunk Failure](router-chunk-failure.md): React Router and TanStack Router lazy boundary failure/recovery.

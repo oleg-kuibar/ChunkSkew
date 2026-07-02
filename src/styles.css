@@ -150,6 +150,7 @@ a {
 
 .topbar-left,
 .topbar-right,
+.heading-badges,
 .workflow-actions,
 .modal-actions,
 .toolbar,
@@ -162,6 +163,10 @@ a {
 
 .topbar-left {
   min-width: 0;
+}
+
+.heading-badges {
+  justify-content: flex-end;
 }
 
 .topbar-left .badge-build {
@@ -885,23 +890,6 @@ textarea:focus {
   outline: none;
 }
 
-.example-state-strip {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.example-state-strip > div {
-  display: grid;
-  gap: 4px;
-  min-width: 0;
-  padding: 14px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fff;
-}
-
-.example-state-strip span,
 .example-pattern-card > span {
   color: var(--muted);
   font-size: 13px;
@@ -909,10 +897,6 @@ textarea:focus {
 
 .example-pattern-card > span strong {
   color: var(--ink);
-}
-
-.example-state-strip strong {
-  overflow-wrap: anywhere;
 }
 
 .example-proof-strip {
@@ -1364,7 +1348,6 @@ td code {
   .review-layout,
   .document-grid,
   .report-grid,
-  .example-state-strip,
   .example-proof-strip,
   .example-pattern-grid,
   .scenario-grid {

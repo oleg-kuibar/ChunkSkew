@@ -143,10 +143,10 @@ test("1b. Simple examples page teaches core patterns", async ({ page }) => {
   await open(page, "/examples");
   await expect(page.getByRole("heading", { name: "Simple examples" })).toBeVisible();
   await expect(page.getByText("Small rules, robust paths")).toBeVisible();
-  const releaseStrip = page.locator('section[aria-label="Bundle session latest comparison"]');
-  await expect(releaseStrip).toContainText("Bundle");
-  await expect(releaseStrip).toContainText("Session");
-  await expect(releaseStrip).toContainText("Latest");
+  const releaseStamp = page.locator(".page-heading").getByTestId("build-version-stamp");
+  await expect(releaseStamp).toContainText("Bundle");
+  await expect(releaseStamp).toContainText("Session");
+  await expect(releaseStamp).toContainText("Latest");
   await expect(page.getByTestId("simple-examples")).toContainText("Release identity");
   await expect(page.getByTestId("simple-examples")).toContainText("Idempotent mutation");
   await expect(page.getByTestId("simple-examples")).toContainText("Step 1");
@@ -158,6 +158,7 @@ test("1b. Simple examples page teaches core patterns", async ({ page }) => {
   await expect(page.getByTestId("simple-examples")).toContainText("session.releaseId !== latest.releaseId");
   await expect(page.getByTestId("simple-proof-anchors")).toContainText("simpleVersionSkewPatterns.ts");
   await expect(page.getByTestId("simple-proof-anchors")).toContainText("simple-patterns.spec.ts");
+  await expect(page.getByTestId("simple-proof-anchors")).toContainText("update-policy.spec.ts");
   await expect(page.getByTestId("simple-proof-anchors")).toContainText("pnpm test:learning:windows");
   await expect(page.getByTestId("simple-examples")).toContainText("src/shared/chunkRecoveryController.ts");
   await expect(page.getByTestId("simple-examples")).toContainText("Robust path:");
@@ -225,9 +226,9 @@ test("2. Bundle, session, and latest release IDs are visible in debug mode", asy
   await open(page);
   const debugPanel = page.getByTestId("version-debug-panel");
   await expect(debugPanel).toBeVisible();
-  await expect(debugPanel).toContainText("Bundle");
-  await expect(debugPanel).toContainText("Session");
-  await expect(debugPanel).toContainText("Latest");
+  await expect(debugPanel).toContainText("Loaded bundle");
+  await expect(debugPanel).toContainText("Session release");
+  await expect(debugPanel).toContainText("Latest release");
   const buildStamp = page.getByTestId("build-version-stamp").first();
   await expect(buildStamp).toBeVisible();
   await expect(buildStamp).toContainText("Bundle");

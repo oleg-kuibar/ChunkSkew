@@ -12,7 +12,13 @@ import {
   WalletCards,
   type LucideIcon
 } from "lucide-react";
-import { primaryGuidedScenario, simplePatternCatalog, startPageScenarioCatalog, type GuidedScenarioId } from "../examples/simpleVersionSkewPatterns";
+import {
+  guidedScenarioSetupLabel,
+  primaryGuidedScenario,
+  simplePatternCatalog,
+  startPageScenarioCatalog,
+  type GuidedScenarioId
+} from "../examples/simpleVersionSkewPatterns";
 import { debugRouteHref } from "../shared/routerLinks";
 import type { RouterMode } from "../shared/types";
 
@@ -114,7 +120,7 @@ export function DashboardPage({ routerMode }: { routerMode: RouterMode }) {
               <strong>{scenario.title}</strong>
               <p>{scenario.outcome}</p>
               <span>
-                Open {scenario.title} setup
+                {guidedScenarioSetupLabel(scenario.id)}
                 <ArrowRight aria-hidden="true" />
               </span>
             </a>

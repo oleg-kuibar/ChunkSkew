@@ -31,105 +31,98 @@ export interface PolicyResult {
   versionState: VersionMetadata;
 }
 
+type PolicyResultFlags = Partial<Pick<PolicyResult, "blocksMutation" | "blocksNavigation" | "readonlyMode">>;
+
+function policyResult(
+  versionState: VersionMetadata,
+  decision: UpdateDecision,
+  copy: string,
+  flags: PolicyResultFlags = {}
+): PolicyResult {
+  return {
+    decision,
+    blocksMutation: false,
+    blocksNavigation: false,
+    readonlyMode: false,
+    copy,
+    versionState,
+    ...flags
+  };
+}
+
 export function decideUpdatePolicy(input: PolicyInput): PolicyResult {
   const versionState = getVersionState(input.routerMode);
-  const idle = Date.now() - input.lastInteractionAt > 60_000;
+  return decideUpdatePolicyForState(input, versionState);
+}
+
+export function decideUpdatePolicyForState(input: PolicyInput, versionState: VersionMetadata, now = Date.now()): PolicyResult {
+  const idle = now - input.lastInteractionAt > 60_000;
   const clean = !input.dirtyForm && !input.mutationPending && !input.mfaPending && !input.navigationPending;
 
   if (input.chunkFailureAlreadyHappened) {
-    return {
-      decision: "show-chunk-failure-fallback",
-      blocksMutation: true,
-      blocksNavigation: false,
-      readonlyMode: false,
-      copy: "We saved your progress. Refresh safely to continue with the latest app version.",
-      versionState
-    };
+    return policyResult(
+      versionState,
+      "show-chunk-failure-fallback",
+      "We saved your progress. Refresh safely to continue with the latest app version.",
+      { blocksMutation: true }
+    );
   }
 
   if (!input.apiContractCompatible || !versionState.apiContractCompatible) {
-    return {
-      decision: "allow-readonly-mode",
-      blocksMutation: true,
-      blocksNavigation: false,
-      readonlyMode: true,
-      copy: "This session can still be reviewed, but changes are paused until the app is refreshed.",
-      versionState
-    };
+    return policyResult(
+      versionState,
+      "allow-readonly-mode",
+      "This session can still be reviewed, but changes are paused until the app is refreshed.",
+      { blocksMutation: true, readonlyMode: true }
+    );
   }
 
   if (!versionState.updateAvailable) {
-    return {
-      decision: "passive-toast",
-      blocksMutation: false,
-      blocksNavigation: false,
-      readonlyMode: false,
-      copy: "You are on the current release.",
-      versionState
-    };
+    return policyResult(versionState, "passive-toast", "No update is pending for this session.");
   }
 
   if (input.mutationPending) {
-    return {
-      decision: "force-refresh-after-current-action",
-      blocksMutation: false,
-      blocksNavigation: true,
-      readonlyMode: false,
-      copy: "We will offer a refresh after the current action finishes.",
-      versionState
-    };
+    return policyResult(
+      versionState,
+      "force-refresh-after-current-action",
+      "We will offer a refresh after the current action finishes.",
+      { blocksNavigation: true }
+    );
   }
 
   if (versionState.requiredUpdatePending) {
     if (input.dirtyForm || input.mfaPending || input.sensitiveWorkflow) {
-      return {
-        decision: "block-next-sensitive-mutation",
-        blocksMutation: true,
-        blocksNavigation: input.sensitiveWorkflow,
-        readonlyMode: false,
-        copy: "Your work is saved. Refresh before starting another sensitive action.",
-        versionState
-      };
+      return policyResult(
+        versionState,
+        "block-next-sensitive-mutation",
+        "Your work is saved. Refresh before starting another sensitive action.",
+        { blocksMutation: true, blocksNavigation: input.sensitiveWorkflow }
+      );
     }
 
-    return {
-      decision: clean && idle ? "silent-reload-if-idle" : "block-new-navigation",
-      blocksMutation: true,
-      blocksNavigation: true,
-      readonlyMode: false,
-      copy: "A required update is ready. Refresh to continue making changes.",
-      versionState
-    };
+    return policyResult(
+      versionState,
+      clean && idle ? "silent-reload-if-idle" : "block-new-navigation",
+      "A required update is ready. Refresh to continue making changes.",
+      { blocksMutation: true, blocksNavigation: true }
+    );
   }
 
   if (versionState.updateSeverity === "recommended" && input.sensitiveWorkflow) {
-    return {
-      decision: input.dirtyForm ? "defer-until-save" : "sticky-banner",
-      blocksMutation: false,
-      blocksNavigation: false,
-      readonlyMode: false,
-      copy: "A safer app version is ready. Finish this step, then refresh at a safe point.",
-      versionState
-    };
+    return policyResult(
+      versionState,
+      input.dirtyForm ? "defer-until-save" : "sticky-banner",
+      "A safer app version is ready. Finish this step, then refresh at a safe point."
+    );
   }
 
   if (clean && idle) {
-    return {
-      decision: "silent-reload-if-idle",
-      blocksMutation: false,
-      blocksNavigation: false,
-      readonlyMode: false,
-      copy: "Refreshing while the session is idle.",
-      versionState
-    };
+    return policyResult(versionState, "silent-reload-if-idle", "Refreshing while the session is idle.");
   }
 
-  return {
-    decision: "passive-toast",
-    blocksMutation: false,
-    blocksNavigation: false,
-    readonlyMode: false,
-    copy: "A new app version is available. You can refresh when ready.",
-    versionState
-  };
+  return policyResult(
+    versionState,
+    "passive-toast",
+    "A new app version is available. You can refresh when ready."
+  );
 }

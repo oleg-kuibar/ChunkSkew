@@ -56,9 +56,13 @@ This page intentionally repeats common search terms so people can find the right
 - guided scenario catalog
 - start page scenario catalog
 - guided proof scenario labels
+- guided scenario setup label
 - primary guided scenario
 - proof setup
 - active proof setup
+- release identity in sync
+- update policy decisions
+- pure update policy proof
 
 ## Deployment Terms
 
