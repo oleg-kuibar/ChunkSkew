@@ -346,7 +346,7 @@ export function VersionDebugPanel({ routerMode }: { routerMode: RouterMode }) {
 
 export function WorkflowAutosaveRestoredNotice({ migrated = false }: { migrated?: boolean }) {
   return (
-    <div className="notice notice-success" data-testid="draft-restored-notice">
+    <div className="notice notice-success" role="status" aria-live="polite" data-testid="draft-restored-notice">
       <CheckCircle2 aria-hidden="true" />
       <span>{migrated ? "Draft restored after app update. Review migrated fields before submitting." : "Draft restored after app update."}</span>
     </div>

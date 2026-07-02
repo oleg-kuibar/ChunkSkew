@@ -273,6 +273,38 @@ test("1h. Simple examples reset path works by keyboard", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Lab controls" })).toBeVisible();
 });
 
+test("1i. Recovery surfaces are keyboard reachable and announced", async ({ page }) => {
+  await prepare(page, "react", "asset-retention");
+  await open(page, "/debug/version-skew");
+  const preparePayment = page.getByRole("button", { name: "Prepare payment recovery" });
+  await preparePayment.focus();
+  await expect(preparePayment).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/payments\/create\/recipient/);
+  await expect(page.getByRole("region", { name: "Active proof setup" })).toBeVisible();
+
+  await page.getByLabel("Memo").fill("Keyboard recovery draft");
+  await page.reload();
+  const restoredNotice = page.getByTestId("draft-restored-notice");
+  await expect(restoredNotice).toBeVisible();
+  await expect(restoredNotice).toHaveAttribute("role", "status");
+  await expect(restoredNotice).toHaveAttribute("aria-live", "polite");
+
+  await open(page, "/debug/version-skew?scenario=missing-chunk");
+  const prepareMissingChunk = page.getByRole("button", { name: "Prepare missing chunk fallback" });
+  await prepareMissingChunk.focus();
+  await expect(prepareMissingChunk).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/payments\/create\/review/);
+  const fallback = page.getByTestId("chunk-failure-fallback");
+  await expect(fallback).toHaveAttribute("role", "alert");
+  const tryAgain = fallback.getByRole("button", { name: "Try again" });
+  await tryAgain.focus();
+  await expect(tryAgain).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("heading", { name: /Understand the failure/ })).toBeVisible();
+});
+
 test("2. Bundle, session, and latest release IDs are visible in debug mode", async ({ page }) => {
   await prepare(page);
   await open(page);
@@ -498,6 +530,24 @@ test("7b. Refresh safely resumes an autosaved payment workflow", async ({ page }
   await expect(page.getByTestId("payment-receipt")).toBeVisible();
 });
 
+test("7c. Required update gate refresh works from keyboard", async ({ page }) => {
+  await prepare(page, "react", "asset-retention");
+  await gotoPaymentMfa(page);
+  await page.getByRole("button", { name: "Mark MFA verified" }).click();
+  await forceRequiredUpdate(page);
+  await page.getByRole("button", { name: "Submit payment" }).click();
+
+  const requiredGate = page.getByTestId("required-update-gate");
+  await expect(requiredGate).toHaveAttribute("role", "alert");
+  const refreshSafely = requiredGate.getByRole("button", { name: "Refresh safely" });
+  await refreshSafely.focus();
+  await expect(refreshSafely).toBeFocused();
+  await page.keyboard.press("Enter");
+
+  await expect(page.getByText("Confirm this payment")).toBeVisible();
+  await expect(requiredGate).toHaveCount(0);
+});
+
 test("8. Draft is restored after refresh", async ({ page }) => {
   await prepare(page);
   await open(page, "/payments/create/recipient");
@@ -539,6 +589,30 @@ test("13. Payment idempotency key survives reload", async ({ page }) => {
   await prepare(page);
   await open(page, "/payments/create/review");
   await expect(page.getByText("Key saved")).toBeVisible();
+});
+
+test("13a. Vendor draft and idempotency key survive reload", async ({ page }) => {
+  await prepare(page);
+  await open(page, "/payments/create/recipient");
+  await page.getByLabel("New vendor name").fill("Atlas Compliance Labs");
+  await page.getByLabel("New vendor category").fill("Risk review");
+
+  const before = await page.evaluate(() => {
+    const store = JSON.parse(window.localStorage.getItem("chunk-skew-finance:idempotency-keys") ?? "{}");
+    return store["vendor.create:payment-create-vendor"]?.key as string | undefined;
+  });
+  expect(before).toContain("vendor.create:payment-create-vendor:");
+
+  await page.reload();
+  await expect(page.getByTestId("draft-restored-notice")).toBeVisible();
+  await expect(page.getByLabel("New vendor name")).toHaveValue("Atlas Compliance Labs");
+  await expect(page.getByLabel("New vendor category")).toHaveValue("Risk review");
+
+  const after = await page.evaluate(() => {
+    const store = JSON.parse(window.localStorage.getItem("chunk-skew-finance:idempotency-keys") ?? "{}");
+    return store["vendor.create:payment-create-vendor"]?.key as string | undefined;
+  });
+  expect(after).toBe(before);
 });
 
 test("14. Retried payment submit does not create duplicate payment", async ({ page }) => {

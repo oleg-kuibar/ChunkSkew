@@ -53,6 +53,7 @@ test("project contract stays standalone and fake-data only", () => {
   const serviceWorker = readFileSync("public/service-worker.js", "utf8");
   expect(serviceWorker).toContain('url.pathname === "/version.json"');
   expect(serviceWorker).toContain('event.data?.type === "WARM_WORKFLOW_ASSETS"');
+  expect(serviceWorker).toContain('type: "WORKFLOW_ASSETS_WARMED"');
   expect(serviceWorker).not.toContain("index.html");
   expect(serviceWorker).not.toContain("clients.openWindow");
 });

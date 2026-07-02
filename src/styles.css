@@ -762,7 +762,7 @@ a {
 
 .status-chip {
   background: var(--amber-soft);
-  color: var(--amber);
+  color: #8a590f;
 }
 
 .form-grid,
@@ -1114,7 +1114,7 @@ td code {
 .update-banner span,
 .notice span,
 .gate span {
-  color: var(--muted);
+  color: #43504c;
 }
 
 .update-banner,

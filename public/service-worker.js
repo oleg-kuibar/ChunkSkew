@@ -28,14 +28,21 @@ self.addEventListener("fetch", (event) => {
 
 self.addEventListener("message", (event) => {
   if (event.data?.type === "WARM_WORKFLOW_ASSETS") {
+    const urls = event.data.urls ?? [];
     event.waitUntil(
       Promise.all(
-        (event.data.urls ?? []).map((url) =>
-          fetch(url, { cache: "reload" }).catch(() => {
-            return undefined;
-          })
+        urls.map((url) =>
+          fetch(url, { cache: "reload" })
+            .then((response) => response.ok)
+            .catch(() => false)
         )
-      )
+      ).then((results) => {
+        event.source?.postMessage({
+          type: "WORKFLOW_ASSETS_WARMED",
+          requested: urls.length,
+          warmed: results.filter(Boolean).length
+        });
+      })
     );
   }
 });
