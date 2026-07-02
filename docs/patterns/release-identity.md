@@ -24,15 +24,15 @@ Track separate identities:
 
 ## UI Rule
 
-Show labels that do not lie:
+Show labels and status that do not lie:
 
 ```text
-Bundle dev-local / Session dev-local / Latest release-b
-Bundle dev-local / Session release-b / Latest release-b
-Bundle release-a / Session release-a / Latest release-b
+Bundle dev-local / Session dev-local / Latest release-b / optional pending
+Bundle dev-local / Session release-b / Latest release-b / session recovered
+Bundle release-a / Session release-a / Latest release-b / required pending
 ```
 
-Avoid ambiguous labels such as:
+Use the same status words in build stamps and the debug rail. Keep `Update policy` separate from `Status` so `optional` does not look like the app is still stale after recovery. Avoid ambiguous labels such as:
 
 ```text
 release-b current

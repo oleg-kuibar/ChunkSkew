@@ -26,7 +26,7 @@ Prove that a required update does not lose the payment draft and does not create
 ## Expected UI
 
 - Required update gate appears before mutation.
-- Build stamp distinguishes bundle, recovered session, and latest release, for example `Bundle dev-local / Session release-b / Latest release-b`.
+- Build stamp distinguishes bundle, recovered session, latest release, and status, for example `Bundle dev-local / Session release-b / Latest release-b / session recovered`.
 - Draft restored notice appears after reload where applicable.
 - Duplicate-submit notice appears for idempotent replay.
 

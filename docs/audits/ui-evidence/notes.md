@@ -23,7 +23,7 @@ Screenshots were captured from the local app on July 1, 2026 with debug mode ena
 - Captured issue: the update toast overlapped or visually competed with the right-side release debug panel in desktop screenshots.
 - Follow-up fix: `.debug-panel-open .update-toast` now offsets the toast away from the release debug panel, with a Playwright regression covering the desktop layout.
 - Debug surfaces still contain many labels, badges, and code-like values; the guided path helps, manual diagnostics are now behind the advanced section, and the scenario grid uses wider tracks when the debug rail is visible.
-- Build/version labels are useful for retesting, but should remain compact so workflow content stays primary.
+- Build/version labels are useful for retesting, but should remain compact so workflow content stays primary. The compact topbar stamp now keeps its status visible without clipping the latest release in the desktop debug-rail layout.
 
 ## Accessibility Risks
 

@@ -148,6 +148,7 @@ test("1b. Simple examples page teaches core patterns", async ({ page }) => {
   await expect(releaseStamp).toContainText("Bundle");
   await expect(releaseStamp).toContainText("Session");
   await expect(releaseStamp).toContainText("Latest");
+  await expect(releaseStamp.locator("small")).toHaveText(/pending|in sync|session recovered/);
   await expect(page.getByTestId("simple-examples")).toContainText("Release identity");
   await expect(page.getByTestId("simple-examples")).toContainText("Idempotent mutation");
   await expect(page.getByTestId("simple-examples")).toContainText("Step 1");
@@ -162,6 +163,7 @@ test("1b. Simple examples page teaches core patterns", async ({ page }) => {
   await expect(page.getByTestId("simple-example-required-update-gate")).toContainText("Robust source");
   await expect(page.getByTestId("simple-proof-anchors")).toContainText("simpleVersionSkewPatterns.ts");
   await expect(page.getByTestId("simple-proof-anchors")).toContainText("simple-patterns.spec.ts");
+  await expect(page.getByTestId("simple-proof-anchors")).toContainText("docs vocabulary");
   await expect(page.getByTestId("simple-proof-anchors")).toContainText("update-policy.spec.ts");
   await expect(page.getByTestId("simple-proof-anchors")).toContainText("pnpm test:learning:windows");
   await expect(page.getByTestId("simple-examples")).toContainText("src/shared/updatePolicyEngine.ts");
@@ -185,12 +187,22 @@ test("1c. Update toast does not cover release debug panel", async ({ page }) => 
   await open(page, "/examples");
   await expect(page.locator(".update-toast")).toBeVisible();
   await expect(page.getByTestId("version-debug-panel")).toBeVisible();
+  await expect(page.getByTestId("version-debug-panel")).toContainText("Update policy");
+  await expect(page.getByTestId("version-debug-panel")).toContainText("Status");
+  await expect(page.getByTestId("version-debug-panel")).toContainText(/pending|in sync|session recovered/);
 
   const toast = await page.locator(".update-toast").boundingBox();
   const panel = await page.getByTestId("version-debug-panel").boundingBox();
   expect(toast).not.toBeNull();
   expect(panel).not.toBeNull();
   expect(toast!.x + toast!.width).toBeLessThanOrEqual(panel!.x);
+
+  const topbarStampText = await page
+    .locator(".topbar")
+    .getByTestId("build-version-stamp")
+    .locator(":scope > span")
+    .evaluate((element) => ({ clientWidth: element.clientWidth, scrollWidth: element.scrollWidth }));
+  expect(topbarStampText.scrollWidth).toBeLessThanOrEqual(topbarStampText.clientWidth + 1);
 });
 
 test("1d. Start page routes payment recovery through guided controls", async ({ page }) => {
@@ -264,6 +276,7 @@ test("3. Version debug panel works", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Check version" })).toBeVisible();
   await expect(diagnostics.getByText("Loaded bundle")).toBeVisible();
   await expect(diagnostics.getByText("Session release")).toBeVisible();
+  await expect(diagnostics.getByText("Update policy")).toBeVisible();
   await expect(page.getByTestId("deployment-modes")).toContainText("asset-retention");
 });
 
@@ -351,6 +364,7 @@ test("3b. Reset simulation state clears recovered release overrides", async ({ p
   await expect(page.getByTestId("reset-confirmation")).toContainText("Debug mode and router choice stayed on");
   await expect(page.getByTestId("build-version-stamp").first()).toContainText("Bundle dev-local");
   await expect(page.getByTestId("build-version-stamp").first()).toContainText("Session dev-local");
+  await expect(page.getByTestId("build-version-stamp").first().locator("small")).toHaveText("in sync");
   await expect(page.getByTestId("build-version-stamp").first()).not.toContainText("Session release-b");
   await expect
     .poll(async () => {

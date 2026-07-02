@@ -40,6 +40,7 @@ Use it in three modes:
 - [Example Index](examples/README.md)
 - App route: `/examples?debug=1`
 - Simple source: [`../src/examples/simpleVersionSkewPatterns.ts`](../src/examples/simpleVersionSkewPatterns.ts)
+- Simple source and docs vocabulary proof: [`../tests/simple-patterns.spec.ts`](../tests/simple-patterns.spec.ts)
 - Pure policy proof: [`../tests/update-policy.spec.ts`](../tests/update-policy.spec.ts)
 - [Payment Safe Refresh](examples/payment-safe-refresh.md)
 - [KYB Draft Recovery](examples/kyb-draft-recovery.md)

@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { readFileSync } from "node:fs";
 import {
   blocksSensitiveMutation,
   chunkRecoveryDecision,
@@ -13,6 +14,14 @@ import {
   staticHostKeepsOldChunks,
   updateAvailable
 } from "../src/examples/simpleVersionSkewPatterns";
+
+const docsWithReleaseStatusExamples = [
+  "README.md",
+  "docs/guides/retest-runbook.md",
+  "docs/guides/build-version-skew.md",
+  "docs/examples/payment-safe-refresh.md",
+  "docs/patterns/release-identity.md"
+].map((path) => readFileSync(path, "utf8")).join("\n");
 
 test("simple version skew patterns stay copy-pasteable", () => {
   expect(simplePatternCatalog.map((pattern) => pattern.stepTitle)).toEqual([
@@ -67,4 +76,11 @@ test("simple version skew patterns stay copy-pasteable", () => {
 
   expect(staticHostKeepsOldChunks(true, true)).toBe(true);
   expect(staticHostKeepsOldChunks(true, false)).toBe(false);
+
+  expect(docsWithReleaseStatusExamples).toContain("bundle/session/latest/status build stamps");
+  expect(docsWithReleaseStatusExamples).toContain("Session dev-local` with `in sync` status");
+  expect(docsWithReleaseStatusExamples).toContain("Bundle dev-local / Session release-b / Latest release-b / session recovered");
+  expect(docsWithReleaseStatusExamples).toContain("Keep `Update policy` separate from `Status`");
+  expect(docsWithReleaseStatusExamples).not.toContain("bundle/session/latest build stamps");
+  expect(docsWithReleaseStatusExamples).not.toMatch(/Bundle dev-local \/ Session release-b \/ Latest release-b[`.\n]/);
 });

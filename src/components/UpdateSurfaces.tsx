@@ -25,6 +25,15 @@ function activeRouterMode(): RouterMode {
   return stored === "tanstack-router" ? "tanstack-router" : "react-router";
 }
 
+function getReleaseStatus(state: ReturnType<typeof getVersionState>, bundle: ReturnType<typeof getBundledReleaseIdentity>) {
+  const sessionMatchesBundle = state.current.releaseId === bundle.releaseId;
+  const sessionMatchesLatest = state.current.releaseId === state.latest.releaseId;
+  const bundleMatchesLatest = bundle.releaseId === state.latest.releaseId;
+  const fullyCurrent = sessionMatchesBundle && sessionMatchesLatest && bundleMatchesLatest;
+  const status = fullyCurrent ? "in sync" : sessionMatchesLatest ? "session recovered" : `${state.updateSeverity} pending`;
+  return { fullyCurrent, status };
+}
+
 export function BuildVersionStamp({
   routerMode,
   label = "Bundle",
@@ -41,11 +50,7 @@ export function BuildVersionStamp({
   const bundleRelease = shortRelease(bundle.releaseId);
   const sessionRelease = shortRelease(state.current.releaseId);
   const latest = shortRelease(state.latest.releaseId);
-  const sessionMatchesBundle = state.current.releaseId === bundle.releaseId;
-  const sessionMatchesLatest = state.current.releaseId === state.latest.releaseId;
-  const bundleMatchesLatest = bundle.releaseId === state.latest.releaseId;
-  const fullyCurrent = sessionMatchesBundle && sessionMatchesLatest && bundleMatchesLatest;
-  const status = fullyCurrent ? "in sync" : sessionMatchesLatest ? "session recovered" : `${state.updateSeverity} pending`;
+  const { fullyCurrent, status } = getReleaseStatus(state, bundle);
   const title = [
     `Bundle: ${bundle.releaseId}`,
     `Session: ${state.current.releaseId}`,
@@ -67,7 +72,7 @@ export function BuildVersionStamp({
       <span>
         {label} {bundleRelease} / Session {sessionRelease} / Latest {latest}
       </span>
-      {!compact ? <small>{status}</small> : null}
+      <small className={compact ? "badge-build-status-compact" : undefined}>{status}</small>
     </span>
   );
 }
@@ -295,6 +300,7 @@ export function VersionDebugPanel({ routerMode }: { routerMode: RouterMode }) {
   useEffect(() => subscribeVersionState(() => setTick((value) => value + 1)), []);
   const state = getVersionState(routerMode);
   const bundle = getBundledReleaseIdentity(routerMode);
+  const { status } = getReleaseStatus(state, bundle);
   if (!isDebugMode()) {
     return null;
   }
@@ -318,8 +324,12 @@ export function VersionDebugPanel({ routerMode }: { routerMode: RouterMode }) {
           <dd>{state.latest.releaseId}</dd>
         </div>
         <div>
-          <dt>Severity</dt>
+          <dt>Update policy</dt>
           <dd>{state.updateSeverity}</dd>
+        </div>
+        <div>
+          <dt>Status</dt>
+          <dd>{status}</dd>
         </div>
         <div>
           <dt>Mode</dt>

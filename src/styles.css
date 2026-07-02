@@ -170,7 +170,13 @@ a {
 }
 
 .topbar-left .badge-build {
-  max-width: min(100%, 430px);
+  max-width: min(100%, 500px);
+}
+
+.topbar-left .badge-build > span {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
 }
 
 .badge-build > span {
@@ -740,6 +746,7 @@ a {
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0;
+  white-space: nowrap;
 }
 
 .status-chip {

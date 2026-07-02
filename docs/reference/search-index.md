@@ -69,6 +69,10 @@ This page intentionally repeats common search terms so people can find the right
 - reset confirmation strip
 - learning proof command
 - release identity in sync
+- release debug status
+- update policy vs status
+- session recovered status
+- build status visible
 - update policy decisions
 - pure update policy proof
 

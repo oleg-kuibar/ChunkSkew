@@ -226,7 +226,7 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
               <strong>{versionState.latest.releaseId}</strong>
             </div>
             <div className="summary-tile">
-              <span>Severity</span>
+              <span>Update policy</span>
               <strong>{versionState.updateSeverity}</strong>
             </div>
             <div className="summary-tile">

@@ -6,7 +6,7 @@ import { guidedScenarioSetupLabel, simplePatternCatalog, type SimplePatternSlug 
 import type { RouterMode } from "../shared/types";
 
 const simpleAnchor = "simpleVersionSkewPatterns.ts";
-const testAnchor = "simple-patterns.spec.ts + update-policy.spec.ts";
+const testAnchor = "simple-patterns.spec.ts + docs vocabulary + update-policy.spec.ts";
 const proofCommand = "pnpm test:learning:windows";
 
 const exampleIcons: Record<SimplePatternSlug, LucideIcon> = {

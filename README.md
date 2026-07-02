@@ -31,7 +31,7 @@ pnpm test:learning:windows
 
 ## What The Repo Demonstrates
 
-- Runtime release identity through `import.meta.env.VITE_RELEASE_ID`, generated `/version.json`, and visible bundle/session/latest build stamps.
+- Runtime release identity through `import.meta.env.VITE_RELEASE_ID`, generated `/version.json`, and visible bundle/session/latest/status build stamps.
 - Polling, focus/reconnect checks, route-transition checks, and SSE/WebSocket release awareness.
 - Chunk error classification for Vite preload failures, dynamic import failures, `ChunkLoadError`, and missing CSS/JS assets.
 - Safe refresh behavior that preserves autosaved workflow state and idempotency keys.
@@ -68,7 +68,7 @@ pnpm dev
 
 Open Lab controls at `/debug/version-skew?debug=1` and click **Reset simulation state**.
 
-After reload, the page shows a reset confirmation strip and the build stamp should return to `Session dev-local` unless another scenario is prepared.
+After reload, the page shows a reset confirmation strip and the build stamp should return to `Session dev-local` with `in sync` status unless another scenario is prepared.
 
 Guided scenario cards reset automatically before they prepare a scenario, so a manual reset is only needed before custom/manual replay.
 

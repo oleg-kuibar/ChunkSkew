@@ -18,7 +18,7 @@ http://localhost:5173/debug/version-skew?debug=1&router=react
 
 Click **Reset simulation state** on the Lab controls page when replaying a manual path or clearing the whole lab.
 
-After the reload, the Lab controls page shows a reset confirmation strip; the build stamp should read `Session dev-local` again unless you prepare another scenario.
+After the reload, the Lab controls page shows a reset confirmation strip; the build stamp should read `Session dev-local` with `in sync` status again unless you prepare another scenario.
 
 Guided scenario cards reset automatically before they prepare a scenario, so you do not need a separate reset click before **Prepare payment recovery**, **Prepare missing chunk fallback**, **Prepare KYB draft review**, or **Prepare API contract block**.
 
@@ -73,7 +73,7 @@ Manual path:
 7. Confirm the required update gate appears.
 8. Click **Refresh safely**.
 9. Confirm the payment flow resumes and the memo is restored.
-10. Confirm the build stamp shows bundle, session, and latest separately, for example `Bundle dev-local / Session release-b / Latest release-b`.
+10. Confirm the build stamp shows bundle, session, latest, and status separately, for example `Bundle dev-local / Session release-b / Latest release-b / session recovered`.
 
 ## Reproduce API Contract Blocking
 

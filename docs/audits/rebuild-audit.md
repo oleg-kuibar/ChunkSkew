@@ -127,6 +127,9 @@ Change made in the next pass:
 - Added `Reset included` to each guided scenario card so the setup contract is visible at the click target.
 - Named the scenario lifecycle as `prepareGuidedScenario` and `finishGuidedScenario` so the Lab controls page no longer hides reset/setup/navigation inside one inline mutation block.
 - Renamed release summary labels from ambiguous `current release` wording to `loaded bundle`, `session release`, and `latest release`.
+- Kept the compact build stamp's status visible so `Bundle`, `Session`, and `Latest` also say whether the app is `in sync`, `session recovered`, or has an update pending.
+- Widened the desktop topbar build stamp and covered it with a layout assertion so the latest release does not disappear behind ellipsis when the debug rail is open.
+- Added the same status wording to the release debug rail and separated `Update policy` from `Status` so badges, diagnostics, and advanced diagnostics answer "did recovery work?" the same way.
 - Moved manual mode controls, release state, preload status, telemetry, and audit trail into a collapsible advanced diagnostics section.
 - Moved the manual `Check version` action into advanced diagnostics so the primary lab page keeps only scenario setup and full reset visible.
 - Moved the release debug panel into a desktop right rail so it stays visible without covering reset or guided scenario controls.
@@ -141,9 +144,9 @@ Change made in the next pass:
 - Marked start-page scenarios inside the same catalog so the homepage no longer hard-codes which robust examples are featured.
 - Named the primary guided scenario in the catalog so the start-page payment CTA no longer depends on the first featured item.
 
-Remaining rebuild target:
+Current guardrail:
 
-- Keep the current diagnostics table for verification, but keep it opt-in behind the guided scenario path.
+- Keep the diagnostics table for verification, but keep it opt-in behind the guided scenario path.
 
 ### 5. Examples need a "minimal path" variant
 
@@ -167,6 +170,7 @@ Change made in this pass:
 - Added a direct Playwright check for the tiny source examples so they stay runnable, not only rendered as text.
 - Added shared simple-source and `tests/simple-patterns.spec.ts` proof anchors on the simple examples page without repeating them on every card.
 - Added `tests/update-policy.spec.ts` to the visible `/examples` proof anchors now that the learning command covers pure policy decisions.
+- Added `docs vocabulary` to the visible `/examples` proof anchors now that the simple-pattern proof guards release-status docs wording.
 - Retargeted the required-update simple card to `src/shared/updatePolicyEngine.ts` so the visible robust source matches the pure policy proof while the code block stays the tiny `required || !apiContractCompatible` rule.
 - Added a visible `Minimal rule` label above each simple card's code block so the page distinguishes tiny copy-paste rules from robust source anchors.
 - Shortened visible proof filenames on `/examples` so the first viewport stays readable while docs still link the full source paths.
@@ -192,6 +196,7 @@ Change made in this pass:
 - Added a TypeScript catalog contract so mistyped simple-example guided scenario ids fail at compile time before they reach the UI.
 - Added a start-page scenario catalog proof so the first robust examples stay intentionally ordered with the rest of the learning path.
 - Added a primary guided scenario proof so the recommended payment recovery walkthrough is explicit in source and tests.
+- Added release-status doc assertions to the simple-pattern proof so stale `Bundle / Session / Latest` examples cannot lose the visible status wording.
 - Added `Open Step`, `Solve path`, and simple-pattern-catalog terms to the Search Index so the new UI vocabulary is discoverable.
 - Reworked the Pattern Index into a minimal-rule to robust-proof map so each pattern has a clear tiny example and realistic workflow proof.
 - Linked `Router Lazy Boundaries` directly from the ordered chunk-recovery row so router-specific recovery stays discoverable instead of hiding behind the shared recovery controller.
@@ -233,6 +238,6 @@ This matrix is the completion check for the rebuild goal. A row is only strong w
 | Run one scenario without source reading. | `/examples?debug=1` cards use named setup buttons; Lab controls cards show reset, mode, and starting step before navigation. | `tests/version-skew.spec.ts` simple examples, guided scenario, and debug panel assertions. |
 | Minimal plus realistic examples for each pattern. | Pattern Index maps minimal rules to robust proofs; `/examples` links tiny source and policy-engine decisions to guided workflow proofs. | `tests/simple-patterns.spec.ts`, `tests/update-policy.spec.ts`, and `tests/version-skew.spec.ts` learning assertions. |
 | Debug controls stay out of the primary path. | Manual modes, release state, preload table, telemetry, and audit table live under **Advanced diagnostics**. | `Version debug panel works` expects diagnostics hidden until opened. |
-| Reset/retest behavior is obvious. | Reset reloads with a success strip and build stamp returns to `Session dev-local`; guided setups expose **Return to example** after visiting Lab controls. | `pnpm test:learning:windows` covers reset confirmation and return navigation. |
-| Vocabulary matches across UI, docs, and tests. | Root README, Knowledge Map, Pattern Index, Example Index, Search Index, and Production Checklist use the same **Solve in this order**, **Minimal rule**, **Robust source**, named setup buttons, **Lab controls**, and **Return to example** path. | `pnpm test:learning:windows` plus docs review. |
+| Reset/retest behavior is obvious. | Reset reloads with a success strip and build stamp returns to `Session dev-local` with `in sync` status; guided setups expose **Return to example** after visiting Lab controls. | `pnpm test:learning:windows` covers reset confirmation and return navigation. |
+| Vocabulary matches across UI, docs, and tests. | Root README, Knowledge Map, Pattern Index, Example Index, Search Index, Production Checklist, and Release Identity note use the same **Solve in this order**, **Minimal rule**, **Robust source**, named setup buttons, **Lab controls**, visible build status, **Update policy**, **Status**, and **Return to example** path. | `pnpm test:learning:windows`, including `tests/simple-patterns.spec.ts` docs-vocabulary assertions. |
 | Safety guarantees still hold. | Payment safe refresh, required update gates, idempotency replay, chunk fallback, draft restore, asset retention, router recovery, and telemetry stay covered by e2e tests. | Full `tests/version-skew.spec.ts` passed 50 tests with `pnpm test:e2e:windows test tests/version-skew.spec.ts --project=chromium --reporter=list`. |
