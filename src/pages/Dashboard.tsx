@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   WalletCards
 } from "lucide-react";
+import { simplePatternCatalog } from "../examples/simpleVersionSkewPatterns";
 import { debugRouteHref } from "../shared/routerLinks";
 import type { RouterMode } from "../shared/types";
 
@@ -64,33 +65,6 @@ const scenarioLinks = [
     body: "Reset state, switch deployment modes, inspect release identity, and review preload status.",
     href: "/debug/version-skew",
     icon: ShieldCheck
-  }
-];
-
-const patternSteps = [
-  {
-    title: "Detect release skew",
-    body: "Compare bundle, session, and latest release before making update decisions."
-  },
-  {
-    title: "Recover lazy chunks",
-    body: "Classify React/TanStack lazy failures, reload once when safe, then stop the loop."
-  },
-  {
-    title: "Preserve work",
-    body: "Save drafts and idempotency keys before refresh or route recovery."
-  },
-  {
-    title: "Gate risky actions",
-    body: "Block new sensitive mutations only for required updates or incompatible APIs."
-  },
-  {
-    title: "Prove no duplicates",
-    body: "Retry with the same idempotency key and return the previous result."
-  },
-  {
-    title: "Host for compatibility",
-    body: "Retain old chunks or pin deployments so recovery is a backup path."
   }
 ];
 
@@ -176,11 +150,15 @@ export function DashboardPage({ routerMode }: { routerMode: RouterMode }) {
             <p>Use the simple examples as the checklist, then open the robust examples to see each rule under workflow pressure.</p>
           </div>
         </header>
-        {patternSteps.map((pattern, index) => (
-          <article className="learning-card" key={pattern.title}>
+        {simplePatternCatalog.map((pattern, index) => (
+          <article className="learning-card" key={pattern.stepTitle}>
             <span className="status-chip">Pattern {index + 1}</span>
-            <strong>{pattern.title}</strong>
-            <p>{pattern.body}</p>
+            <strong>{pattern.stepTitle}</strong>
+            <p>{pattern.summary}</p>
+            <a className="learning-step-link" href={debugRouteHref(`/examples#simple-${pattern.slug}`, routerMode)} aria-label={`Open ${pattern.stepTitle} simple example`}>
+              Open Step {index + 1}
+              <ArrowRight aria-hidden="true" />
+            </a>
           </article>
         ))}
       </section>

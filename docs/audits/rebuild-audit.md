@@ -128,6 +128,7 @@ Change made in the next pass:
 - Centralized debug/router/scenario URL generation in `src/shared/routerLinks.ts` so start-page, examples-page, guided-banner, and reset links cannot drift.
 - Updated the retest runbook to use the guided banner's `Return to example` path instead of telling testers to manually reconstruct the route.
 - Renamed start-page and simple-example entry links to `Open guided setup` so they do not imply that setup already ran before the lab card is clicked.
+- Added a reset confirmation strip after **Reset simulation state** so manual retests visibly prove that drafts, release overrides, reload flags, and guided scenario state were cleared while debug/router choice stayed on.
 
 Remaining rebuild target:
 
@@ -145,7 +146,7 @@ The realistic fintech examples are valuable, but they are not always minimal. A 
 
 Change made in this pass:
 
-- Added a dedicated `/examples` route with tiny cards for release identity, chunk recovery, safe refresh, idempotent mutation, required update gates, and asset strategy.
+- Added a dedicated `/examples` route with tiny cards for release identity, chunk recovery, safe refresh, required update gates, idempotent mutation, and asset strategy.
 - Kept each card linked to the realistic fintech/debug workflow that proves the same rule under pressure.
 - Cards that need skew setup now prepare the matching guided scenario instead of jumping directly into an unprepared workflow.
 - Each card now names the implementation file to study after the minimal rule.
@@ -160,6 +161,13 @@ Change made in this pass:
 - Added `pnpm test:learning:windows` as the one-command proof for the tiny source examples plus the rendered learning page.
 - Aligned the root README, knowledge map, and examples index with the guided setup flow so new readers see auto-reset, diagnostics, and `Return to example` before manual reset instructions.
 - Replaced the start page's static pattern-vocabulary chips with an ordered `Solve in this order` checklist that mirrors the simple examples path.
+- Linked each `Solve in this order` step directly to the matching simple example card so the ordered checklist no longer depends on manual scanning.
+- Changed those checklist links from generic text to visible step numbers so each click target reflects the ordered path.
+- Added each solve-order label to the matching simple example card so landing on `Release identity` still shows it came from `Detect release skew`.
+- Aligned `/examples` step order with the Pattern Index: required-update gates come before idempotency replay.
+- Aligned `src/examples/simpleVersionSkewPatterns.ts` and its test order with the same six-step path so source study matches the UI.
+- Moved the six-step slug, label, summary, source, and robust-path metadata into one tiny catalog consumed by both the start page and `/examples`.
+- Added `Open Step`, `Solve path`, and simple-pattern-catalog terms to the Search Index so the new UI vocabulary is discoverable.
 - Reworked the Pattern Index into a minimal-rule to robust-proof map so each pattern has a clear tiny example and realistic workflow proof.
 - Linked `Router Lazy Boundaries` directly from the ordered chunk-recovery row so router-specific recovery stays discoverable instead of hiding behind the shared recovery controller.
 - Made the visible chunk-recovery copy name React/TanStack so router comparison is explicit on the start page and simple examples page.
@@ -189,3 +197,17 @@ Future rebuild target:
 - Debug controls are separated from primary learning flow.
 - The docs, UI labels, and tests use the same vocabulary.
 - E2E tests still prove the safety guarantees.
+
+## Current Evidence Matrix
+
+This matrix is the completion check for the rebuild goal. A row is only strong when UI, docs, and tests point at the same learner path.
+
+| Done criterion | Current evidence | Verification |
+| --- | --- | --- |
+| Explain build version skew from the first screen. | Start page has the four-step mental model plus **Solve in this order** links into matching simple examples. | `tests/version-skew.spec.ts` baseline and ordered deep-link assertions. |
+| Run one scenario without source reading. | `/examples?debug=1` cards open guided setup; Lab controls cards show reset, mode, and starting step before navigation. | `tests/version-skew.spec.ts` simple examples, guided scenario, and debug panel assertions. |
+| Minimal plus realistic examples for each pattern. | Pattern Index maps minimal rules to robust proofs; `/examples` links tiny source to guided workflow proofs. | `tests/simple-patterns.spec.ts` and `tests/version-skew.spec.ts` learning assertions. |
+| Debug controls stay out of the primary path. | Manual modes, release state, preload table, telemetry, and audit table live under **Advanced diagnostics**. | `Version debug panel works` expects diagnostics hidden until opened. |
+| Reset/retest behavior is obvious. | Reset reloads with a success strip and build stamp returns to `Session dev-local`. | `Reset simulation state clears recovered release overrides`. |
+| Vocabulary matches across UI, docs, and tests. | Root README, Knowledge Map, Pattern Index, Example Index, Search Index, and Production Checklist use the same **Solve in this order**, **Open guided setup**, **Lab controls**, and **Return to example** path. | `pnpm test:learning:windows` plus docs review. |
+| Safety guarantees still hold. | Payment safe refresh, required update gates, idempotency replay, chunk fallback, draft restore, and asset retention stay covered by e2e tests. | Full `tests/version-skew.spec.ts` remains the broad safety suite. |

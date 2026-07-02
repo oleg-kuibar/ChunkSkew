@@ -4,11 +4,21 @@ import {
   chunkRecoveryDecision,
   replayIdempotentMutation,
   safeRefreshReady,
+  simplePatternCatalog,
   staticHostKeepsOldChunks,
   updateAvailable
 } from "../src/examples/simpleVersionSkewPatterns";
 
 test("simple version skew patterns stay copy-pasteable", () => {
+  expect(simplePatternCatalog.map((pattern) => pattern.stepTitle)).toEqual([
+    "Detect release skew",
+    "Recover lazy chunks",
+    "Preserve work",
+    "Gate risky actions",
+    "Prove no duplicates",
+    "Host for compatibility"
+  ]);
+
   expect(updateAvailable({ releaseId: "release-a" }, { releaseId: "release-b" })).toBe(true);
   expect(updateAvailable({ releaseId: "release-b" }, { releaseId: "release-b" })).toBe(false);
 
@@ -19,13 +29,13 @@ test("simple version skew patterns stay copy-pasteable", () => {
   expect(safeRefreshReady({ saved: true, idempotencyKeyPresent: true })).toBe(true);
   expect(safeRefreshReady({ saved: true, idempotencyKeyPresent: false })).toBe(false);
 
-  const seen = new Map<string, string>();
-  expect(replayIdempotentMutation(seen, "payment:1", () => "created")).toBe("created");
-  expect(replayIdempotentMutation(seen, "payment:1", () => "duplicate")).toBe("created");
-
   expect(blocksSensitiveMutation(true, true)).toBe(true);
   expect(blocksSensitiveMutation(false, false)).toBe(true);
   expect(blocksSensitiveMutation(false, true)).toBe(false);
+
+  const seen = new Map<string, string>();
+  expect(replayIdempotentMutation(seen, "payment:1", () => "created")).toBe("created");
+  expect(replayIdempotentMutation(seen, "payment:1", () => "duplicate")).toBe("created");
 
   expect(staticHostKeepsOldChunks(true, true)).toBe(true);
   expect(staticHostKeepsOldChunks(true, false)).toBe(false);

@@ -123,6 +123,19 @@ test("1. Baseline app loads", async ({ page }) => {
   await expect(page.getByText("Pattern 1")).toBeVisible();
   await expect(page.getByText("Preserve work", { exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "Study simple examples" })).toHaveAttribute("href", "/examples?debug=1&router=react");
+  await expect(page.getByRole("link", { name: "Open Detect release skew simple example" })).toHaveAttribute(
+    "href",
+    "/examples?debug=1&router=react#simple-release-identity"
+  );
+  await expect(page.getByRole("link", { name: "Open Host for compatibility simple example" })).toContainText("Open Step 6");
+});
+
+test("1a. Ordered pattern steps deep-link to matching simple examples", async ({ page }) => {
+  await prepare(page);
+  await open(page);
+  await page.getByRole("link", { name: "Open Host for compatibility simple example" }).click();
+  await expect(page).toHaveURL(/examples\?debug=1&router=react#simple-asset-strategy/);
+  await expect(page.getByTestId("simple-example-asset-strategy")).toBeInViewport();
 });
 
 test("1b. Simple examples page teaches core patterns", async ({ page }) => {
@@ -138,6 +151,10 @@ test("1b. Simple examples page teaches core patterns", async ({ page }) => {
   await expect(page.getByTestId("simple-examples")).toContainText("Idempotent mutation");
   await expect(page.getByTestId("simple-examples")).toContainText("Step 1");
   await expect(page.getByTestId("simple-examples")).toContainText("Step 6");
+  await expect(page.getByTestId("simple-example-release-identity")).toContainText("Solve path: Detect release skew");
+  await expect(page.getByTestId("simple-example-required-update-gate")).toContainText("Step 4");
+  await expect(page.getByTestId("simple-example-idempotent-mutation")).toContainText("Step 5");
+  await expect(page.getByTestId("simple-example-asset-strategy")).toContainText("Solve path: Host for compatibility");
   await expect(page.getByTestId("simple-examples")).toContainText("session.releaseId !== latest.releaseId");
   await expect(page.getByTestId("simple-proof-anchors")).toContainText("simpleVersionSkewPatterns.ts");
   await expect(page.getByTestId("simple-proof-anchors")).toContainText("simple-patterns.spec.ts");
@@ -318,7 +335,10 @@ test("3b. Reset simulation state clears recovered release overrides", async ({ p
   });
   await page.getByRole("button", { name: "Reset simulation state" }).click();
   await page.waitForLoadState("domcontentloaded");
+  await expect(page).toHaveURL(/reset=1/);
   await expect(page.getByRole("heading", { name: "Lab controls" })).toBeVisible();
+  await expect(page.getByTestId("reset-confirmation")).toContainText("Simulation state reset");
+  await expect(page.getByTestId("reset-confirmation")).toContainText("Debug mode and router choice stayed on");
   await expect(page.getByTestId("build-version-stamp").first()).toContainText("Bundle dev-local");
   await expect(page.getByTestId("build-version-stamp").first()).toContainText("Session dev-local");
   await expect(page.getByTestId("build-version-stamp").first()).not.toContainText("Session release-b");

@@ -12,7 +12,7 @@ Use it in three modes:
 
 | Step | Where | What to prove |
 | --- | --- | --- |
-| 1 | `/?debug=1` | The four-step mental model and ordered pattern checklist are understandable before source reading. |
+| 1 | `/?debug=1` | The four-step mental model and ordered pattern checklist are understandable before source reading, with direct links into matching simple examples. |
 | 2 | `/examples?debug=1` | Each minimal rule has tiny source, a test anchor, a robust path, and guided setup. |
 | 3 | **Open guided setup** | The app resets state, sets the lab mode, and opens the prepared workflow. |
 | 4 | **Lab controls** and **Return to example** | Diagnostics stay opt-in while the prepared workflow remains recoverable. |

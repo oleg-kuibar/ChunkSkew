@@ -5,12 +5,13 @@ export function routerQueryValue(routerMode: RouterMode) {
 }
 
 export function debugRouteHref(path: string, routerMode: RouterMode, scenarioId?: string) {
-  const [pathname, search = ""] = path.split("?", 2);
+  const [pathAndSearch, hash = ""] = path.split("#", 2);
+  const [pathname, search = ""] = pathAndSearch.split("?", 2);
   const params = new URLSearchParams(search);
   params.set("debug", "1");
   params.set("router", routerQueryValue(routerMode));
   if (scenarioId) {
     params.set("scenario", scenarioId);
   }
-  return `${pathname}?${params.toString()}`;
+  return `${pathname}?${params.toString()}${hash ? `#${hash}` : ""}`;
 }

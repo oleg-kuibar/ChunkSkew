@@ -11,7 +11,7 @@ This repo uses fake deterministic fintech data only. It does not import from, in
 Fast path for learning and proving the pattern:
 
 1. Open `/?debug=1` and read the four-step mental model plus **Solve in this order**.
-2. Open `/examples?debug=1` for the minimal rules, shared `Simple source`, and `Verified by` proof anchors.
+2. Use the **Open Step** links or open `/examples?debug=1` for minimal rules, shared `Simple source`, and `Verified by` proof anchors.
 3. Use each card's `Study` anchor for the robust implementation, then click **Open guided setup** to run the workflow proof.
 4. Use **Lab controls** for diagnostics, then **Return to example** in the guided banner to continue the prepared workflow.
 5. Prove the learning path with:
@@ -67,6 +67,8 @@ pnpm dev
 ## Reset State To Retest
 
 Open Lab controls at `/debug/version-skew?debug=1` and click **Reset simulation state**.
+
+After reload, the page shows a reset confirmation strip and the build stamp should return to `Session dev-local` unless another scenario is prepared.
 
 Guided scenario cards reset automatically before they prepare a scenario, so a manual reset is only needed before custom/manual replay.
 

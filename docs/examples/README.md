@@ -2,7 +2,7 @@
 
 Examples connect the reusable patterns to product workflows.
 
-- Simple examples workbench: open `/examples?debug=1` for the smallest release identity, chunk recovery, safe refresh, idempotency, update gate, and asset strategy examples.
+- Simple examples workbench: open `/examples?debug=1` for the smallest release identity, chunk recovery, safe refresh, update gate, idempotency, and asset strategy examples.
 - Guided cards reset automatically, open the prepared workflow, and expose **Return to example** after you visit Lab controls.
 - Simple source: [`../../src/examples/simpleVersionSkewPatterns.ts`](../../src/examples/simpleVersionSkewPatterns.ts) keeps the copy-paste patterns runnable and covered by `tests/simple-patterns.spec.ts`.
 - [Payment Safe Refresh](payment-safe-refresh.md): required update, autosaved payment, idempotency key, safe refresh.

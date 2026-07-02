@@ -1,80 +1,33 @@
-import { Braces, FileWarning, GitBranch, KeyRound, RefreshCcw, ShieldCheck } from "lucide-react";
+import { Braces, FileWarning, GitBranch, KeyRound, RefreshCcw, ShieldCheck, type LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getBundledReleaseIdentity } from "../shared/releaseIdentity";
 import { debugRouteHref } from "../shared/routerLinks";
 import { getVersionState, subscribeVersionState } from "../shared/versionCheckClient";
-import { simplePatternSnippets } from "../examples/simpleVersionSkewPatterns";
+import { simplePatternCatalog, type SimplePatternSlug } from "../examples/simpleVersionSkewPatterns";
 import type { RouterMode } from "../shared/types";
 
 const simpleAnchor = "simpleVersionSkewPatterns.ts";
 const testAnchor = "simple-patterns.spec.ts";
 const proofCommand = "pnpm test:learning:windows";
 
-const examples = [
-  {
-    title: "Release identity",
-    icon: GitBranch,
-    rule: "Always compare the loaded bundle, the session release, and the latest release as separate facts.",
-    hook: "Badges, request headers, and update decisions.",
-    code: simplePatternSnippets.releaseIdentity,
-    anchor: "src/shared/releaseIdentity.ts",
-    href: "/debug/version-skew"
-  },
-  {
-    title: "Chunk recovery",
-    icon: FileWarning,
-    rule: "Classify lazy import failures, reload once when safe, then stop and show a controlled fallback.",
-    hook: "React/TanStack route imports, modal imports, and preload errors.",
-    code: simplePatternSnippets.chunkRecovery,
-    anchor: "src/shared/chunkRecoveryController.ts",
-    href: "/debug/version-skew",
-    scenarioId: "missing-chunk"
-  },
-  {
-    title: "Safe refresh",
-    icon: RefreshCcw,
-    rule: "Save draft and idempotency context before refreshing an old tab onto the latest release.",
-    hook: "Required gates, sticky banners, and chunk fallbacks.",
-    code: simplePatternSnippets.safeRefresh,
-    anchor: "src/shared/versionCheckClient.ts",
-    href: "/debug/version-skew",
-    scenarioId: "payment-safe-refresh"
-  },
-  {
-    title: "Idempotent mutation",
-    icon: KeyRound,
-    rule: "Retry the same sensitive action with the same key and return the previous result.",
-    hook: "Payment submit, approvals, card controls, KYB, vendors, roles, and API keys.",
-    code: simplePatternSnippets.idempotentMutation,
-    anchor: "src/shared/idempotencyKeyStore.ts",
-    href: "/debug/version-skew",
-    scenarioId: "payment-safe-refresh"
-  },
-  {
-    title: "Required update gate",
-    icon: ShieldCheck,
-    rule: "Block new risky mutations only when the update is required or the API contract is incompatible.",
-    hook: "Sensitive mutation guards without page crashes or surprise refreshes.",
-    code: simplePatternSnippets.requiredUpdateGate,
-    anchor: "src/shared/sensitiveMutationGuard.ts",
-    href: "/debug/version-skew",
-    scenarioId: "api-contract"
-  },
-  {
-    title: "Asset strategy",
-    icon: Braces,
-    rule: "Retain old chunks or pin clients to deployments so recovery is the backup, not the normal path.",
-    hook: "CDN/static hosting with a defined compatibility window.",
-    code: simplePatternSnippets.assetStrategy,
-    anchor: "src/shared/assetRetentionSimulator.ts",
-    href: "/debug/version-skew",
-    scenarioId: "asset-strategy"
-  }
-];
+const exampleIcons: Record<SimplePatternSlug, LucideIcon> = {
+  "release-identity": GitBranch,
+  "chunk-recovery": FileWarning,
+  "safe-refresh": RefreshCcw,
+  "required-update-gate": ShieldCheck,
+  "idempotent-mutation": KeyRound,
+  "asset-strategy": Braces
+};
 
 export function SimpleExamplesPage({ routerMode }: { routerMode: RouterMode }) {
   const [, setTick] = useState(0);
   useEffect(() => subscribeVersionState(() => setTick((value) => value + 1)), []);
+  useEffect(() => {
+    const id = window.location.hash.slice(1);
+    if (id) {
+      window.requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ block: "center" }));
+    }
+  }, []);
   const bundle = getBundledReleaseIdentity(routerMode);
   const versionState = getVersionState(routerMode);
 
@@ -123,14 +76,15 @@ export function SimpleExamplesPage({ routerMode }: { routerMode: RouterMode }) {
       </section>
 
       <section className="example-pattern-grid" data-testid="simple-examples">
-        {examples.map((example, index) => {
-          const Icon = example.icon;
+        {simplePatternCatalog.map((example, index) => {
+          const Icon = exampleIcons[example.slug];
           return (
-            <article className="example-pattern-card" key={example.title}>
+            <article className="example-pattern-card" data-testid={`simple-example-${example.slug}`} id={`simple-${example.slug}`} key={example.title}>
               <div className="example-card-top">
                 <Icon aria-hidden="true" />
                 <span className="status-chip">Step {index + 1}</span>
               </div>
+              <span>Solve path: {example.stepTitle}</span>
               <strong>{example.title}</strong>
               <p>{example.rule}</p>
               <pre className="example-code">

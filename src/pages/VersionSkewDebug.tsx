@@ -154,7 +154,7 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
       }),
     onSuccess() {
       resetBrowserSimulationState(routerMode);
-      window.location.assign(debugRouteHref("/debug/version-skew", routerMode));
+      window.location.assign(debugRouteHref("/debug/version-skew?reset=1", routerMode));
     }
   });
   const scenarioMutation = useMutation({
@@ -168,8 +168,9 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
   const versionState = getVersionState(routerMode);
   const bundle = getBundledReleaseIdentity(routerMode);
   const statuses = readPreloadStatuses();
-  const suggestedScenarioId =
-    typeof window === "undefined" ? undefined : new URLSearchParams(window.location.search).get("scenario") ?? undefined;
+  const searchParams = typeof window === "undefined" ? new URLSearchParams() : new URLSearchParams(window.location.search);
+  const resetConfirmed = searchParams.get("reset") === "1";
+  const suggestedScenarioId = searchParams.get("scenario") ?? undefined;
   const visibleScenarios = suggestedScenarioId
     ? [...guidedScenarios].sort((a, b) => Number(b.id === suggestedScenarioId) - Number(a.id === suggestedScenarioId))
     : guidedScenarios;
@@ -192,6 +193,13 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
           {resetMutation.isPending ? "Resetting..." : "Reset simulation state"}
         </button>
       </section>
+
+      {resetConfirmed ? (
+        <div className="notice notice-success" data-testid="reset-confirmation">
+          <CheckCircle2 aria-hidden="true" />
+          <span>Simulation state reset. Drafts, release overrides, reload flags, and guided scenario were cleared. Debug mode and router choice stayed on.</span>
+        </div>
+      ) : null}
 
       <section className="scenario-runner" data-testid="guided-scenarios">
         <header className="section-header">

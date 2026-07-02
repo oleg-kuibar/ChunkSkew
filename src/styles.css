@@ -869,13 +869,20 @@ textarea:focus {
   outline: none;
 }
 
-.learning-card-link > span {
+.learning-card-link > span,
+.learning-step-link {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   margin-top: 6px;
   color: var(--green);
   font-weight: 800;
+}
+
+.learning-step-link:hover,
+.learning-step-link:focus-visible {
+  color: #0f5e42;
+  outline: none;
 }
 
 .example-state-strip {

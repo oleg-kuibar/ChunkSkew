@@ -50,6 +50,9 @@ This page intentionally repeats common search terms so people can find the right
 - minimal version skew patterns
 - simple version skew source
 - solve in this order
+- open step links
+- solve path labels
+- simple pattern catalog
 
 ## Deployment Terms
 
