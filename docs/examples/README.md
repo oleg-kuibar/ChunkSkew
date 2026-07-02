@@ -26,4 +26,4 @@ http://localhost:5173/debug/version-skew?debug=1
 
 Use the topbar router switch to replay the current route in React Router or TanStack Router mode.
 
-Click **Reset simulation state** before replaying each example.
+Use guided setup cards for normal retests; they reset automatically before opening the prepared workflow. Click **Reset simulation state** only when replaying a manual path or clearing the whole lab.

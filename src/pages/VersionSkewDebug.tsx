@@ -29,7 +29,9 @@ const guidedScenarios = [
     id: "payment-safe-refresh",
     title: "Payment safe refresh",
     mode: "asset-retention" as SkewMode,
+    modeLabel: "Retained assets",
     href: "/payments/create/recipient",
+    startLabel: "Payment recipient step",
     icon: WalletCards,
     action: "Prepare payment recovery",
     outcome: "Autosave a payment, force a required update, then refresh safely without duplicate submit.",
@@ -40,7 +42,9 @@ const guidedScenarios = [
     id: "missing-chunk",
     title: "Missing chunk fallback",
     mode: "broken" as SkewMode,
+    modeLabel: "Missing chunks",
     href: "/payments/create/review",
+    startLabel: "Payment review step",
     icon: Bug,
     action: "Prepare missing chunk fallback",
     outcome: "Open a lazy review route while old chunks are unavailable and see controlled recovery.",
@@ -51,7 +55,9 @@ const guidedScenarios = [
     id: "kyb-draft",
     title: "KYB incompatible draft",
     mode: "asset-retention" as SkewMode,
+    modeLabel: "Retained assets",
     href: "/kyb/review",
+    startLabel: "KYB review step",
     icon: FileClock,
     action: "Prepare KYB draft review",
     outcome: "Seed an incompatible KYB draft and verify the app asks for review instead of submitting.",
@@ -63,7 +69,9 @@ const guidedScenarios = [
     id: "api-contract",
     title: "API contract blocking",
     mode: "api-contract-incompatible" as SkewMode,
+    modeLabel: "API contract block",
     href: "/payments/create/mfa",
+    startLabel: "Payment MFA step",
     icon: ShieldCheck,
     action: "Prepare API contract block",
     outcome: "Open a risky payment step with an incompatible API contract and watch mutation get paused.",
@@ -158,10 +166,6 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
           <p className="eyebrow">Internal simulation</p>
           <h1>Version skew controls</h1>
         </div>
-        <button className="button button-light" type="button" onClick={() => void checkForVersionUpdate(routerMode, "manual-debug")}>
-          <RefreshCcw aria-hidden="true" />
-          Check version
-        </button>
         <button
           className="button"
           type="button"
@@ -191,20 +195,11 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
                 <strong>{scenario.title}</strong>
                 {suggested ? <span className="status-chip">Recommended next</span> : null}
                 <p>{scenario.outcome}</p>
-                <div className="scenario-meta" aria-label={`${scenario.title} setup`}>
+                <div className="scenario-meta" aria-label={`${scenario.title} setup: reset included, mode ${scenario.mode}, opens ${scenario.href}`}>
                   <span>Reset included</span>
-                  <span>
-                    Mode <code>{scenario.mode}</code>
-                  </span>
-                  <span>
-                    Opens <code>{scenario.href}</code>
-                  </span>
+                  <span title={`Mode ${scenario.mode}`}>Lab mode {scenario.modeLabel}</span>
+                  <span title={`Opens ${scenario.href}`}>Starts {scenario.startLabel}</span>
                 </div>
-                <ol>
-                  {scenario.steps.map((step) => (
-                    <li key={step}>{step}</li>
-                  ))}
-                </ol>
                 <button className="button button-light" type="button" disabled={mutation.isPending || scenarioMutation.isPending} onClick={() => runGuidedScenario(scenario)}>
                   <Play aria-hidden="true" />
                   {scenarioMutation.isPending ? "Preparing..." : scenario.action}
@@ -266,6 +261,10 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
           </section>
 
           <section className="toolbar">
+            <button className="button button-light" type="button" onClick={() => void checkForVersionUpdate(routerMode, "manual-debug")}>
+              <RefreshCcw aria-hidden="true" />
+              Check version
+            </button>
             <button className="button button-secondary" type="button" onClick={() => seedIncompatibleKybDraft(routerMode)}>
               <AlertTriangle aria-hidden="true" />
               Seed incompatible KYB draft

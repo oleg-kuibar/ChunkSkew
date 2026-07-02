@@ -120,7 +120,7 @@ export function AppShell({
                 TanStack
               </a>
             </nav>
-            <BuildVersionStamp routerMode={routerMode} />
+            <BuildVersionStamp routerMode={routerMode} compact />
             <span className="badge badge-muted">
               <ShieldCheck aria-hidden="true" />
               Fake data only

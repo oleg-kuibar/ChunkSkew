@@ -6,8 +6,8 @@ import { getVersionState, subscribeVersionState } from "../shared/versionCheckCl
 import { simplePatternSnippets } from "../examples/simpleVersionSkewPatterns";
 import type { RouterMode } from "../shared/types";
 
-const simpleAnchor = "src/examples/simpleVersionSkewPatterns.ts";
-const testAnchor = "tests/simple-patterns.spec.ts";
+const simpleAnchor = "simpleVersionSkewPatterns.ts";
+const testAnchor = "simple-patterns.spec.ts";
 const proofCommand = "pnpm test:learning:windows";
 
 const examples = [
@@ -141,7 +141,7 @@ export function SimpleExamplesPage({ routerMode }: { routerMode: RouterMode }) {
               </div>
               <span>{example.hook}</span>
               <a className="button button-light" href={debugRouteHref(example.href, routerMode, example.scenarioId)}>
-                {example.scenarioId ? "Prepare robust example" : "Open robust example"}
+                {example.scenarioId ? "Open guided setup" : "Open lab controls"}
               </a>
             </article>
           );

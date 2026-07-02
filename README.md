@@ -12,7 +12,7 @@ Fast path for learning and proving the pattern:
 
 1. Open `/examples?debug=1`.
 2. Read the shared `Simple source` and `Verified by` proof anchors, then use each card's `Study` anchor for the robust implementation.
-3. Click **Prepare robust example** to jump into a guided recovery scenario; guided cards reset simulation state before setup.
+3. Click **Open guided setup** to jump into a guided recovery scenario; guided cards reset simulation state before setup.
 4. Use **Lab controls** for diagnostics, then **Return to example** in the guided banner to continue the prepared workflow.
 5. Prove the path with:
 

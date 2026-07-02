@@ -6,9 +6,9 @@ Screenshots were captured from the local app on July 1, 2026 with debug mode ena
 
 | Step | Screenshot | Health | Notes |
 | --- | --- | --- | --- |
-| 1 | `01-start.png` | Good | The first screen explains the deploy, lazy route, missing chunk, and safe recovery model before showing fintech examples. |
-| 2 | `02-simple-examples.png` | Good | The ordered simple examples expose the implementation anchors and proof command, though the right-side update toast competes with the release debug rail. |
-| 3 | `03-guided-lab-controls.png` | Good with density risk | Guided scenario cards make reset, mode, and target route visible; advanced diagnostics stay below the primary path. |
+| 1 | `01-start.png` | Good after follow-up | The first screen explains the deploy, lazy route, missing chunk, and safe recovery model before showing fintech examples, with all four checkpoints visible in the desktop viewport. |
+| 2 | `02-simple-examples.png` | Good after follow-up | The ordered simple examples expose the implementation anchors and proof command. A later CSS pass moved the update toast away from the release debug rail. |
+| 3 | `03-guided-lab-controls.png` | Good after follow-up | Guided scenario cards make reset, lab mode, starting step, and setup actions visible; advanced diagnostics stay below the primary path. |
 | 4 | `04-payment-required-update.png` | Good | The required-update payment state shows saved work, explicit `Bundle / Session / Latest` identity, and a safe refresh affordance. |
 | 5 | `05-kyb-incompatible-draft.png` | Good | The incompatible draft fallback explains why review is needed and avoids submitting migrated sensitive data automatically. |
 
@@ -22,7 +22,7 @@ Screenshots were captured from the local app on July 1, 2026 with debug mode ena
 
 - Captured issue: the update toast overlapped or visually competed with the right-side release debug panel in desktop screenshots.
 - Follow-up fix: `.debug-panel-open .update-toast` now offsets the toast away from the release debug panel, with a Playwright regression covering the desktop layout.
-- Debug surfaces still contain many labels, badges, and code-like values; the guided path helps, but the diagnostic layer remains dense.
+- Debug surfaces still contain many labels, badges, and code-like values; the guided path helps, manual diagnostics are now behind the advanced section, and the scenario grid uses wider tracks when the debug rail is visible.
 - Build/version labels are useful for retesting, but should remain compact so workflow content stays primary.
 
 ## Accessibility Risks

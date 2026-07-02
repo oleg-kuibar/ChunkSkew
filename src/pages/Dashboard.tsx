@@ -109,7 +109,7 @@ export function DashboardPage({ routerMode }: { routerMode: RouterMode }) {
         </div>
       </section>
 
-      <section className="learning-grid" aria-labelledby="mental-model-heading">
+      <section className="learning-grid mental-model-grid" aria-labelledby="mental-model-heading">
         <header className="section-header wide-panel">
           <div>
             <h2 id="mental-model-heading">The mental model</h2>
@@ -143,7 +143,7 @@ export function DashboardPage({ routerMode }: { routerMode: RouterMode }) {
               <strong>{scenario.title}</strong>
               <p>{scenario.body}</p>
               <span>
-                {scenario.scenarioId ? "Prepare example" : "Open controls"}
+                {scenario.scenarioId ? "Open guided setup" : "Open controls"}
                 <ArrowRight aria-hidden="true" />
               </span>
             </a>

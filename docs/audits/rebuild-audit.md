@@ -18,7 +18,7 @@ Captured steps:
 
 1. Start page: clear mental model and scenario entry points.
 2. Simple examples: ordered minimal patterns with proof and source anchors.
-3. Guided lab controls: reset, skew mode, and target route are visible before setup.
+3. Guided lab controls: reset, lab mode, and starting step are visible before setup.
 4. Payment required update: saved work, build identity, and safe refresh are explicit.
 5. KYB incompatible draft: review-required fallback is calm and prevents unsafe submit.
 
@@ -51,6 +51,7 @@ Change made in this pass:
 
 - Replaced the root dashboard with a learning-first lab page.
 - The first viewport now explains the four-step mental model: deploy, lazy route, missing chunk, safe recovery.
+- Tightened the mental-model grid so all four checkpoints stay visible in the first desktop viewport with the release debug rail open.
 - The primary actions now link to the ordered simple examples before the denser lab controls and payment recovery path.
 - Direct scenario links now point to payment recovery, missing chunk recovery, KYB draft recovery, and lab controls.
 - Scenario links that require setup now open lab controls with the matching guided card highlighted from the start page and simple examples page.
@@ -110,17 +111,21 @@ Change made in the next pass:
 - Aligned CLI skew scripts and lab controls so they assign the same update severity for each mode.
 - Added a focused script test so CLI skew-mode rules stay aligned without touching tracked seed state.
 - Added lightweight setup progress in the guided banner so the active step matches the route opened by each scenario.
-- Exposed each guided scenario's skew mode and target route on the card so setup is visible before clicking.
+- Exposed each guided scenario's lab mode and starting step on the card so setup is visible before clicking without raw route text in the primary path.
 - Clarified in the guided runner that scenario cards start from a clean reset.
 - Changed guided scenario cards to reset browser and backend simulation state automatically before applying their scenario mode.
 - Added `Reset included` to each guided scenario card so the setup contract is visible at the click target.
 - Named the scenario lifecycle as `prepareGuidedScenario` and `finishGuidedScenario` so the debug page no longer hides reset/setup/navigation inside one inline mutation block.
 - Renamed release summary labels from ambiguous `current release` wording to `loaded bundle`, `session release`, and `latest release`.
 - Moved manual mode controls, release state, preload status, telemetry, and audit trail into a collapsible advanced diagnostics section.
+- Moved the manual `Check version` action into advanced diagnostics so the primary lab page keeps only scenario setup and full reset visible.
 - Moved the release debug panel into a desktop right rail so it stays visible without covering reset or guided scenario controls.
+- Widened guided scenario card tracks so the debug right rail no longer squeezes route labels and primary setup buttons.
+- Removed pre-click step lists from scenario cards so setup actions stay visible; the active guided banner still shows step progress after a scenario starts.
 - Added current-step status and a `Return to example` action to the guided scenario banner so users can visit lab controls and get back to the prepared workflow.
 - Centralized debug/router/scenario URL generation in `src/shared/routerLinks.ts` so start-page, examples-page, guided-banner, and reset links cannot drift.
 - Updated the retest runbook to use the guided banner's `Return to example` path instead of telling testers to manually reconstruct the route.
+- Renamed start-page and simple-example entry links to `Open guided setup` so they do not imply that setup already ran before the lab card is clicked.
 
 Remaining rebuild target:
 
@@ -147,6 +152,7 @@ Change made in this pass:
 - Added `src/examples/simpleVersionSkewPatterns.ts` as a tiny source file for copy/paste release, chunk, refresh, idempotency, gate, and asset-strategy examples.
 - Added a direct Playwright check for the tiny source examples so they stay runnable, not only rendered as text.
 - Added shared simple-source and `tests/simple-patterns.spec.ts` proof anchors on the simple examples page without repeating them on every card.
+- Shortened visible proof filenames on `/examples` so the first viewport stays readable while docs still link the full source paths.
 - Updated the retest runbook and example docs to use guided scenarios as the primary path instead of old manual mode-switching steps.
 - Added `pnpm test:learning:windows` as the one-command proof for the tiny source examples plus the rendered learning page.
 - Aligned the root README, knowledge map, and examples index with the guided setup flow so new readers see auto-reset, diagnostics, and `Return to example` before manual reset instructions.

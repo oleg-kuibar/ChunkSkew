@@ -116,6 +116,8 @@ test("1. Baseline app loads", async ({ page }) => {
   await expect(page.getByRole("heading", { name: /Understand the failure/ })).toBeVisible();
   await expect(page.getByText("ChunkSkew Lab")).toBeVisible();
   await expect(page.getByText("The mental model")).toBeVisible();
+  await expect(page.getByText("4. Recovery is safe")).toBeInViewport();
+  await expect(page.getByText("Open guided setup").first()).toBeVisible();
   await expect(page.getByRole("link", { name: "Study simple examples" })).toHaveAttribute("href", "/examples?debug=1&router=react");
 });
 
@@ -132,10 +134,11 @@ test("1b. Simple examples page teaches core patterns", async ({ page }) => {
   await expect(page.getByTestId("simple-examples")).toContainText("Step 1");
   await expect(page.getByTestId("simple-examples")).toContainText("Step 6");
   await expect(page.getByTestId("simple-examples")).toContainText("session.releaseId !== latest.releaseId");
-  await expect(page.getByTestId("simple-proof-anchors")).toContainText("src/examples/simpleVersionSkewPatterns.ts");
-  await expect(page.getByTestId("simple-proof-anchors")).toContainText("tests/simple-patterns.spec.ts");
+  await expect(page.getByTestId("simple-proof-anchors")).toContainText("simpleVersionSkewPatterns.ts");
+  await expect(page.getByTestId("simple-proof-anchors")).toContainText("simple-patterns.spec.ts");
   await expect(page.getByTestId("simple-proof-anchors")).toContainText("pnpm test:learning:windows");
   await expect(page.getByTestId("simple-examples")).toContainText("src/shared/chunkRecoveryController.ts");
+  await expect(page.getByTestId("simple-examples")).toContainText("Open lab controls");
   await expect(page.getByTestId("router-mode-switch").getByRole("link", { name: "React" })).toHaveAttribute("aria-current", "page");
 
   await page.getByTestId("router-mode-switch").getByRole("link", { name: "TanStack" }).click();
@@ -170,7 +173,7 @@ test("1e. Simple examples prepare setup-dependent robust examples", async ({ pag
   await prepare(page);
   await open(page, "/examples");
   const chunkRecoveryCard = page.getByTestId("simple-examples").locator("article").filter({ hasText: "Chunk recovery" });
-  await chunkRecoveryCard.getByRole("link", { name: "Prepare robust example" }).click();
+  await chunkRecoveryCard.getByRole("link", { name: "Open guided setup" }).click();
   await expect(page).toHaveURL(/debug\/version-skew.*scenario=missing-chunk/);
   await expect(page.getByTestId("guided-scenario-missing-chunk")).toContainText("Recommended next");
 });
@@ -191,16 +194,24 @@ test("2. Bundle, session, and latest release IDs are visible in debug mode", asy
 });
 
 test("3. Version debug panel works", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await prepare(page);
   await open(page, "/debug/version-skew");
   await expect(page.getByRole("heading", { name: "Version skew controls" })).toBeVisible();
   await expect(page.getByTestId("guided-scenarios")).toContainText("Pick one scenario");
   await expect(page.getByTestId("guided-scenarios")).toContainText("starts from a clean reset");
   await expect(page.getByTestId("guided-scenario-missing-chunk")).toContainText("Reset included");
-  await expect(page.getByTestId("guided-scenario-missing-chunk")).toContainText("Mode broken");
-  await expect(page.getByTestId("guided-scenario-missing-chunk")).toContainText("Opens /payments/create/review");
+  await expect(page.getByTestId("guided-scenario-missing-chunk")).toContainText("Lab mode Missing chunks");
+  await expect(page.getByTestId("guided-scenario-missing-chunk")).toContainText("Starts Payment review step");
+  const firstScenarioCard = await page.getByTestId("guided-scenario-payment-safe-refresh").boundingBox();
+  expect(firstScenarioCard).not.toBeNull();
+  expect(firstScenarioCard!.width).toBeGreaterThanOrEqual(280);
+  await expect(page.getByRole("button", { name: "Prepare payment recovery" })).toBeInViewport();
+  await expect(page.getByRole("button", { name: "Prepare API contract block" })).toBeInViewport();
+  await expect(page.getByRole("button", { name: "Check version" })).toBeHidden();
   await expect(page.getByTestId("deployment-modes")).toBeHidden();
   await openAdvancedDiagnostics(page);
+  await expect(page.getByRole("button", { name: "Check version" })).toBeVisible();
   await expect(page.getByText("Loaded bundle")).toBeVisible();
   await expect(page.getByText("Session release")).toBeVisible();
   await expect(page.getByTestId("deployment-modes")).toContainText("asset-retention");
