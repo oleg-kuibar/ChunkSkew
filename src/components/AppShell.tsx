@@ -42,10 +42,12 @@ const navItems = [
 
 export function AppShell({
   routerMode,
+  routeKey,
   link,
   children
 }: {
   routerMode: RouterMode;
+  routeKey: string;
   link: LinkRenderer;
   children: ReactNode;
 }) {
@@ -67,7 +69,7 @@ export function AppShell({
   };
   useEffect(() => {
     void checkForVersionUpdate(routerMode, "route-transition");
-  }, [routerMode]);
+  }, [routerMode, routeKey]);
   useEffect(() => {
     const syncGuidedScenario = (event: Event) => {
       const key = (event as CustomEvent<{ key?: string }>).detail?.key;

@@ -21,6 +21,7 @@ Use it in three modes:
 ## Guides
 
 - [Rebuild Audit](audits/rebuild-audit.md): current UX/code friction and the target learning architecture.
+- [Completion Readiness Audit](audits/completion-readiness-audit.md): pasted brief versus current proof, including remaining partials.
 - [Build Version Skew](guides/build-version-skew.md): what breaks, why lazy chunks fail, and the layered mitigation model.
 - [Retest Runbook](guides/retest-runbook.md): reset state, reproduce stale chunk failure, and verify recovery.
 - [Production Rollout Guide](guides/production-rollout-guide.md): a practical rollout sequence for real apps.

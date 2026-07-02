@@ -36,6 +36,12 @@ const modes: SkewMode[] = [
   "api-contract-incompatible"
 ];
 
+const modeEvent: Partial<Record<SkewMode, Parameters<typeof applyReleasePayload>[2]>> = {
+  affinity: "release.rollback",
+  "compatibility-window-expired": "asset.retention.expiring",
+  "api-contract-incompatible": "api.contract.deprecating"
+};
+
 const scenarioIcons: Record<GuidedScenarioId, LucideIcon> = {
   "payment-safe-refresh": WalletCards,
   "missing-chunk": Bug,
@@ -94,6 +100,7 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
       }),
     onSuccess(data) {
       setLocalSkewMode(routerMode, data.mode);
+      applyReleasePayload(routerMode, data.version, modeEvent[data.mode]);
       void checkForVersionUpdate(routerMode, "debug-mode-change");
       queryClient.invalidateQueries({ queryKey: ["debug-version-skew", routerMode] });
     }
@@ -201,6 +208,7 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
               <button
                 key={mode}
                 className={cx("mode-card", query.data?.mode === mode && "active")}
+                data-testid={`mode-${mode}`}
                 type="button"
                 onClick={() => mutation.mutate(mode)}
               >

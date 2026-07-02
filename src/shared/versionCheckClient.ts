@@ -18,6 +18,13 @@ const stateKey = "version-state";
 const emitter = new EventTarget();
 let pollingId: number | undefined;
 let releaseBus: EventSource | WebSocket | undefined;
+type ReleaseBusEvent =
+  | "release.available"
+  | "release.recommended"
+  | "release.required"
+  | "release.rollback"
+  | "asset.retention.expiring"
+  | "api.contract.deprecating";
 
 export function getVersionState(routerMode: RouterMode): VersionState {
   return readJson<VersionState>("version-state", {
@@ -88,9 +95,32 @@ export async function checkForVersionUpdate(routerMode: RouterMode, reason: stri
   }
 }
 
-export function applyReleasePayload(routerMode: RouterMode, payload: ReleaseMetadata) {
+function trackReleaseEvent(routerMode: RouterMode, payload: ReleaseMetadata, eventName?: ReleaseBusEvent) {
+  if (eventName === "release.rollback") {
+    trackTelemetry("release_rollback_detected", routerMode, { latestReleaseId: payload.releaseId });
+  }
+  if (eventName === "asset.retention.expiring" || payload.skewMode === "compatibility-window-expired") {
+    trackTelemetry("asset_retention_expiring_detected", routerMode, {
+      compatibilityWindowExpiresAt: payload.compatibilityWindowExpiresAt
+    });
+  }
+  if (eventName === "api.contract.deprecating" || payload.skewMode === "api-contract-incompatible") {
+    trackTelemetry("api_contract_deprecating_detected", routerMode, {
+      apiContractVersion: payload.apiContractVersion
+    });
+  }
+  if (payload.skewMode === "asset-retention") {
+    trackTelemetry("asset_retention_used", routerMode, { latestReleaseId: payload.releaseId });
+  }
+  if (payload.skewMode === "affinity") {
+    trackTelemetry("deployment_affinity_used", routerMode, { deploymentId: payload.deploymentId });
+  }
+}
+
+export function applyReleasePayload(routerMode: RouterMode, payload: ReleaseMetadata, eventName?: ReleaseBusEvent) {
   const next = compareRelease(getCurrentReleaseIdentity(routerMode), payload);
   setVersionState(next);
+  trackReleaseEvent(routerMode, payload, eventName);
   if (payload.updateSeverity === "required") {
     trackTelemetry("release_required_detected", routerMode, { latestReleaseId: payload.releaseId });
   } else {
@@ -149,8 +179,8 @@ function startReleaseBus(routerMode: RouterMode) {
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
     const socket = new WebSocket(`${protocol}://${window.location.host}/events-ws`);
     socket.addEventListener("message", (event) => {
-      const data = JSON.parse(String(event.data)) as { event: string; payload: ReleaseMetadata };
-      applyReleasePayload(routerMode, data.payload);
+      const data = JSON.parse(String(event.data)) as { event: ReleaseBusEvent; payload: ReleaseMetadata };
+      applyReleasePayload(routerMode, data.payload, data.event);
     });
     releaseBus = socket;
     return;
@@ -159,27 +189,18 @@ function startReleaseBus(routerMode: RouterMode) {
   const events = new EventSource(
     `/events?routerMode=${encodeURIComponent(routerMode)}&clientRelease=${encodeURIComponent(current.releaseId)}`
   );
-  for (const eventName of [
+  const eventNames: ReleaseBusEvent[] = [
     "release.available",
     "release.recommended",
     "release.required",
     "release.rollback",
     "asset.retention.expiring",
     "api.contract.deprecating"
-  ]) {
+  ];
+  for (const eventName of eventNames) {
     events.addEventListener(eventName, (event) => {
       const payload = JSON.parse((event as MessageEvent).data) as ReleaseMetadata;
-      if (eventName === "asset.retention.expiring") {
-        trackTelemetry("asset_retention_expiring_detected", routerMode, {
-          compatibilityWindowExpiresAt: payload.compatibilityWindowExpiresAt
-        });
-      }
-      if (eventName === "api.contract.deprecating") {
-        trackTelemetry("api_contract_deprecating_detected", routerMode, {
-          apiContractVersion: payload.apiContractVersion
-        });
-      }
-      applyReleasePayload(routerMode, payload);
+      applyReleasePayload(routerMode, payload, eventName);
     });
   }
   releaseBus = events;

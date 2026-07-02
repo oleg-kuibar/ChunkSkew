@@ -27,13 +27,14 @@ function detectRouterMode(): RouterMode {
   return (window.localStorage.getItem("chunk-skew-finance:router-mode") as RouterMode | null) ?? "react-router";
 }
 
-function App() {
-  const routerMode = useMemo(() => detectRouterMode(), []);
+const initialRouterMode = detectRouterMode();
+registerVitePreloadErrorHandler(initialRouterMode);
+
+function App({ routerMode }: { routerMode: RouterMode }) {
   const queryClient = useMemo(() => createAppQueryClient(routerMode), [routerMode]);
   const [chunkFailure, setChunkFailure] = useState<ChunkFailureEventDetail | null>(null);
 
   useEffect(() => {
-    registerVitePreloadErrorHandler(routerMode);
     registerOptionalServiceWorker(routerMode);
     return startReleaseAwareness(routerMode);
   }, [routerMode]);
@@ -41,7 +42,7 @@ function App() {
   useEffect(() => {
     const handler = (event: Event) => {
       const detail = (event as CustomEvent<ChunkFailureEventDetail>).detail;
-      if (detail?.context.routerMode === routerMode) {
+      if (detail?.context.routerMode === routerMode && detail.context.routeId === "vite-module-preload") {
         setChunkFailure(detail);
       }
     };
@@ -72,4 +73,4 @@ function App() {
   );
 }
 
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(<App routerMode={initialRouterMode} />);

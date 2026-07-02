@@ -1,4 +1,4 @@
-import { Link, Outlet, createBrowserRouter } from "react-router-dom";
+import { Link, Outlet, createBrowserRouter, useLocation } from "react-router-dom";
 import { AppShell } from "../components/AppShell";
 import { ChunkFailureFallback } from "../components/UpdateSurfaces";
 import { DashboardPage } from "../pages/Dashboard";
@@ -12,9 +12,13 @@ import { VersionSkewDebugPage } from "../pages/VersionSkewDebug";
 import { reactRouterLazy } from "../shared/lazyRoute";
 
 function Root() {
+  const location = useLocation();
+  const routeKey = `${location.pathname}${location.search}`;
+
   return (
     <AppShell
       routerMode="react-router"
+      routeKey={routeKey}
       link={({ to, children, className }) => (
         <Link to={to} className={className}>
           {children}

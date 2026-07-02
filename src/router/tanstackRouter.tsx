@@ -1,4 +1,4 @@
-import { Link, Outlet, RouterProvider, createLazyRoute, createRootRoute, createRoute, createRouter } from "@tanstack/react-router";
+import { Link, Outlet, RouterProvider, createLazyRoute, createRootRoute, createRoute, createRouter, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { AppShell } from "../components/AppShell";
 import { ChunkFailureFallback } from "../components/UpdateSurfaces";
@@ -18,9 +18,12 @@ import { tanstackLazyImport } from "../shared/lazyRoute";
 import type { WorkflowType } from "../shared/types";
 
 function RootComponent() {
+  const routeKey = useRouterState({ select: (state) => state.location.href });
+
   return (
     <AppShell
       routerMode="tanstack-router"
+      routeKey={routeKey}
       link={({ to, children, className }) => (
         <Link to={to} className={className}>
           {children}

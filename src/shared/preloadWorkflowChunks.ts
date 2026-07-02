@@ -12,69 +12,68 @@ type PreloadRegistryEntry = {
   load: Loader;
 };
 
+const paymentWorkflow = () => import("../workflows/PaymentWorkflow");
+const invoiceDetailRoute = () => import("../pages/InvoiceDetailRoute");
+const invoiceApprovalModal = () => import("../workflows/InvoiceApprovalModal");
+const cardDetailRoute = () => import("../pages/CardDetailRoute");
+const kybRoute = () => import("../pages/KybRoute");
+const kybDocumentsStep = () => import("../workflows/KybDocumentsStep");
+const transactionReportRoute = () => import("../pages/TransactionReportRoute");
+const transactionDrawer = () => import("../workflows/SuspiciousTransactionDrawer");
+
+function entry(
+  workflowType: WorkflowType,
+  lazyMechanism: PreloadStatus["lazyMechanism"],
+  load: Loader,
+  required = true
+): PreloadRegistryEntry {
+  return { workflowType, required, lazyMechanism, load };
+}
+
 const registry: Record<string, PreloadRegistryEntry> = {
-  "payment-recipient": {
-    workflowType: "payment",
-    required: true,
-    lazyMechanism: "component-lazy",
-    load: () => import("../workflows/PaymentWorkflow")
-  },
-  "payment-review": {
-    workflowType: "payment",
-    required: true,
-    lazyMechanism: "react-router-lazy",
-    load: () => import("../pages/PaymentReviewRoute")
-  },
-  "payment-mfa": {
-    workflowType: "payment",
-    required: true,
-    lazyMechanism: "component-lazy",
-    load: () => import("../workflows/PaymentWorkflow")
-  },
-  "invoice-detail": {
-    workflowType: "invoice",
-    required: true,
-    lazyMechanism: "react-router-lazy",
-    load: () => import("../pages/InvoiceDetailRoute")
-  },
-  "card-detail": {
-    workflowType: "card",
-    required: true,
-    lazyMechanism: "react-router-lazy",
-    load: () => import("../pages/CardDetailRoute")
-  },
-  "kyb-review": {
-    workflowType: "kyb",
-    required: true,
-    lazyMechanism: "react-router-lazy",
-    load: () => import("../pages/KybReviewRoute")
-  },
-  "transaction-report": {
-    workflowType: "transaction",
-    required: false,
-    lazyMechanism: "react-router-lazy",
-    load: () => import("../pages/TransactionReportRoute")
-  },
-  "tanstack-payment-lazy": {
-    workflowType: "payment",
-    required: true,
-    lazyMechanism: "tanstack-route-lazy",
-    load: () => import("../pages/tanstack/Payment.lazy")
-  },
-  "tanstack-invoice-lazy": {
-    workflowType: "invoice",
-    required: true,
-    lazyMechanism: "tanstack-route-lazy",
-    load: () => import("../pages/tanstack/InvoiceDetail.lazy")
-  }
+  "payment-recipient": entry("payment", "component-lazy", paymentWorkflow),
+  "payment-amount": entry("payment", "component-lazy", paymentWorkflow),
+  "payment-funding-account": entry("payment", "component-lazy", paymentWorkflow),
+  "payment-date": entry("payment", "component-lazy", paymentWorkflow),
+  "payment-review": entry("payment", "react-router-lazy", () => import("../pages/PaymentReviewRoute")),
+  "payment-mfa": entry("payment", "component-lazy", paymentWorkflow),
+  "payment-submit": entry("payment", "component-lazy", paymentWorkflow),
+  "payment-receipt": entry("payment", "component-lazy", paymentWorkflow),
+  "invoice-detail": entry("invoice", "react-router-lazy", invoiceDetailRoute),
+  "invoice-approval-modal": entry("invoice", "component-lazy", invoiceApprovalModal),
+  "invoice-rejection-modal": entry("invoice", "component-lazy", invoiceApprovalModal),
+  "invoice-audit-drawer": entry("invoice", "react-router-lazy", invoiceDetailRoute, false),
+  "card-detail": entry("card", "react-router-lazy", cardDetailRoute),
+  "card-spend-limit-form": entry("card", "react-router-lazy", cardDetailRoute),
+  "card-freeze-confirmation": entry("card", "react-router-lazy", cardDetailRoute),
+  "card-merchant-controls": entry("card", "react-router-lazy", cardDetailRoute),
+  "kyb-business": entry("kyb", "react-router-lazy", kybRoute),
+  "kyb-owners": entry("kyb", "react-router-lazy", kybRoute),
+  "kyb-documents": entry("kyb", "component-lazy", kybDocumentsStep),
+  "kyb-review": entry("kyb", "react-router-lazy", () => import("../pages/KybReviewRoute")),
+  "kyb-submit-result": entry("kyb", "react-router-lazy", kybRoute),
+  "transaction-report": entry("transaction", "react-router-lazy", transactionReportRoute, false),
+  "transaction-drawer": entry("transaction", "component-lazy", transactionDrawer, false),
+  "tanstack-payment-lazy": entry("payment", "tanstack-route-lazy", () => import("../pages/tanstack/Payment.lazy")),
+  "tanstack-invoice-lazy": entry("invoice", "tanstack-route-lazy", () => import("../pages/tanstack/InvoiceDetail.lazy"))
 };
 
 const workflowRoutes: Record<WorkflowType, string[]> = {
-  payment: ["payment-recipient", "payment-review", "payment-mfa", "tanstack-payment-lazy"],
-  invoice: ["invoice-detail", "tanstack-invoice-lazy"],
-  card: ["card-detail"],
-  kyb: ["kyb-review"],
-  transaction: ["transaction-report"],
+  payment: [
+    "payment-recipient",
+    "payment-amount",
+    "payment-funding-account",
+    "payment-date",
+    "payment-review",
+    "payment-mfa",
+    "payment-submit",
+    "payment-receipt",
+    "tanstack-payment-lazy"
+  ],
+  invoice: ["invoice-detail", "invoice-approval-modal", "invoice-rejection-modal", "invoice-audit-drawer", "tanstack-invoice-lazy"],
+  card: ["card-detail", "card-spend-limit-form", "card-freeze-confirmation", "card-merchant-controls"],
+  kyb: ["kyb-business", "kyb-owners", "kyb-documents", "kyb-review", "kyb-submit-result"],
+  transaction: ["transaction-report", "transaction-drawer"],
   admin: [],
   vendor: [],
   none: []

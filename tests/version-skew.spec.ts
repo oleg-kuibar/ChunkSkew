@@ -97,10 +97,25 @@ async function dismissUpdateToast(page: Page) {
   }
 }
 
-async function waitForPreloadRoute(page: Page, route: string) {
+async function waitForPreloadRoute(page: Page, route: string, status = "succeeded") {
   await page.waitForFunction(
-    (targetRoute) => window.localStorage.getItem("chunk-skew-finance:preload-statuses")?.includes(`"route":"${targetRoute}"`),
-    route
+    ({ targetRoute, targetStatus }) => {
+      const statuses = JSON.parse(window.localStorage.getItem("chunk-skew-finance:preload-statuses") ?? "[]");
+      return statuses.some(
+        (item: { route?: string; status?: string }) => item.route === targetRoute && (!targetStatus || item.status === targetStatus)
+      );
+    },
+    { targetRoute: route, targetStatus: status }
+  );
+}
+
+async function waitForTelemetryEvent(page: Page, name: string) {
+  await page.waitForFunction(
+    (eventName) => {
+      const events = JSON.parse(window.localStorage.getItem("chunk-skew-finance:telemetry-events") ?? "[]");
+      return events.some((event: { name?: string }) => event.name === eventName);
+    },
+    name
   );
 }
 
@@ -271,6 +286,36 @@ test("2. Bundle, session, and latest release IDs are visible in debug mode", asy
   await expect(buildStamp).toContainText("Bundle");
   await expect(buildStamp).toContainText("Session");
   await expect(buildStamp).toContainText("Latest");
+});
+
+test("2a. Route transitions check for version updates in both routers", async ({ page }) => {
+  for (const router of ["react", "tanstack"] as const) {
+    await prepare(page, router);
+    await open(page, "/", router);
+    await expect(page.getByRole("heading", { name: /Understand the failure/ })).toBeVisible();
+    const before = await page.evaluate(() => {
+      const events = JSON.parse(window.localStorage.getItem("chunk-skew-finance:telemetry-events") ?? "[]");
+      return events.filter(
+        (event: { name?: string; properties?: { reason?: string } }) =>
+          event.name === "version_check_started" && event.properties?.reason === "route-transition"
+      ).length;
+    });
+
+    await page.locator(".sidebar").getByRole("link", { name: "Simple examples", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Simple examples" })).toBeVisible();
+    await page.waitForFunction(
+      (previousCount) => {
+        const events = JSON.parse(window.localStorage.getItem("chunk-skew-finance:telemetry-events") ?? "[]");
+        return (
+          events.filter(
+            (event: { name?: string; properties?: { reason?: string } }) =>
+              event.name === "version_check_started" && event.properties?.reason === "route-transition"
+          ).length > previousCount
+        );
+      },
+      before
+    );
+  }
 });
 
 test("3. Version debug panel works", async ({ page }) => {
@@ -665,6 +710,28 @@ test("25. React Router workflow chunks preload on workflow entry", async ({ page
   await expect(page.getByRole("row", { name: /payment-review payment react-router-lazy succeeded/ })).toBeVisible();
 });
 
+test("25a. Workflow preload table lists named fintech completion chunks", async ({ page }) => {
+  await prepare(page);
+  await open(page, "/payments/create/recipient");
+  await waitForPreloadRoute(page, "payment-receipt");
+  await open(page, "/invoices");
+  await waitForPreloadRoute(page, "invoice-approval-modal");
+  await open(page, "/cards");
+  await waitForPreloadRoute(page, "card-merchant-controls");
+  await open(page, "/kyb/business");
+  await waitForPreloadRoute(page, "kyb-documents");
+  await open(page, "/transactions");
+  await waitForPreloadRoute(page, "transaction-drawer");
+
+  await open(page, "/debug/version-skew");
+  await openAdvancedDiagnostics(page);
+  await expect(page.getByTestId("preload-row-payment-receipt")).toContainText("succeeded");
+  await expect(page.getByTestId("preload-row-invoice-approval-modal")).toContainText("succeeded");
+  await expect(page.getByTestId("preload-row-card-merchant-controls")).toContainText("succeeded");
+  await expect(page.getByTestId("preload-row-kyb-documents")).toContainText("succeeded");
+  await expect(page.getByTestId("preload-row-transaction-drawer")).toContainText("no");
+});
+
 test("26. React Router route error boundary handles repeated failure", async ({ page }) => {
   await prepare(page, "react", "broken");
   await open(page, "/transactions/report");
@@ -760,4 +827,24 @@ test("37. Telemetry export works", async ({ page }) => {
   await prepare(page);
   await open(page, "/audit");
   await expect(page.getByRole("button", { name: "Export JSON" })).toBeVisible();
+});
+
+test("38. Rare release observability events are logged", async ({ page }) => {
+  await prepare(page, "react", "asset-retention");
+  await open(page, "/debug/version-skew");
+  await openAdvancedDiagnostics(page);
+  await page.evaluate(() => window.localStorage.setItem("chunk-skew-finance:telemetry-events", "[]"));
+
+  await page.getByTestId("mode-asset-retention").click();
+  await waitForTelemetryEvent(page, "asset_retention_used");
+
+  await page.getByTestId("mode-affinity").click();
+  await waitForTelemetryEvent(page, "deployment_affinity_used");
+  await waitForTelemetryEvent(page, "release_rollback_detected");
+
+  await page.getByTestId("mode-compatibility-window-expired").click();
+  await waitForTelemetryEvent(page, "asset_retention_expiring_detected");
+
+  await page.getByTestId("mode-api-contract-incompatible").click();
+  await waitForTelemetryEvent(page, "api_contract_deprecating_detected");
 });

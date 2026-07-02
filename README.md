@@ -22,6 +22,7 @@ pnpm test:learning:windows
 
 - [Knowledge map](docs/README.md): guide, pattern, example, and reference index.
 - [Rebuild audit](docs/audits/rebuild-audit.md): current friction and the target learning architecture.
+- [Completion readiness audit](docs/audits/completion-readiness-audit.md): pasted brief versus current proof and remaining partials.
 - [Build version skew guide](docs/guides/build-version-skew.md): the core explanation and mitigation model.
 - [Retest runbook](docs/guides/retest-runbook.md): how to reset state and replay the demos.
 - [Pattern index](docs/patterns/README.md): reusable implementation patterns with code anchors.
