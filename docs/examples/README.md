@@ -8,6 +8,7 @@ Examples connect the reusable patterns to product workflows.
 - [Payment Safe Refresh](payment-safe-refresh.md): required update, autosaved payment, idempotency key, safe refresh.
 - [KYB Draft Recovery](kyb-draft-recovery.md): draft schema compatibility and review-required fallback.
 - [Router Chunk Failure](router-chunk-failure.md): React Router and TanStack Router lazy boundary failure/recovery.
+- Asset strategy guided setup: use the **Asset strategy** card on `/examples?debug=1` to open a retained-assets transaction report proof.
 
 ## Run Examples
 

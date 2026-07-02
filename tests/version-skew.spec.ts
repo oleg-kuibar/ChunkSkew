@@ -119,6 +119,9 @@ test("1. Baseline app loads", async ({ page }) => {
   await expect(page.getByText("4. Recovery is safe")).toBeInViewport();
   await expect(page.getByText("Open guided setup").first()).toBeVisible();
   await expect(page.getByText("Open lab controls").first()).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Solve in this order" })).toBeVisible();
+  await expect(page.getByText("Pattern 1")).toBeVisible();
+  await expect(page.getByText("Preserve work", { exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "Study simple examples" })).toHaveAttribute("href", "/examples?debug=1&router=react");
 });
 
@@ -141,7 +144,9 @@ test("1b. Simple examples page teaches core patterns", async ({ page }) => {
   await expect(page.getByTestId("simple-proof-anchors")).toContainText("pnpm test:learning:windows");
   await expect(page.getByTestId("simple-examples")).toContainText("src/shared/chunkRecoveryController.ts");
   await expect(page.getByTestId("simple-examples")).toContainText("Robust path:");
+  await expect(page.getByTestId("simple-examples")).toContainText("React/TanStack");
   await expect(page.getByTestId("simple-examples")).toContainText("Open lab controls");
+  await expect(page.getByTestId("simple-examples")).toContainText("Open guided setup");
   await expect(page.getByTestId("router-mode-switch").getByRole("link", { name: "React" })).toHaveAttribute("aria-current", "page");
 
   await page.getByTestId("router-mode-switch").getByRole("link", { name: "TanStack" }).click();
@@ -181,6 +186,22 @@ test("1e. Simple examples prepare setup-dependent robust examples", async ({ pag
   await expect(page.getByTestId("guided-scenario-missing-chunk")).toContainText("Recommended next");
 });
 
+test("1f. Asset strategy opens a retained-asset proof scenario", async ({ page }) => {
+  await prepare(page);
+  await open(page, "/examples");
+  const assetStrategyCard = page.getByTestId("simple-examples").locator("article").filter({ hasText: "Asset strategy" });
+  await assetStrategyCard.getByRole("link", { name: "Open guided setup" }).click();
+  await expect(page).toHaveURL(/debug\/version-skew.*scenario=asset-strategy/);
+  await expect(page.getByTestId("guided-scenario-asset-strategy")).toBeInViewport();
+  await expect(page.getByTestId("guided-scenario-asset-strategy")).toContainText("Recommended next");
+
+  await page.getByRole("button", { name: "Prepare asset retention proof" }).click();
+  await expect(page).toHaveURL(/transactions\/report/);
+  await expect(page.getByTestId("guided-scenario-banner")).toContainText("Asset retention safety");
+  await expect(page.getByRole("heading", { name: "Transaction exposure report" })).toBeVisible();
+  await expect(page.getByTestId("chunk-failure-fallback")).toBeHidden();
+});
+
 test("2. Bundle, session, and latest release IDs are visible in debug mode", async ({ page }) => {
   await prepare(page);
   await open(page);
@@ -206,6 +227,8 @@ test("3. Version debug panel works", async ({ page }) => {
   await expect(page.getByTestId("guided-scenario-missing-chunk")).toContainText("Reset included");
   await expect(page.getByTestId("guided-scenario-missing-chunk")).toContainText("Lab mode Missing chunks");
   await expect(page.getByTestId("guided-scenario-missing-chunk")).toContainText("Starts Payment review step");
+  await expect(page.getByTestId("guided-scenario-asset-strategy")).toContainText("Lab mode Retained assets");
+  await expect(page.getByTestId("guided-scenario-asset-strategy")).toContainText("Starts Transaction report route");
   const firstScenarioCard = await page.getByTestId("guided-scenario-payment-safe-refresh").boundingBox();
   expect(firstScenarioCard).not.toBeNull();
   expect(firstScenarioCard!.width).toBeGreaterThanOrEqual(280);

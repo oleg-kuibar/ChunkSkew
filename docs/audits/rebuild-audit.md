@@ -159,6 +159,14 @@ Change made in this pass:
 - Updated the retest runbook and example docs to use guided scenarios as the primary path instead of old manual mode-switching steps.
 - Added `pnpm test:learning:windows` as the one-command proof for the tiny source examples plus the rendered learning page.
 - Aligned the root README, knowledge map, and examples index with the guided setup flow so new readers see auto-reset, diagnostics, and `Return to example` before manual reset instructions.
+- Replaced the start page's static pattern-vocabulary chips with an ordered `Solve in this order` checklist that mirrors the simple examples path.
+- Reworked the Pattern Index into a minimal-rule to robust-proof map so each pattern has a clear tiny example and realistic workflow proof.
+- Linked `Router Lazy Boundaries` directly from the ordered chunk-recovery row so router-specific recovery stays discoverable instead of hiding behind the shared recovery controller.
+- Made the visible chunk-recovery copy name React/TanStack so router comparison is explicit on the start page and simple examples page.
+- Added an asset-retention guided setup so the Asset Strategy card proves retained old chunks by opening a heavy lazy report without falling back.
+- Moved URL-recommended guided scenarios to the top of Lab controls so simple-example links reveal the intended proof card without scrolling.
+- Aligned the root README, Knowledge Map, and Search Index with the same `Solve in this order` learning path so docs no longer read like an unordered page catalog.
+- Added the same ordered rollout map to the Production Checklist so the path continues from simple rules to robust proofs to real-app gates.
 
 Future rebuild target:
 

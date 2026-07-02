@@ -67,13 +67,31 @@ const scenarioLinks = [
   }
 ];
 
-const patternLinks = [
-  "release identity",
-  "update policy",
-  "chunk recovery",
-  "autosave",
-  "idempotency",
-  "asset retention"
+const patternSteps = [
+  {
+    title: "Detect release skew",
+    body: "Compare bundle, session, and latest release before making update decisions."
+  },
+  {
+    title: "Recover lazy chunks",
+    body: "Classify React/TanStack lazy failures, reload once when safe, then stop the loop."
+  },
+  {
+    title: "Preserve work",
+    body: "Save drafts and idempotency keys before refresh or route recovery."
+  },
+  {
+    title: "Gate risky actions",
+    body: "Block new sensitive mutations only for required updates or incompatible APIs."
+  },
+  {
+    title: "Prove no duplicates",
+    body: "Retry with the same idempotency key and return the previous result."
+  },
+  {
+    title: "Host for compatibility",
+    body: "Retain old chunks or pin deployments so recovery is a backup path."
+  }
 ];
 
 export function DashboardPage({ routerMode }: { routerMode: RouterMode }) {
@@ -151,17 +169,20 @@ export function DashboardPage({ routerMode }: { routerMode: RouterMode }) {
         })}
       </section>
 
-      <section className="panel">
-        <header className="panel-header">
-          <h2>Pattern vocabulary</h2>
+      <section className="learning-grid pattern-map" aria-labelledby="pattern-map-heading">
+        <header className="section-header wide-panel">
+          <div>
+            <h2 id="pattern-map-heading">Solve in this order</h2>
+            <p>Use the simple examples as the checklist, then open the robust examples to see each rule under workflow pressure.</p>
+          </div>
         </header>
-        <div className="tag-row">
-          {patternLinks.map((pattern) => (
-            <span className="status-chip" key={pattern}>
-              {pattern}
-            </span>
-          ))}
-        </div>
+        {patternSteps.map((pattern, index) => (
+          <article className="learning-card" key={pattern.title}>
+            <span className="status-chip">Pattern {index + 1}</span>
+            <strong>{pattern.title}</strong>
+            <p>{pattern.body}</p>
+          </article>
+        ))}
       </section>
     </div>
   );

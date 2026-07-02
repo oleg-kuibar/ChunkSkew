@@ -4,9 +4,19 @@ This documentation turns the runnable POC into a searchable knowledge repo for b
 
 Use it in three modes:
 
-- Learn the failure mode: open `/examples?debug=1`, use **Open guided setup**, then read [Build Version Skew](guides/build-version-skew.md).
+- Learn the failure mode: open `/?debug=1`, read **Solve in this order**, then open `/examples?debug=1`.
 - Implement the pattern: use the [Pattern Index](patterns/README.md).
 - Reproduce the behavior: use the [Example Index](examples/README.md) and [Retest Runbook](guides/retest-runbook.md).
+
+## Learning Path
+
+| Step | Where | What to prove |
+| --- | --- | --- |
+| 1 | `/?debug=1` | The four-step mental model and ordered pattern checklist are understandable before source reading. |
+| 2 | `/examples?debug=1` | Each minimal rule has tiny source, a test anchor, a robust path, and guided setup. |
+| 3 | **Open guided setup** | The app resets state, sets the lab mode, and opens the prepared workflow. |
+| 4 | **Lab controls** and **Return to example** | Diagnostics stay opt-in while the prepared workflow remains recoverable. |
+| 5 | [Production Checklist](reference/production-checklist.md) | The demo maps to rollout gates for a real React/Vite SPA. |
 
 ## Guides
 

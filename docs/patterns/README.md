@@ -2,14 +2,16 @@
 
 These patterns are reusable pieces for mitigating build version skew in React/Vite SPAs.
 
-| Pattern | Problem it solves | Start here |
-| --- | --- | --- |
-| Release identity | Distinguish loaded bundle, recovered session, latest release, and API contract | [Release Identity](release-identity.md) |
-| Update policy engine | Decide whether to toast, banner, defer, block, readonly, or recover | [Update Policy Engine](update-policy-engine.md) |
-| Chunk recovery | Catch lazy import/preload failures and prevent reload loops | [Chunk Recovery](chunk-recovery.md) |
-| Autosave and idempotency | Preserve user work and prevent duplicate sensitive actions | [Autosave And Idempotency](autosave-and-idempotency.md) |
-| Router lazy boundaries | Apply recovery to React Router and TanStack Router separately | [Router Lazy Boundaries](router-lazy-boundaries.md) |
-| Asset retention and deployment affinity | Reduce missing chunks at the hosting/CDN layer | [Asset Retention And Deployment Affinity](asset-retention-and-deployment-affinity.md) |
+| Order | Minimal rule | Robust proof | Pattern doc |
+| --- | --- | --- | --- |
+| 1 | Compare bundle, session, and latest release. | Build stamps, request headers, and update decisions. | [Release Identity](release-identity.md) |
+| 2 | Classify lazy chunk failures and reload once when safe. | React Router, TanStack Router, preload, modal, and drawer fallbacks. | [Chunk Recovery](chunk-recovery.md), [Router Lazy Boundaries](router-lazy-boundaries.md) |
+| 3 | Save drafts and idempotency keys before refresh. | Payment safe refresh and KYB draft recovery. | [Autosave And Idempotency](autosave-and-idempotency.md) |
+| 4 | Block only risky actions for required updates or incompatible APIs. | Payment, invoice, card, KYB, vendor, role, and API key guards. | [Update Policy Engine](update-policy-engine.md) |
+| 5 | Retry with the same key and return the previous result. | Mock backend idempotency replay for sensitive mutations. | [Autosave And Idempotency](autosave-and-idempotency.md) |
+| 6 | Retain old chunks or pin clients to deployments. | Asset retention guided setup opens a heavy lazy report that loads instead of falling back. | [Asset Retention And Deployment Affinity](asset-retention-and-deployment-affinity.md) |
+
+Start with `/examples?debug=1` and `src/examples/simpleVersionSkewPatterns.ts` for the minimal rules. Then use **Open guided setup** to run the robust proof under fake fintech workflow pressure.
 
 ## Cross-Cutting Rule
 

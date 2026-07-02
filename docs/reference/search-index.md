@@ -49,6 +49,7 @@ This page intentionally repeats common search terms so people can find the right
 - copy-paste version skew examples
 - minimal version skew patterns
 - simple version skew source
+- solve in this order
 
 ## Deployment Terms
 
@@ -77,8 +78,10 @@ This page intentionally repeats common search terms so people can find the right
 
 ## Start Pages
 
+- [Knowledge Map](../README.md)
 - [Build Version Skew Guide](../guides/build-version-skew.md)
 - [Retest Runbook](../guides/retest-runbook.md)
 - [Pattern Index](../patterns/README.md)
 - [Example Index](../examples/README.md)
+- [Production Checklist](production-checklist.md)
 - [Simple Version Skew Patterns](../../src/examples/simpleVersionSkewPatterns.ts)

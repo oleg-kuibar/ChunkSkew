@@ -77,6 +77,19 @@ const guidedScenarios = [
     outcome: "Open a risky payment step with an incompatible API contract and watch mutation get paused.",
     steps: ["Switch API contract", "Verify MFA", "Submit to see the guard"],
     targetStepIndex: 1
+  },
+  {
+    id: "asset-strategy",
+    title: "Asset retention safety",
+    mode: "asset-retention" as SkewMode,
+    modeLabel: "Retained assets",
+    href: "/transactions/report",
+    startLabel: "Transaction report route",
+    icon: CheckCircle2,
+    action: "Prepare asset retention proof",
+    outcome: "Open a heavy lazy report while old assets are retained so the route loads instead of falling back.",
+    steps: ["Switch to retained assets", "Open lazy transaction report", "Confirm retained assets prevent fallback"],
+    targetStepIndex: 2
   }
 ];
 
@@ -157,6 +170,9 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
   const statuses = readPreloadStatuses();
   const suggestedScenarioId =
     typeof window === "undefined" ? undefined : new URLSearchParams(window.location.search).get("scenario") ?? undefined;
+  const visibleScenarios = suggestedScenarioId
+    ? [...guidedScenarios].sort((a, b) => Number(b.id === suggestedScenarioId) - Number(a.id === suggestedScenarioId))
+    : guidedScenarios;
   const runGuidedScenario = (scenario: GuidedScenario) => scenarioMutation.mutate(scenario);
 
   return (
@@ -186,7 +202,7 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
           </div>
         </header>
         <div className="scenario-grid">
-          {guidedScenarios.map((scenario) => {
+          {visibleScenarios.map((scenario) => {
             const Icon = scenario.icon;
             const suggested = scenario.id === suggestedScenarioId;
             return (

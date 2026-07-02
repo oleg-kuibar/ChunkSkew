@@ -10,11 +10,11 @@ This repo uses fake deterministic fintech data only. It does not import from, in
 
 Fast path for learning and proving the pattern:
 
-1. Open `/examples?debug=1`.
-2. Read the shared `Simple source` and `Verified by` proof anchors, then use each card's `Study` anchor for the robust implementation.
-3. Click **Open guided setup** to jump into a guided recovery scenario; guided cards reset simulation state before setup.
+1. Open `/?debug=1` and read the four-step mental model plus **Solve in this order**.
+2. Open `/examples?debug=1` for the minimal rules, shared `Simple source`, and `Verified by` proof anchors.
+3. Use each card's `Study` anchor for the robust implementation, then click **Open guided setup** to run the workflow proof.
 4. Use **Lab controls** for diagnostics, then **Return to example** in the guided banner to continue the prepared workflow.
-5. Prove the path with:
+5. Prove the learning path with:
 
 ```bash
 pnpm test:learning:windows

@@ -2,6 +2,19 @@
 
 Use this checklist before enforcing strict build version skew behavior in a real app.
 
+## Ordered Rollout Map
+
+Use the same order as the app's **Solve in this order** checklist:
+
+| Order | Production gate |
+| --- | --- |
+| 1. Detect release skew | Build release metadata, `/version.json`, release bus, request headers, and telemetry. |
+| 2. Recover lazy chunks | Router-specific lazy wrappers, Vite preload handling, controlled fallback, and reload-loop prevention. |
+| 3. Preserve work | Draft autosave, schema compatibility, MFA safety, and idempotency keys that survive refresh. |
+| 4. Gate risky actions | Update policy, required-update gates, API compatibility blocking, and readonly fallback. |
+| 5. Prove no duplicates | Backend idempotency replay plus tests for retries after refresh or chunk failure. |
+| 6. Host for compatibility | No-cache HTML, immutable hashed assets, retained old chunks, and deployment affinity where needed. |
+
 ## Build And Hosting
 
 - `index.html` is revalidated or served with `no-cache`.

@@ -24,7 +24,7 @@ const examples = [
     title: "Chunk recovery",
     icon: FileWarning,
     rule: "Classify lazy import failures, reload once when safe, then stop and show a controlled fallback.",
-    hook: "Route imports, modal imports, preload errors, and router boundaries.",
+    hook: "React/TanStack route imports, modal imports, and preload errors.",
     code: simplePatternSnippets.chunkRecovery,
     anchor: "src/shared/chunkRecoveryController.ts",
     href: "/debug/version-skew",
@@ -67,7 +67,8 @@ const examples = [
     hook: "CDN/static hosting with a defined compatibility window.",
     code: simplePatternSnippets.assetStrategy,
     anchor: "src/shared/assetRetentionSimulator.ts",
-    href: "/debug/version-skew"
+    href: "/debug/version-skew",
+    scenarioId: "asset-strategy"
   }
 ];
 
