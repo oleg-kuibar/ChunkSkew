@@ -48,7 +48,11 @@ This page intentionally repeats common search terms so people can find the right
 - duplicate submit prevention
 - copy-paste version skew examples
 - minimal version skew patterns
+- minimal rule labels
+- robust source anchors
 - simple version skew source
+- simple source anchors
+- verified by anchors
 - solve in this order
 - open step links
 - solve path labels
@@ -57,9 +61,13 @@ This page intentionally repeats common search terms so people can find the right
 - start page scenario catalog
 - guided proof scenario labels
 - guided scenario setup label
+- named setup links
 - primary guided scenario
 - proof setup
 - active proof setup
+- return to example
+- reset confirmation strip
+- learning proof command
 - release identity in sync
 - update policy decisions
 - pure update policy proof

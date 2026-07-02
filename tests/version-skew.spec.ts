@@ -122,6 +122,7 @@ test("1. Baseline app loads", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Solve in this order" })).toBeVisible();
   await expect(page.getByText("Pattern 1")).toBeVisible();
   await expect(page.getByText("Preserve work", { exact: true })).toBeVisible();
+  await expect(page.getByText("Block risky mutations when a required update is pending or the API contract is incompatible.")).toBeVisible();
   await expect(page.getByRole("link", { name: "Study simple examples" })).toHaveAttribute("href", "/examples?debug=1&router=react");
   await expect(page.getByRole("link", { name: "Open Detect release skew simple example" })).toHaveAttribute(
     "href",
@@ -156,10 +157,14 @@ test("1b. Simple examples page teaches core patterns", async ({ page }) => {
   await expect(page.getByTestId("simple-example-idempotent-mutation")).toContainText("Step 5");
   await expect(page.getByTestId("simple-example-asset-strategy")).toContainText("Solve path: Host for compatibility");
   await expect(page.getByTestId("simple-examples")).toContainText("session.releaseId !== latest.releaseId");
+  await expect(page.getByTestId("simple-example-required-update-gate")).toContainText("required || !apiContractCompatible");
+  await expect(page.getByTestId("simple-example-required-update-gate")).toContainText("Minimal rule");
+  await expect(page.getByTestId("simple-example-required-update-gate")).toContainText("Robust source");
   await expect(page.getByTestId("simple-proof-anchors")).toContainText("simpleVersionSkewPatterns.ts");
   await expect(page.getByTestId("simple-proof-anchors")).toContainText("simple-patterns.spec.ts");
   await expect(page.getByTestId("simple-proof-anchors")).toContainText("update-policy.spec.ts");
   await expect(page.getByTestId("simple-proof-anchors")).toContainText("pnpm test:learning:windows");
+  await expect(page.getByTestId("simple-examples")).toContainText("src/shared/updatePolicyEngine.ts");
   await expect(page.getByTestId("simple-examples")).toContainText("src/shared/chunkRecoveryController.ts");
   await expect(page.getByTestId("simple-examples")).toContainText("Robust path:");
   await expect(page.getByTestId("simple-examples")).toContainText("React/TanStack");
@@ -255,10 +260,10 @@ test("3. Version debug panel works", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Prepare API contract block" })).toBeInViewport();
   await expect(page.getByRole("button", { name: "Check version" })).toBeHidden();
   await expect(page.getByTestId("deployment-modes")).toBeHidden();
-  await openAdvancedDiagnostics(page);
+  const diagnostics = await openAdvancedDiagnostics(page);
   await expect(page.getByRole("button", { name: "Check version" })).toBeVisible();
-  await expect(page.getByText("Loaded bundle")).toBeVisible();
-  await expect(page.getByText("Session release")).toBeVisible();
+  await expect(diagnostics.getByText("Loaded bundle")).toBeVisible();
+  await expect(diagnostics.getByText("Session release")).toBeVisible();
   await expect(page.getByTestId("deployment-modes")).toContainText("asset-retention");
 });
 

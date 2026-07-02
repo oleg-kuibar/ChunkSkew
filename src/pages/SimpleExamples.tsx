@@ -66,11 +66,12 @@ export function SimpleExamplesPage({ routerMode }: { routerMode: RouterMode }) {
               <span>Solve path: {example.stepTitle}</span>
               <strong>{example.title}</strong>
               <p>{example.rule}</p>
+              <span className="example-code-label">Minimal rule</span>
               <pre className="example-code">
                 <code>{example.code}</code>
               </pre>
               <div className="example-anchor">
-                <span>Study</span>
+                <span>Robust source</span>
                 <code>{example.anchor}</code>
               </div>
               <span>

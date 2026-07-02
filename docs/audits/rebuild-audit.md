@@ -100,6 +100,7 @@ Change made in this pass:
 - Made every build stamp show `Bundle / Session / Latest` explicitly, and only mark the badge fully current when all three identities match.
 - Replaced remaining vague `current release` copy with session-specific wording and an `in sync` stamp state.
 - Aligned the always-visible release debug rail with `Loaded bundle`, `Session release`, and `Latest release` labels.
+- Scoped the debug-panel Playwright assertions to advanced diagnostics so the always-visible release rail and expanded diagnostics can share the same clear labels without strict-locator ambiguity.
 - Reused the shared build stamp on `/examples` instead of keeping a second local release strip.
 - Split sensitive mutation guard outcomes into named session, permission, update policy, and required-update result helpers so the shared safety path reads like the production checklist.
 - Collapsed repeated update-policy result boilerplate so `decideUpdatePolicy` reads as ordered product rules.
@@ -166,11 +167,17 @@ Change made in this pass:
 - Added a direct Playwright check for the tiny source examples so they stay runnable, not only rendered as text.
 - Added shared simple-source and `tests/simple-patterns.spec.ts` proof anchors on the simple examples page without repeating them on every card.
 - Added `tests/update-policy.spec.ts` to the visible `/examples` proof anchors now that the learning command covers pure policy decisions.
+- Retargeted the required-update simple card to `src/shared/updatePolicyEngine.ts` so the visible robust source matches the pure policy proof while the code block stays the tiny `required || !apiContractCompatible` rule.
+- Added a visible `Minimal rule` label above each simple card's code block so the page distinguishes tiny copy-paste rules from robust source anchors.
 - Shortened visible proof filenames on `/examples` so the first viewport stays readable while docs still link the full source paths.
 - Labeled each simple card's realistic workflow bridge as `Robust path` with shorter text so the page reads as rule, code, source, robust path, action.
 - Updated the retest runbook and example docs to use guided scenarios as the primary path instead of old manual mode-switching steps.
 - Added `pnpm test:learning:windows` as the one-command proof for the tiny source examples plus the rendered learning page.
+- Expanded `pnpm test:learning:windows` to include the start page baseline so the four-step mental model and ordered checklist stay covered by the learning proof.
+- Expanded `pnpm test:learning:windows` again to include named setup links from the start page and `/examples` into prepared robust workflows.
+- Expanded `pnpm test:learning:windows` to cover the guided banner's **Return to example** path and the reset confirmation strip.
 - Aligned the root README, knowledge map, and examples index with the guided setup flow so new readers see auto-reset, diagnostics, and `Return to example` before manual reset instructions.
+- Aligned the Production Checklist with the same `/examples` `Minimal rule` / `Robust source` path before listing rollout gates.
 - Replaced the start page's static pattern-vocabulary chips with an ordered `Solve in this order` checklist that mirrors the simple examples path.
 - Linked each `Solve in this order` step directly to the matching simple example card so the ordered checklist no longer depends on manual scanning.
 - Changed those checklist links from generic text to visible step numbers so each click target reflects the ordered path.
@@ -224,8 +231,8 @@ This matrix is the completion check for the rebuild goal. A row is only strong w
 | --- | --- | --- |
 | Explain build version skew from the first screen. | Start page has the four-step mental model plus **Solve in this order** links into matching simple examples. | `tests/version-skew.spec.ts` baseline and ordered deep-link assertions. |
 | Run one scenario without source reading. | `/examples?debug=1` cards use named setup buttons; Lab controls cards show reset, mode, and starting step before navigation. | `tests/version-skew.spec.ts` simple examples, guided scenario, and debug panel assertions. |
-| Minimal plus realistic examples for each pattern. | Pattern Index maps minimal rules to robust proofs; `/examples` links tiny source and policy decisions to guided workflow proofs. | `tests/simple-patterns.spec.ts`, `tests/update-policy.spec.ts`, and `tests/version-skew.spec.ts` learning assertions. |
+| Minimal plus realistic examples for each pattern. | Pattern Index maps minimal rules to robust proofs; `/examples` links tiny source and policy-engine decisions to guided workflow proofs. | `tests/simple-patterns.spec.ts`, `tests/update-policy.spec.ts`, and `tests/version-skew.spec.ts` learning assertions. |
 | Debug controls stay out of the primary path. | Manual modes, release state, preload table, telemetry, and audit table live under **Advanced diagnostics**. | `Version debug panel works` expects diagnostics hidden until opened. |
-| Reset/retest behavior is obvious. | Reset reloads with a success strip and build stamp returns to `Session dev-local`. | `Reset simulation state clears recovered release overrides`. |
-| Vocabulary matches across UI, docs, and tests. | Root README, Knowledge Map, Pattern Index, Example Index, Search Index, and Production Checklist use the same **Solve in this order**, named setup buttons, **Lab controls**, and **Return to example** path. | `pnpm test:learning:windows` plus docs review. |
-| Safety guarantees still hold. | Payment safe refresh, required update gates, idempotency replay, chunk fallback, draft restore, and asset retention stay covered by e2e tests. | Full `tests/version-skew.spec.ts` remains the broad safety suite. |
+| Reset/retest behavior is obvious. | Reset reloads with a success strip and build stamp returns to `Session dev-local`; guided setups expose **Return to example** after visiting Lab controls. | `pnpm test:learning:windows` covers reset confirmation and return navigation. |
+| Vocabulary matches across UI, docs, and tests. | Root README, Knowledge Map, Pattern Index, Example Index, Search Index, and Production Checklist use the same **Solve in this order**, **Minimal rule**, **Robust source**, named setup buttons, **Lab controls**, and **Return to example** path. | `pnpm test:learning:windows` plus docs review. |
+| Safety guarantees still hold. | Payment safe refresh, required update gates, idempotency replay, chunk fallback, draft restore, asset retention, router recovery, and telemetry stay covered by e2e tests. | Full `tests/version-skew.spec.ts` passed 50 tests with `pnpm test:e2e:windows test tests/version-skew.spec.ts --project=chromium --reporter=list`. |

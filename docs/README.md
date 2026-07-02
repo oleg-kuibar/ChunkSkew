@@ -13,7 +13,7 @@ Use it in three modes:
 | Step | Where | What to prove |
 | --- | --- | --- |
 | 1 | `/?debug=1` | The four-step mental model and ordered pattern checklist are understandable before source reading, with direct links into matching simple examples. |
-| 2 | `/examples?debug=1` | Each minimal rule has tiny source, source and policy proof anchors, a robust path, and a named proof setup. |
+| 2 | `/examples?debug=1` | Each card labels the `Minimal rule`, names a `Robust source`, shows proof anchors, and opens a named proof setup. |
 | 3 | **Open [proof] setup** | The app resets state, sets the lab mode, and opens the prepared workflow. |
 | 4 | **Lab controls** and **Return to example** | Diagnostics stay opt-in while the prepared workflow remains recoverable. |
 | 5 | [Production Checklist](reference/production-checklist.md) | The demo maps to rollout gates for a real React/Vite SPA. |

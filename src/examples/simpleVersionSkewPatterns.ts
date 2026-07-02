@@ -166,11 +166,11 @@ export const simplePatternCatalog = [
     slug: "required-update-gate",
     stepTitle: "Gate risky actions",
     title: "Required update gate",
-    summary: "Block new sensitive mutations only for required updates or incompatible APIs.",
-    rule: "Block new risky mutations only when the update is required or the API contract is incompatible.",
-    hook: "Sensitive mutation guards without page crashes or surprise refreshes.",
+    summary: "Block risky mutations when a required update is pending or the API contract is incompatible.",
+    rule: "Let the policy engine block new risky mutations only when the update is required or the API contract is incompatible.",
+    hook: "Policy decisions feeding sensitive mutation guards without page crashes or surprise refreshes.",
     code: simplePatternSnippets.requiredUpdateGate,
-    anchor: "src/shared/sensitiveMutationGuard.ts",
+    anchor: "src/shared/updatePolicyEngine.ts",
     scenarioId: "api-contract"
   },
   {

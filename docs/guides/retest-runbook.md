@@ -98,4 +98,4 @@ pnpm test:e2e:windows
 pnpm build
 ```
 
-The shortest proof for the learning path is `pnpm test:learning:windows`. The full behavior suite lives in `tests/version-skew.spec.ts`.
+The shortest proof for the learning path is `pnpm test:learning:windows`. It covers the start page baseline, simple source examples, pure update-policy decisions, the rendered `/examples` page, named setup links into prepared robust workflows, **Return to example**, and reset confirmation. The full behavior suite lives in `tests/version-skew.spec.ts`.

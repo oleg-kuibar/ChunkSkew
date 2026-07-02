@@ -35,6 +35,10 @@ test("simple version skew patterns stay copy-pasteable", () => {
   expect(startPageScenarioCatalog.map((scenario) => scenario.id)).toEqual(["payment-safe-refresh", "missing-chunk", "kyb-draft"]);
   expect(guidedScenarioTitle("missing-chunk")).toBe("Missing chunk fallback");
   expect(guidedScenarioSetupLabel("missing-chunk")).toBe("Open Missing chunk fallback setup");
+  expect(simplePatternCatalog.find((pattern) => pattern.slug === "required-update-gate")).toMatchObject({
+    anchor: "src/shared/updatePolicyEngine.ts",
+    code: "const blocked = required || !apiContractCompatible;"
+  });
 
   const guidedScenarioIds = new Set(guidedScenarioCatalog.map((scenario) => scenario.id));
   for (const pattern of simplePatternCatalog) {

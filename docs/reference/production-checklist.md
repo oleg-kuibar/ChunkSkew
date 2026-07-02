@@ -4,7 +4,7 @@ Use this checklist before enforcing strict build version skew behavior in a real
 
 ## Ordered Rollout Map
 
-Use the same order as the app's **Solve in this order** checklist:
+Use the same order as the app's **Solve in this order** checklist. Start from `/examples?debug=1`: each card shows a `Minimal rule`, a `Robust source`, and a named proof setup before you apply the production gate.
 
 | Order | Production gate |
 | --- | --- |

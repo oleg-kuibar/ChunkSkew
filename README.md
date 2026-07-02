@@ -11,8 +11,8 @@ This repo uses fake deterministic fintech data only. It does not import from, in
 Fast path for learning and proving the pattern:
 
 1. Open `/?debug=1` and read the four-step mental model plus **Solve in this order**.
-2. Use the **Open Step** links or open `/examples?debug=1` for minimal rules, shared `Simple source`, policy proof, and `Verified by` anchors.
-3. Use each card's `Study` anchor for the robust implementation, then click the named **Open ... setup** button to run the workflow proof.
+2. Use the **Open Step** links or open `/examples?debug=1` for cards labeled `Minimal rule`, `Robust source`, `Simple source`, and `Verified by`.
+3. Use each card's `Robust source` anchor for the implementation, then click the named **Open ... setup** button to run the workflow proof.
 4. Use **Lab controls** for diagnostics, then **Return to example** in the guided banner to continue the prepared workflow.
 5. Prove the learning path with:
 
