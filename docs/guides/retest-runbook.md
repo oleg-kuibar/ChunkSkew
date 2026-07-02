@@ -16,7 +16,7 @@ http://localhost:5173/debug/version-skew?debug=1&router=react
 
 ## Reset State
 
-Click **Reset simulation state** on the debug page when replaying a manual path or clearing the whole lab.
+Click **Reset simulation state** on the Lab controls page when replaying a manual path or clearing the whole lab.
 
 Guided scenario cards reset automatically before they prepare a scenario, so you do not need a separate reset click before **Prepare payment recovery**, **Prepare missing chunk fallback**, **Prepare KYB draft review**, or **Prepare API contract block**.
 

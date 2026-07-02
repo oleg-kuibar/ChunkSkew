@@ -896,6 +896,10 @@ textarea:focus {
   font-size: 13px;
 }
 
+.example-pattern-card > span strong {
+  color: var(--ink);
+}
+
 .example-state-strip strong {
   overflow-wrap: anywhere;
 }

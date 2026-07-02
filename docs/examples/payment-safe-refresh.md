@@ -14,7 +14,7 @@ Prove that a required update does not lose the payment draft and does not create
 4. Enter a memo.
 5. Continue through amount, schedule, review, and MFA.
 6. Use **Lab controls** in the guided banner, open **Advanced diagnostics**, and select `broken`.
-7. Return to `/payments/create/mfa?debug=1&router=react`.
+7. Click **Return to example** in the guided banner.
 8. Click **Submit payment**.
 9. Confirm `RequiredUpdateGate` blocks the risky mutation.
 10. Click **Refresh safely**.

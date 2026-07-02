@@ -163,8 +163,8 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
     <div className="page-stack">
       <section className="page-heading">
         <div>
-          <p className="eyebrow">Internal simulation</p>
-          <h1>Version skew controls</h1>
+          <p className="eyebrow">Version skew simulation</p>
+          <h1>Lab controls</h1>
         </div>
         <button
           className="button"

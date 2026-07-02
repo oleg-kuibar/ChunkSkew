@@ -118,6 +118,7 @@ test("1. Baseline app loads", async ({ page }) => {
   await expect(page.getByText("The mental model")).toBeVisible();
   await expect(page.getByText("4. Recovery is safe")).toBeInViewport();
   await expect(page.getByText("Open guided setup").first()).toBeVisible();
+  await expect(page.getByText("Open lab controls").first()).toBeVisible();
   await expect(page.getByRole("link", { name: "Study simple examples" })).toHaveAttribute("href", "/examples?debug=1&router=react");
 });
 
@@ -125,6 +126,7 @@ test("1b. Simple examples page teaches core patterns", async ({ page }) => {
   await prepare(page);
   await open(page, "/examples");
   await expect(page.getByRole("heading", { name: "Simple examples" })).toBeVisible();
+  await expect(page.getByText("Small rules, robust paths")).toBeVisible();
   const releaseStrip = page.locator('section[aria-label="Bundle session latest comparison"]');
   await expect(releaseStrip).toContainText("Bundle");
   await expect(releaseStrip).toContainText("Session");
@@ -138,6 +140,7 @@ test("1b. Simple examples page teaches core patterns", async ({ page }) => {
   await expect(page.getByTestId("simple-proof-anchors")).toContainText("simple-patterns.spec.ts");
   await expect(page.getByTestId("simple-proof-anchors")).toContainText("pnpm test:learning:windows");
   await expect(page.getByTestId("simple-examples")).toContainText("src/shared/chunkRecoveryController.ts");
+  await expect(page.getByTestId("simple-examples")).toContainText("Robust path:");
   await expect(page.getByTestId("simple-examples")).toContainText("Open lab controls");
   await expect(page.getByTestId("router-mode-switch").getByRole("link", { name: "React" })).toHaveAttribute("aria-current", "page");
 
@@ -197,7 +200,7 @@ test("3. Version debug panel works", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await prepare(page);
   await open(page, "/debug/version-skew");
-  await expect(page.getByRole("heading", { name: "Version skew controls" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Lab controls" })).toBeVisible();
   await expect(page.getByTestId("guided-scenarios")).toContainText("Pick one scenario");
   await expect(page.getByTestId("guided-scenarios")).toContainText("starts from a clean reset");
   await expect(page.getByTestId("guided-scenario-missing-chunk")).toContainText("Reset included");
@@ -292,7 +295,7 @@ test("3b. Reset simulation state clears recovered release overrides", async ({ p
   });
   await page.getByRole("button", { name: "Reset simulation state" }).click();
   await page.waitForLoadState("domcontentloaded");
-  await expect(page.getByRole("heading", { name: "Version skew controls" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Lab controls" })).toBeVisible();
   await expect(page.getByTestId("build-version-stamp").first()).toContainText("Bundle dev-local");
   await expect(page.getByTestId("build-version-stamp").first()).toContainText("Session dev-local");
   await expect(page.getByTestId("build-version-stamp").first()).not.toContainText("Session release-b");

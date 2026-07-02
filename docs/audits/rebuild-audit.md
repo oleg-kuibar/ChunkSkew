@@ -64,6 +64,8 @@ Change made in this pass:
 
 - Renamed the shell to `ChunkSkew Lab`.
 - Renamed sidebar items to `Start here`, `Payment example`, `Invoice example`, `Card example`, `KYB example`, `Report example`, `Session and roles`, `Audit log`, and `Lab controls`.
+- Renamed the Lab controls page heading and start-page control card to `Lab controls` so navigation, cards, docs, and tests use the same label.
+- Updated the retest docs to describe the Lab controls page and guided `Return to example` path instead of old manual route reconstruction.
 
 ### 3. Conceptual complexity is higher than code complexity
 
@@ -115,7 +117,7 @@ Change made in the next pass:
 - Clarified in the guided runner that scenario cards start from a clean reset.
 - Changed guided scenario cards to reset browser and backend simulation state automatically before applying their scenario mode.
 - Added `Reset included` to each guided scenario card so the setup contract is visible at the click target.
-- Named the scenario lifecycle as `prepareGuidedScenario` and `finishGuidedScenario` so the debug page no longer hides reset/setup/navigation inside one inline mutation block.
+- Named the scenario lifecycle as `prepareGuidedScenario` and `finishGuidedScenario` so the Lab controls page no longer hides reset/setup/navigation inside one inline mutation block.
 - Renamed release summary labels from ambiguous `current release` wording to `loaded bundle`, `session release`, and `latest release`.
 - Moved manual mode controls, release state, preload status, telemetry, and audit trail into a collapsible advanced diagnostics section.
 - Moved the manual `Check version` action into advanced diagnostics so the primary lab page keeps only scenario setup and full reset visible.
@@ -153,6 +155,7 @@ Change made in this pass:
 - Added a direct Playwright check for the tiny source examples so they stay runnable, not only rendered as text.
 - Added shared simple-source and `tests/simple-patterns.spec.ts` proof anchors on the simple examples page without repeating them on every card.
 - Shortened visible proof filenames on `/examples` so the first viewport stays readable while docs still link the full source paths.
+- Labeled each simple card's realistic workflow bridge as `Robust path` with shorter text so the page reads as rule, code, source, robust path, action.
 - Updated the retest runbook and example docs to use guided scenarios as the primary path instead of old manual mode-switching steps.
 - Added `pnpm test:learning:windows` as the one-command proof for the tiny source examples plus the rendered learning page.
 - Aligned the root README, knowledge map, and examples index with the guided setup flow so new readers see auto-reset, diagnostics, and `Return to example` before manual reset instructions.

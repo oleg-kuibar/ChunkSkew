@@ -60,7 +60,7 @@ const scenarioLinks = [
     icon: FileClock
   },
   {
-    title: "Version skew controls",
+    title: "Lab controls",
     body: "Reset state, switch deployment modes, inspect release identity, and review preload status.",
     href: "/debug/version-skew",
     icon: ShieldCheck
@@ -143,7 +143,7 @@ export function DashboardPage({ routerMode }: { routerMode: RouterMode }) {
               <strong>{scenario.title}</strong>
               <p>{scenario.body}</p>
               <span>
-                {scenario.scenarioId ? "Open guided setup" : "Open controls"}
+                {scenario.scenarioId ? "Open guided setup" : "Open lab controls"}
                 <ArrowRight aria-hidden="true" />
               </span>
             </a>

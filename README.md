@@ -53,7 +53,7 @@ Open:
 - React Router mode: `http://localhost:5173/?debug=1&router=react`
 - TanStack Router mode: `http://localhost:5173/?debug=1&router=tanstack`
 - Simple examples: `http://localhost:5173/examples?debug=1`
-- Version skew controls: `http://localhost:5173/debug/version-skew?debug=1`
+- Lab controls: `http://localhost:5173/debug/version-skew?debug=1`
 
 Use the topbar router switch to replay the same route in React Router or TanStack Router mode.
 
@@ -66,7 +66,7 @@ pnpm dev
 
 ## Reset State To Retest
 
-Open `/debug/version-skew?debug=1` and click **Reset simulation state**.
+Open Lab controls at `/debug/version-skew?debug=1` and click **Reset simulation state**.
 
 Guided scenario cards reset automatically before they prepare a scenario, so a manual reset is only needed before custom/manual replay.
 

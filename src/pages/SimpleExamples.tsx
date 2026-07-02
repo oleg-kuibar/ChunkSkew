@@ -15,7 +15,7 @@ const examples = [
     title: "Release identity",
     icon: GitBranch,
     rule: "Always compare the loaded bundle, the session release, and the latest release as separate facts.",
-    hook: "Use this before rendering badges, sending request headers, or deciding whether an update is pending.",
+    hook: "Badges, request headers, and update decisions.",
     code: simplePatternSnippets.releaseIdentity,
     anchor: "src/shared/releaseIdentity.ts",
     href: "/debug/version-skew"
@@ -24,7 +24,7 @@ const examples = [
     title: "Chunk recovery",
     icon: FileWarning,
     rule: "Classify lazy import failures, reload once when safe, then stop and show a controlled fallback.",
-    hook: "Use this around route imports, modal imports, Vite preload errors, and router error boundaries.",
+    hook: "Route imports, modal imports, preload errors, and router boundaries.",
     code: simplePatternSnippets.chunkRecovery,
     anchor: "src/shared/chunkRecoveryController.ts",
     href: "/debug/version-skew",
@@ -34,7 +34,7 @@ const examples = [
     title: "Safe refresh",
     icon: RefreshCcw,
     rule: "Save draft and idempotency context before refreshing an old tab onto the latest release.",
-    hook: "Use this from required update gates, sticky banners, and chunk failure fallbacks.",
+    hook: "Required gates, sticky banners, and chunk fallbacks.",
     code: simplePatternSnippets.safeRefresh,
     anchor: "src/shared/versionCheckClient.ts",
     href: "/debug/version-skew",
@@ -44,7 +44,7 @@ const examples = [
     title: "Idempotent mutation",
     icon: KeyRound,
     rule: "Retry the same sensitive action with the same key and return the previous result.",
-    hook: "Use this for payment submit, approval, card controls, KYB submit, vendors, roles, and API keys.",
+    hook: "Payment submit, approvals, card controls, KYB, vendors, roles, and API keys.",
     code: simplePatternSnippets.idempotentMutation,
     anchor: "src/shared/idempotencyKeyStore.ts",
     href: "/debug/version-skew",
@@ -54,7 +54,7 @@ const examples = [
     title: "Required update gate",
     icon: ShieldCheck,
     rule: "Block new risky mutations only when the update is required or the API contract is incompatible.",
-    hook: "Use this in mutation guards, not as a global page crash or surprise refresh.",
+    hook: "Sensitive mutation guards without page crashes or surprise refreshes.",
     code: simplePatternSnippets.requiredUpdateGate,
     anchor: "src/shared/sensitiveMutationGuard.ts",
     href: "/debug/version-skew",
@@ -64,7 +64,7 @@ const examples = [
     title: "Asset strategy",
     icon: Braces,
     rule: "Retain old chunks or pin clients to deployments so recovery is the backup, not the normal path.",
-    hook: "Use this at the CDN/static-host layer with a defined compatibility window.",
+    hook: "CDN/static hosting with a defined compatibility window.",
     code: simplePatternSnippets.assetStrategy,
     anchor: "src/shared/assetRetentionSimulator.ts",
     href: "/debug/version-skew"
@@ -84,7 +84,7 @@ export function SimpleExamplesPage({ routerMode }: { routerMode: RouterMode }) {
           <p className="eyebrow">Minimal patterns</p>
           <h1>Simple examples</h1>
         </div>
-        <span className="badge badge-muted">Small rules, real hooks</span>
+        <span className="badge badge-muted">Small rules, robust paths</span>
       </section>
 
       <section className="example-state-strip" aria-label="Bundle session latest comparison">
@@ -139,7 +139,9 @@ export function SimpleExamplesPage({ routerMode }: { routerMode: RouterMode }) {
                 <span>Study</span>
                 <code>{example.anchor}</code>
               </div>
-              <span>{example.hook}</span>
+              <span>
+                <strong>Robust path:</strong> {example.hook}
+              </span>
               <a className="button button-light" href={debugRouteHref(example.href, routerMode, example.scenarioId)}>
                 {example.scenarioId ? "Open guided setup" : "Open lab controls"}
               </a>
