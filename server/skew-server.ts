@@ -503,12 +503,18 @@ app.post("/api/debug/version-skew/mode", (req, res) => {
 });
 
 app.post("/api/debug/version-skew/reset", (req, res) => {
-  const next = createDefaultSkewState();
+  const clientRelease = String(req.header("x-client-release") ?? "");
+  const routerMode = String(req.header("x-router-mode") ?? "react-router");
+  const next = {
+    ...createDefaultSkewState(),
+    activeReleaseId: clientRelease || "release-a",
+    latestReleaseId: clientRelease || "release-a"
+  };
   writeState(next);
   resetMockData();
   idempotencyRecords.clear();
   auditEvents.length = 0;
-  const payload = versionMetadata(String(req.header("x-router-mode") ?? "react-router"), String(req.header("x-client-release") ?? ""));
+  const payload = versionMetadata(routerMode, clientRelease);
   publishReleaseEvent(primaryReleaseEvent(next), payload);
   res.json({ ...next, version: payload });
 });

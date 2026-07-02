@@ -39,9 +39,11 @@ Use it in three modes:
 
 - [Example Index](examples/README.md)
 - App route: `/examples?debug=1`
+- Standalone/fake-data/release-awareness contract proof: [`../tests/project-contract.spec.ts`](../tests/project-contract.spec.ts)
 - Simple source: [`../src/examples/simpleVersionSkewPatterns.ts`](../src/examples/simpleVersionSkewPatterns.ts)
 - Simple source and docs vocabulary proof: [`../tests/simple-patterns.spec.ts`](../tests/simple-patterns.spec.ts)
 - Pure policy proof: [`../tests/update-policy.spec.ts`](../tests/update-policy.spec.ts)
+- Mutation metadata proof: [`../tests/api-client.spec.ts`](../tests/api-client.spec.ts)
 - [Payment Safe Refresh](examples/payment-safe-refresh.md)
 - [KYB Draft Recovery](examples/kyb-draft-recovery.md)
 - [Router Chunk Failure](examples/router-chunk-failure.md)

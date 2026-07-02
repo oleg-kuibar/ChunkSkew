@@ -34,6 +34,10 @@ export function SimpleExamplesPage({ routerMode }: { routerMode: RouterMode }) {
           <h1>Simple examples</h1>
         </div>
         <div className="heading-badges">
+          <a className="button button-secondary" href={debugRouteHref("/debug/version-skew", routerMode)}>
+            <RefreshCcw aria-hidden="true" />
+            Reset or retest
+          </a>
           <span className="badge badge-muted">Small rules, robust paths</span>
           <BuildVersionStamp routerMode={routerMode} compact />
         </div>

@@ -144,6 +144,7 @@ test("1b. Simple examples page teaches core patterns", async ({ page }) => {
   await open(page, "/examples");
   await expect(page.getByRole("heading", { name: "Simple examples" })).toBeVisible();
   await expect(page.getByText("Small rules, robust paths")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Reset or retest" })).toHaveAttribute("href", "/debug/version-skew?debug=1&router=react");
   const releaseStamp = page.locator(".page-heading").getByTestId("build-version-stamp");
   await expect(releaseStamp).toContainText("Bundle");
   await expect(releaseStamp).toContainText("Session");
@@ -236,6 +237,14 @@ test("1f. Asset strategy opens a retained-asset proof scenario", async ({ page }
   await expect(page.getByTestId("guided-scenario-banner")).toContainText("Asset retention safety");
   await expect(page.getByRole("heading", { name: "Transaction exposure report" })).toBeVisible();
   await expect(page.getByTestId("chunk-failure-fallback")).toBeHidden();
+});
+
+test("1g. Simple examples reset controls fit mobile width", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await prepare(page);
+  await open(page, "/examples");
+  await expect(page.getByRole("link", { name: "Reset or retest" })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
 });
 
 test("2. Bundle, session, and latest release IDs are visible in debug mode", async ({ page }) => {

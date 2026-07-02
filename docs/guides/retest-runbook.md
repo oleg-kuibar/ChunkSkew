@@ -16,7 +16,7 @@ http://localhost:5173/debug/version-skew?debug=1&router=react
 
 ## Reset State
 
-Click **Reset simulation state** on the Lab controls page when replaying a manual path or clearing the whole lab.
+From Simple examples, click **Reset or retest** to open Lab controls. Click **Reset simulation state** there when replaying a manual path or clearing the whole lab.
 
 After the reload, the Lab controls page shows a reset confirmation strip; the build stamp should read `Session dev-local` with `in sync` status again unless you prepare another scenario.
 

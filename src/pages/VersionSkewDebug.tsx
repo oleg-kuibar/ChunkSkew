@@ -56,8 +56,8 @@ interface DebugState {
 }
 
 async function prepareGuidedScenario(routerMode: RouterMode, scenario: GuidedScenario) {
-  await apiFetch<DebugState>("/api/debug/version-skew/reset", routerMode, { method: "POST" });
   resetBrowserSimulationState(routerMode);
+  await apiFetch<DebugState>("/api/debug/version-skew/reset", routerMode, { method: "POST" });
   const data = await apiFetch<DebugState>("/api/debug/version-skew/mode", routerMode, {
     method: "POST",
     body: JSON.stringify({ mode: scenario.mode })
@@ -99,12 +99,13 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
     }
   });
   const resetMutation = useMutation({
-    mutationFn: () =>
-      apiFetch<DebugState>("/api/debug/version-skew/reset", routerMode, {
-        method: "POST"
-      }),
-    onSuccess() {
+    mutationFn: () => {
       resetBrowserSimulationState(routerMode);
+      return apiFetch<DebugState>("/api/debug/version-skew/reset", routerMode, {
+        method: "POST"
+      });
+    },
+    onSuccess() {
       window.location.assign(debugRouteHref("/debug/version-skew?reset=1", routerMode));
     }
   });

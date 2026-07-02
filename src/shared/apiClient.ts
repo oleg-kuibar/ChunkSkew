@@ -1,15 +1,18 @@
 import { getCurrentReleaseIdentity } from "./releaseIdentity";
 import { getSessionSnapshot } from "./sessionSimulation";
-import type { RouterMode, SensitiveMutationIntent } from "./types";
+import type { ReleaseMetadata, RouterMode, SensitiveMutationIntent, SessionSnapshot } from "./types";
 
 export interface ApiOptions extends RequestInit {
   idempotencyKey?: string;
   mutationIntent?: SensitiveMutationIntent;
 }
 
-export async function apiFetch<T>(path: string, routerMode: RouterMode, options: ApiOptions = {}): Promise<T> {
-  const release = getCurrentReleaseIdentity(routerMode);
-  const session = getSessionSnapshot();
+export function buildApiHeaders(
+  routerMode: RouterMode,
+  options: ApiOptions = {},
+  release: ReleaseMetadata = getCurrentReleaseIdentity(routerMode),
+  session: SessionSnapshot = getSessionSnapshot()
+) {
   const headers = new Headers(options.headers);
   headers.set("content-type", headers.get("content-type") ?? "application/json");
   headers.set("x-client-release", release.releaseId);
@@ -25,7 +28,11 @@ export async function apiFetch<T>(path: string, routerMode: RouterMode, options:
     headers.set("x-mutation-intent", options.mutationIntent);
     headers.set("x-mutation-created-at", new Date().toISOString());
   }
+  return headers;
+}
 
+export async function apiFetch<T>(path: string, routerMode: RouterMode, options: ApiOptions = {}): Promise<T> {
+  const headers = buildApiHeaders(routerMode, options);
   const response = await fetch(path, { ...options, headers });
   const contentType = response.headers.get("content-type") ?? "";
   const payload = contentType.includes("application/json") ? await response.json() : await response.text();
