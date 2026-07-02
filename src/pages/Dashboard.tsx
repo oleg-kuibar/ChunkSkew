@@ -9,9 +9,10 @@ import {
   RefreshCcw,
   Route,
   ShieldCheck,
-  WalletCards
+  WalletCards,
+  type LucideIcon
 } from "lucide-react";
-import { simplePatternCatalog } from "../examples/simpleVersionSkewPatterns";
+import { primaryGuidedScenario, simplePatternCatalog, startPageScenarioCatalog, type GuidedScenarioId } from "../examples/simpleVersionSkewPatterns";
 import { debugRouteHref } from "../shared/routerLinks";
 import type { RouterMode } from "../shared/types";
 
@@ -38,35 +39,13 @@ const labSteps = [
   }
 ];
 
-const scenarioLinks = [
-  {
-    title: "Payment safe refresh",
-    body: "Autosave a payment, force a required update, refresh safely, and submit without duplicates.",
-    href: "/debug/version-skew",
-    scenarioId: "payment-safe-refresh",
-    icon: WalletCards
-  },
-  {
-    title: "Missing lazy chunk",
-    body: "Switch to broken mode and open a lazy review route to see controlled recovery.",
-    href: "/debug/version-skew",
-    scenarioId: "missing-chunk",
-    icon: Bug
-  },
-  {
-    title: "KYB draft compatibility",
-    body: "Seed an incompatible KYB draft, then verify the app asks for review instead of submitting.",
-    href: "/debug/version-skew",
-    scenarioId: "kyb-draft",
-    icon: FileClock
-  },
-  {
-    title: "Lab controls",
-    body: "Reset state, switch deployment modes, inspect release identity, and review preload status.",
-    href: "/debug/version-skew",
-    icon: ShieldCheck
-  }
-];
+const scenarioIcons: Record<GuidedScenarioId, LucideIcon> = {
+  "payment-safe-refresh": WalletCards,
+  "missing-chunk": Bug,
+  "kyb-draft": FileClock,
+  "api-contract": ShieldCheck,
+  "asset-strategy": BadgeCheck
+};
 
 export function DashboardPage({ routerMode }: { routerMode: RouterMode }) {
   return (
@@ -88,7 +67,7 @@ export function DashboardPage({ routerMode }: { routerMode: RouterMode }) {
               <ShieldCheck aria-hidden="true" />
               Open lab controls
             </a>
-            <a className="button button-light" href={debugRouteHref("/debug/version-skew", routerMode, "payment-safe-refresh")}>
+            <a className="button button-light" href={debugRouteHref("/debug/version-skew", routerMode, primaryGuidedScenario.id)}>
               <WalletCards aria-hidden="true" />
               Try payment recovery
             </a>
@@ -127,20 +106,29 @@ export function DashboardPage({ routerMode }: { routerMode: RouterMode }) {
             <p>Each path is a working scenario backed by tests and fake deterministic data.</p>
           </div>
         </header>
-        {scenarioLinks.map((scenario) => {
-          const Icon = scenario.icon;
+        {startPageScenarioCatalog.map((scenario) => {
+          const Icon = scenarioIcons[scenario.id];
           return (
-            <a className="learning-card learning-card-link" href={debugRouteHref(scenario.href, routerMode, scenario.scenarioId)} key={scenario.title}>
+            <a className="learning-card learning-card-link" href={debugRouteHref("/debug/version-skew", routerMode, scenario.id)} key={scenario.title}>
               <Icon aria-hidden="true" />
               <strong>{scenario.title}</strong>
-              <p>{scenario.body}</p>
+              <p>{scenario.outcome}</p>
               <span>
-                {scenario.scenarioId ? "Open guided setup" : "Open lab controls"}
+                Open {scenario.title} setup
                 <ArrowRight aria-hidden="true" />
               </span>
             </a>
           );
         })}
+        <a className="learning-card learning-card-link" href={debugRouteHref("/debug/version-skew", routerMode)}>
+          <ShieldCheck aria-hidden="true" />
+          <strong>Lab controls</strong>
+          <p>Reset state, switch deployment modes, inspect release identity, and review preload status.</p>
+          <span>
+            Open lab controls
+            <ArrowRight aria-hidden="true" />
+          </span>
+        </a>
       </section>
 
       <section className="learning-grid pattern-map" aria-labelledby="pattern-map-heading">

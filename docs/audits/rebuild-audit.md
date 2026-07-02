@@ -108,6 +108,8 @@ Change made in this pass:
 Change made in the next pass:
 
 - Added a guided scenario runner above the manual controls.
+- Renamed the runner copy to `Proof setup` / `Pick one proof` so Lab controls matches the named proof setup links on the start and examples pages.
+- Renamed the active banner's accessible labels to `Active proof setup` and `Clear proof setup` so assistive tech uses the same vocabulary.
 - Added one-click preparation for payment recovery, missing chunk fallback, KYB draft review, and API contract blocking.
 - Moved live skew-mode writes to ignored runtime state so retests no longer leave tracked `server/skew-state.json` diffs.
 - Aligned CLI skew scripts and lab controls so they assign the same update severity for each mode.
@@ -127,8 +129,11 @@ Change made in the next pass:
 - Added current-step status and a `Return to example` action to the guided scenario banner so users can visit lab controls and get back to the prepared workflow.
 - Centralized debug/router/scenario URL generation in `src/shared/routerLinks.ts` so start-page, examples-page, guided-banner, and reset links cannot drift.
 - Updated the retest runbook to use the guided banner's `Return to example` path instead of telling testers to manually reconstruct the route.
-- Renamed start-page and simple-example entry links to `Open guided setup` so they do not imply that setup already ran before the lab card is clicked.
-- Added a reset confirmation strip after **Reset simulation state** so manual retests visibly prove that drafts, release overrides, reload flags, and guided scenario state were cleared while debug/router choice stayed on.
+- Renamed start-page and simple-example entry links to named setup actions so they do not imply that setup already ran before the lab card is clicked.
+- Added a reset confirmation strip after **Reset simulation state** so manual retests visibly prove that drafts, release overrides, reload flags, and proof setup state were cleared while debug/router choice stayed on.
+- Moved guided scenario metadata into `src/examples/simpleVersionSkewPatterns.ts` so the start page, simple examples, Lab controls, and tests share one scenario catalog.
+- Marked start-page scenarios inside the same catalog so the homepage no longer hard-codes which robust examples are featured.
+- Named the primary guided scenario in the catalog so the start-page payment CTA no longer depends on the first featured item.
 
 Remaining rebuild target:
 
@@ -167,6 +172,12 @@ Change made in this pass:
 - Aligned `/examples` step order with the Pattern Index: required-update gates come before idempotency replay.
 - Aligned `src/examples/simpleVersionSkewPatterns.ts` and its test order with the same six-step path so source study matches the UI.
 - Moved the six-step slug, label, summary, source, and robust-path metadata into one tiny catalog consumed by both the start page and `/examples`.
+- Removed repeated Lab controls hrefs from the simple-pattern catalog; the catalog now stores the rule and optional guided proof id only.
+- Verified that every simple example's guided scenario id exists in the shared scenario catalog so named setup links cannot silently drift.
+- Changed simple-example and start-page setup buttons to name the guided proof scenario they open, instead of using a generic `Open guided setup` label.
+- Added a TypeScript catalog contract so mistyped simple-example guided scenario ids fail at compile time before they reach the UI.
+- Added a start-page scenario catalog proof so the first robust examples stay intentionally ordered with the rest of the learning path.
+- Added a primary guided scenario proof so the recommended payment recovery walkthrough is explicit in source and tests.
 - Added `Open Step`, `Solve path`, and simple-pattern-catalog terms to the Search Index so the new UI vocabulary is discoverable.
 - Reworked the Pattern Index into a minimal-rule to robust-proof map so each pattern has a clear tiny example and realistic workflow proof.
 - Linked `Router Lazy Boundaries` directly from the ordered chunk-recovery row so router-specific recovery stays discoverable instead of hiding behind the shared recovery controller.
@@ -205,9 +216,9 @@ This matrix is the completion check for the rebuild goal. A row is only strong w
 | Done criterion | Current evidence | Verification |
 | --- | --- | --- |
 | Explain build version skew from the first screen. | Start page has the four-step mental model plus **Solve in this order** links into matching simple examples. | `tests/version-skew.spec.ts` baseline and ordered deep-link assertions. |
-| Run one scenario without source reading. | `/examples?debug=1` cards open guided setup; Lab controls cards show reset, mode, and starting step before navigation. | `tests/version-skew.spec.ts` simple examples, guided scenario, and debug panel assertions. |
+| Run one scenario without source reading. | `/examples?debug=1` cards use named setup buttons; Lab controls cards show reset, mode, and starting step before navigation. | `tests/version-skew.spec.ts` simple examples, guided scenario, and debug panel assertions. |
 | Minimal plus realistic examples for each pattern. | Pattern Index maps minimal rules to robust proofs; `/examples` links tiny source to guided workflow proofs. | `tests/simple-patterns.spec.ts` and `tests/version-skew.spec.ts` learning assertions. |
 | Debug controls stay out of the primary path. | Manual modes, release state, preload table, telemetry, and audit table live under **Advanced diagnostics**. | `Version debug panel works` expects diagnostics hidden until opened. |
 | Reset/retest behavior is obvious. | Reset reloads with a success strip and build stamp returns to `Session dev-local`. | `Reset simulation state clears recovered release overrides`. |
-| Vocabulary matches across UI, docs, and tests. | Root README, Knowledge Map, Pattern Index, Example Index, Search Index, and Production Checklist use the same **Solve in this order**, **Open guided setup**, **Lab controls**, and **Return to example** path. | `pnpm test:learning:windows` plus docs review. |
+| Vocabulary matches across UI, docs, and tests. | Root README, Knowledge Map, Pattern Index, Example Index, Search Index, and Production Checklist use the same **Solve in this order**, named setup buttons, **Lab controls**, and **Return to example** path. | `pnpm test:learning:windows` plus docs review. |
 | Safety guarantees still hold. | Payment safe refresh, required update gates, idempotency replay, chunk fallback, draft restore, and asset retention stay covered by e2e tests. | Full `tests/version-skew.spec.ts` remains the broad safety suite. |

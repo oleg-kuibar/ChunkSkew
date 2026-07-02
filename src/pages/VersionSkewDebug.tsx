@@ -1,7 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, Bug, CheckCircle2, FileClock, Play, RefreshCcw, ShieldCheck, Trash2, WalletCards } from "lucide-react";
+import {
+  AlertTriangle,
+  Bug,
+  CheckCircle2,
+  FileClock,
+  Play,
+  RefreshCcw,
+  ShieldCheck,
+  Trash2,
+  WalletCards,
+  type LucideIcon
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { AssetRetentionWarning } from "../components/UpdateSurfaces";
+import { guidedScenarioCatalog, type GuidedScenarioId } from "../examples/simpleVersionSkewPatterns";
 import { apiFetch } from "../shared/apiClient";
 import { setLocalSkewMode } from "../shared/assetRetentionSimulator";
 import { readPreloadStatuses } from "../shared/preloadWorkflowChunks";
@@ -24,76 +36,15 @@ const modes: SkewMode[] = [
   "api-contract-incompatible"
 ];
 
-const guidedScenarios = [
-  {
-    id: "payment-safe-refresh",
-    title: "Payment safe refresh",
-    mode: "asset-retention" as SkewMode,
-    modeLabel: "Retained assets",
-    href: "/payments/create/recipient",
-    startLabel: "Payment recipient step",
-    icon: WalletCards,
-    action: "Prepare payment recovery",
-    outcome: "Autosave a payment, force a required update, then refresh safely without duplicate submit.",
-    steps: ["Start with retained assets", "Fill the payment memo", "Force required update before submit"],
-    targetStepIndex: 1
-  },
-  {
-    id: "missing-chunk",
-    title: "Missing chunk fallback",
-    mode: "broken" as SkewMode,
-    modeLabel: "Missing chunks",
-    href: "/payments/create/review",
-    startLabel: "Payment review step",
-    icon: Bug,
-    action: "Prepare missing chunk fallback",
-    outcome: "Open a lazy review route while old chunks are unavailable and see controlled recovery.",
-    steps: ["Switch to broken assets", "Open lazy payment review", "Confirm fallback and reload-loop prevention"],
-    targetStepIndex: 2
-  },
-  {
-    id: "kyb-draft",
-    title: "KYB incompatible draft",
-    mode: "asset-retention" as SkewMode,
-    modeLabel: "Retained assets",
-    href: "/kyb/review",
-    startLabel: "KYB review step",
-    icon: FileClock,
-    action: "Prepare KYB draft review",
-    outcome: "Seed an incompatible KYB draft and verify the app asks for review instead of submitting.",
-    steps: ["Seed incompatible draft", "Open KYB review", "Review the compatibility fallback"],
-    targetStepIndex: 2,
-    seedKybDraft: true
-  },
-  {
-    id: "api-contract",
-    title: "API contract blocking",
-    mode: "api-contract-incompatible" as SkewMode,
-    modeLabel: "API contract block",
-    href: "/payments/create/mfa",
-    startLabel: "Payment MFA step",
-    icon: ShieldCheck,
-    action: "Prepare API contract block",
-    outcome: "Open a risky payment step with an incompatible API contract and watch mutation get paused.",
-    steps: ["Switch API contract", "Verify MFA", "Submit to see the guard"],
-    targetStepIndex: 1
-  },
-  {
-    id: "asset-strategy",
-    title: "Asset retention safety",
-    mode: "asset-retention" as SkewMode,
-    modeLabel: "Retained assets",
-    href: "/transactions/report",
-    startLabel: "Transaction report route",
-    icon: CheckCircle2,
-    action: "Prepare asset retention proof",
-    outcome: "Open a heavy lazy report while old assets are retained so the route loads instead of falling back.",
-    steps: ["Switch to retained assets", "Open lazy transaction report", "Confirm retained assets prevent fallback"],
-    targetStepIndex: 2
-  }
-];
+const scenarioIcons: Record<GuidedScenarioId, LucideIcon> = {
+  "payment-safe-refresh": WalletCards,
+  "missing-chunk": Bug,
+  "kyb-draft": FileClock,
+  "api-contract": ShieldCheck,
+  "asset-strategy": CheckCircle2
+};
 
-type GuidedScenario = (typeof guidedScenarios)[number];
+type GuidedScenario = (typeof guidedScenarioCatalog)[number];
 
 interface DebugState {
   mode: SkewMode;
@@ -117,7 +68,7 @@ async function prepareGuidedScenario(routerMode: RouterMode, scenario: GuidedSce
 function finishGuidedScenario(routerMode: RouterMode, data: DebugState, scenario: GuidedScenario) {
   setLocalSkewMode(routerMode, data.mode);
   applyReleasePayload(routerMode, data.version);
-  if (scenario.seedKybDraft) {
+  if ("seedKybDraft" in scenario && scenario.seedKybDraft) {
     seedIncompatibleKybDraft(routerMode);
   }
   writeGuidedScenarioState({
@@ -125,7 +76,7 @@ function finishGuidedScenario(routerMode: RouterMode, data: DebugState, scenario
     title: scenario.title,
     outcome: scenario.outcome,
     href: scenario.href,
-    steps: scenario.steps,
+    steps: [...scenario.steps],
     targetStepIndex: scenario.targetStepIndex
   });
   window.location.assign(debugRouteHref(scenario.href, routerMode));
@@ -172,8 +123,8 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
   const resetConfirmed = searchParams.get("reset") === "1";
   const suggestedScenarioId = searchParams.get("scenario") ?? undefined;
   const visibleScenarios = suggestedScenarioId
-    ? [...guidedScenarios].sort((a, b) => Number(b.id === suggestedScenarioId) - Number(a.id === suggestedScenarioId))
-    : guidedScenarios;
+    ? [...guidedScenarioCatalog].sort((a, b) => Number(b.id === suggestedScenarioId) - Number(a.id === suggestedScenarioId))
+    : guidedScenarioCatalog;
   const runGuidedScenario = (scenario: GuidedScenario) => scenarioMutation.mutate(scenario);
 
   return (
@@ -197,21 +148,21 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
       {resetConfirmed ? (
         <div className="notice notice-success" data-testid="reset-confirmation">
           <CheckCircle2 aria-hidden="true" />
-          <span>Simulation state reset. Drafts, release overrides, reload flags, and guided scenario were cleared. Debug mode and router choice stayed on.</span>
+          <span>Simulation state reset. Drafts, release overrides, reload flags, and proof setup were cleared. Debug mode and router choice stayed on.</span>
         </div>
       ) : null}
 
       <section className="scenario-runner" data-testid="guided-scenarios">
         <header className="section-header">
           <div>
-            <p className="eyebrow">Guided path</p>
-            <h2>Pick one scenario</h2>
+            <p className="eyebrow">Proof setup</p>
+            <h2>Pick one proof</h2>
             <p>Each card starts from a clean reset, sets the lab mode, and opens a focused example.</p>
           </div>
         </header>
         <div className="scenario-grid">
           {visibleScenarios.map((scenario) => {
-            const Icon = scenario.icon;
+            const Icon = scenarioIcons[scenario.id];
             const suggested = scenario.id === suggestedScenarioId;
             return (
               <article className={cx("scenario-card", suggested && "active")} data-testid={`guided-scenario-${scenario.id}`} key={scenario.id}>

@@ -117,7 +117,7 @@ test("1. Baseline app loads", async ({ page }) => {
   await expect(page.getByText("ChunkSkew Lab")).toBeVisible();
   await expect(page.getByText("The mental model")).toBeVisible();
   await expect(page.getByText("4. Recovery is safe")).toBeInViewport();
-  await expect(page.getByText("Open guided setup").first()).toBeVisible();
+  await expect(page.getByText("Open Payment safe refresh setup").first()).toBeVisible();
   await expect(page.getByText("Open lab controls").first()).toBeVisible();
   await expect(page.getByRole("heading", { name: "Solve in this order" })).toBeVisible();
   await expect(page.getByText("Pattern 1")).toBeVisible();
@@ -163,7 +163,8 @@ test("1b. Simple examples page teaches core patterns", async ({ page }) => {
   await expect(page.getByTestId("simple-examples")).toContainText("Robust path:");
   await expect(page.getByTestId("simple-examples")).toContainText("React/TanStack");
   await expect(page.getByTestId("simple-examples")).toContainText("Open lab controls");
-  await expect(page.getByTestId("simple-examples")).toContainText("Open guided setup");
+  await expect(page.getByTestId("simple-examples")).toContainText("Open Missing chunk fallback setup");
+  await expect(page.getByTestId("simple-examples")).toContainText("Open Payment safe refresh setup");
   await expect(page.getByTestId("router-mode-switch").getByRole("link", { name: "React" })).toHaveAttribute("aria-current", "page");
 
   await page.getByTestId("router-mode-switch").getByRole("link", { name: "TanStack" }).click();
@@ -198,7 +199,7 @@ test("1e. Simple examples prepare setup-dependent robust examples", async ({ pag
   await prepare(page);
   await open(page, "/examples");
   const chunkRecoveryCard = page.getByTestId("simple-examples").locator("article").filter({ hasText: "Chunk recovery" });
-  await chunkRecoveryCard.getByRole("link", { name: "Open guided setup" }).click();
+  await chunkRecoveryCard.getByRole("link", { name: "Open Missing chunk fallback setup" }).click();
   await expect(page).toHaveURL(/debug\/version-skew.*scenario=missing-chunk/);
   await expect(page.getByTestId("guided-scenario-missing-chunk")).toContainText("Recommended next");
 });
@@ -207,7 +208,7 @@ test("1f. Asset strategy opens a retained-asset proof scenario", async ({ page }
   await prepare(page);
   await open(page, "/examples");
   const assetStrategyCard = page.getByTestId("simple-examples").locator("article").filter({ hasText: "Asset strategy" });
-  await assetStrategyCard.getByRole("link", { name: "Open guided setup" }).click();
+  await assetStrategyCard.getByRole("link", { name: "Open Asset retention safety setup" }).click();
   await expect(page).toHaveURL(/debug\/version-skew.*scenario=asset-strategy/);
   await expect(page.getByTestId("guided-scenario-asset-strategy")).toBeInViewport();
   await expect(page.getByTestId("guided-scenario-asset-strategy")).toContainText("Recommended next");
@@ -239,7 +240,7 @@ test("3. Version debug panel works", async ({ page }) => {
   await prepare(page);
   await open(page, "/debug/version-skew");
   await expect(page.getByRole("heading", { name: "Lab controls" })).toBeVisible();
-  await expect(page.getByTestId("guided-scenarios")).toContainText("Pick one scenario");
+  await expect(page.getByTestId("guided-scenarios")).toContainText("Pick one proof");
   await expect(page.getByTestId("guided-scenarios")).toContainText("starts from a clean reset");
   await expect(page.getByTestId("guided-scenario-missing-chunk")).toContainText("Reset included");
   await expect(page.getByTestId("guided-scenario-missing-chunk")).toContainText("Lab mode Missing chunks");
@@ -298,6 +299,8 @@ test("3d. Guided scenario banner returns from lab controls to the prepared examp
   await open(page, "/debug/version-skew");
   await page.getByRole("button", { name: "Prepare payment recovery" }).click();
   await expect(page).toHaveURL(/payments\/create\/recipient/);
+  await expect(page.getByRole("region", { name: "Active proof setup" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Clear proof setup" })).toBeVisible();
   await expect(page.getByTestId("guided-scenario-status")).toContainText("Current: step 2 of 3");
 
   await page.getByTestId("guided-scenario-banner").getByRole("link", { name: "Lab controls" }).click();
@@ -338,6 +341,7 @@ test("3b. Reset simulation state clears recovered release overrides", async ({ p
   await expect(page).toHaveURL(/reset=1/);
   await expect(page.getByRole("heading", { name: "Lab controls" })).toBeVisible();
   await expect(page.getByTestId("reset-confirmation")).toContainText("Simulation state reset");
+  await expect(page.getByTestId("reset-confirmation")).toContainText("proof setup");
   await expect(page.getByTestId("reset-confirmation")).toContainText("Debug mode and router choice stayed on");
   await expect(page.getByTestId("build-version-stamp").first()).toContainText("Bundle dev-local");
   await expect(page.getByTestId("build-version-stamp").first()).toContainText("Session dev-local");

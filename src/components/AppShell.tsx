@@ -182,7 +182,7 @@ function GuidedScenarioBanner({
   const status = `${isTargetRoute ? "Current" : "Ready"}: step ${activeStepIndex + 1} of ${scenario.steps.length}`;
 
   return (
-    <section className="guided-scenario-banner" data-testid="guided-scenario-banner" aria-label="Active guided scenario">
+    <section className="guided-scenario-banner" data-testid="guided-scenario-banner" aria-label="Active proof setup">
       <ListChecks aria-hidden="true" />
       <div>
         <strong>{scenario.title}</strong>
@@ -205,7 +205,7 @@ function GuidedScenarioBanner({
         <a className="button button-light" href={debugRouteHref("/debug/version-skew", routerMode)}>
           Lab controls
         </a>
-        <button className="icon-button" type="button" aria-label="Clear guided scenario" title="Clear guided scenario" onClick={onClear}>
+        <button className="icon-button" type="button" aria-label="Clear proof setup" title="Clear proof setup" onClick={onClear}>
           <X aria-hidden="true" />
         </button>
       </div>

@@ -53,6 +53,12 @@ This page intentionally repeats common search terms so people can find the right
 - open step links
 - solve path labels
 - simple pattern catalog
+- guided scenario catalog
+- start page scenario catalog
+- guided proof scenario labels
+- primary guided scenario
+- proof setup
+- active proof setup
 
 ## Deployment Terms
 

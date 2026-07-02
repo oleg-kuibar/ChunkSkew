@@ -11,7 +11,7 @@ These patterns are reusable pieces for mitigating build version skew in React/Vi
 | 5 | Retry with the same key and return the previous result. | Mock backend idempotency replay for sensitive mutations. | [Autosave And Idempotency](autosave-and-idempotency.md) |
 | 6 | Retain old chunks or pin clients to deployments. | Asset retention guided setup opens a heavy lazy report that loads instead of falling back. | [Asset Retention And Deployment Affinity](asset-retention-and-deployment-affinity.md) |
 
-Start with `/examples?debug=1` and `src/examples/simpleVersionSkewPatterns.ts` for the minimal rules. Then use **Open guided setup** to run the robust proof under fake fintech workflow pressure.
+Start with `/examples?debug=1` and `src/examples/simpleVersionSkewPatterns.ts` for the minimal rules. Then use the named **Open ... setup** buttons to run each robust proof under fake fintech workflow pressure.
 
 ## Cross-Cutting Rule
 

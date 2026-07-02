@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { getBundledReleaseIdentity } from "../shared/releaseIdentity";
 import { debugRouteHref } from "../shared/routerLinks";
 import { getVersionState, subscribeVersionState } from "../shared/versionCheckClient";
-import { simplePatternCatalog, type SimplePatternSlug } from "../examples/simpleVersionSkewPatterns";
+import { guidedScenarioTitle, simplePatternCatalog, type SimplePatternSlug } from "../examples/simpleVersionSkewPatterns";
 import type { RouterMode } from "../shared/types";
 
 const simpleAnchor = "simpleVersionSkewPatterns.ts";
@@ -97,8 +97,8 @@ export function SimpleExamplesPage({ routerMode }: { routerMode: RouterMode }) {
               <span>
                 <strong>Robust path:</strong> {example.hook}
               </span>
-              <a className="button button-light" href={debugRouteHref(example.href, routerMode, example.scenarioId)}>
-                {example.scenarioId ? "Open guided setup" : "Open lab controls"}
+              <a className="button button-light" href={debugRouteHref("/debug/version-skew", routerMode, example.scenarioId)}>
+                {example.scenarioId ? `Open ${guidedScenarioTitle(example.scenarioId)} setup` : "Open lab controls"}
               </a>
             </article>
           );
