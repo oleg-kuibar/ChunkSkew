@@ -247,6 +247,17 @@ test("1g. Simple examples reset controls fit mobile width", async ({ page }) => 
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
 });
 
+test("1h. Simple examples reset path works by keyboard", async ({ page }) => {
+  await prepare(page);
+  await open(page, "/examples");
+  const resetLink = page.getByRole("link", { name: "Reset or retest" });
+  await resetLink.focus();
+  await expect(resetLink).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/debug\/version-skew/);
+  await expect(page.getByRole("heading", { name: "Lab controls" })).toBeVisible();
+});
+
 test("2. Bundle, session, and latest release IDs are visible in debug mode", async ({ page }) => {
   await prepare(page);
   await open(page);

@@ -60,47 +60,69 @@ export type DraftRestoreResult<T> =
   | { status: "restored"; draft: WorkflowDraft<T>; migrated: boolean }
   | { status: "incompatible"; draft: WorkflowDraft<T>; reason: string };
 
+function restoredDraft<T>(routerMode: RouterMode, draft: WorkflowDraft<T>, migrated: boolean, fromSchemaVersion?: number): DraftRestoreResult<T> {
+  trackTelemetry("workflow_draft_restored", routerMode, { workflowType: draft.workflowType, migrated }, draft.workflowType);
+  void recordAuditEvent(
+    routerMode,
+    "workflow_draft.restored",
+    migrated ? "Draft restored after app update and migrated." : "Draft restored after app update.",
+    {
+      workflowType: draft.workflowType,
+      migrated,
+      ...(fromSchemaVersion ? { fromSchemaVersion } : {})
+    },
+    draft.workflowType
+  );
+  return { status: "restored", draft, migrated };
+}
+
+function migrateKybDraft<T>(draft: WorkflowDraft<T>) {
+  if (draft.schemaVersion !== 1 || draft.workflowType !== "kyb") {
+    return null;
+  }
+  return {
+    ...draft,
+    schemaVersion: supportedSchemaVersion,
+    formValues: {
+      ...(draft.formValues as Record<string, unknown>),
+      migrationReviewRequired: true,
+      migratedFromSchemaVersion: 1
+    }
+  } as WorkflowDraft<T>;
+}
+
+function incompatibleDraft<T>(routerMode: RouterMode, draft: WorkflowDraft<T>): DraftRestoreResult<T> {
+  void recordAuditEvent(
+    routerMode,
+    "workflow_draft.incompatible",
+    "Draft schema was incompatible and required review.",
+    {
+      workflowType: draft.workflowType,
+      schemaVersion: draft.schemaVersion
+    },
+    draft.workflowType
+  );
+  return {
+    status: "incompatible",
+    draft,
+    reason: `Draft schema ${draft.schemaVersion} is not compatible with schema ${supportedSchemaVersion}.`
+  };
+}
+
 export function restoreWorkflowDraft<T>(id: string, routerMode: RouterMode): DraftRestoreResult<T> {
   const draft = readJson<WorkflowDraft<T> | null>(key(id), null);
   if (!draft) {
     return { status: "missing" };
   }
   if (draft.schemaVersion === supportedSchemaVersion) {
-    trackTelemetry("workflow_draft_restored", routerMode, { workflowType: draft.workflowType, migrated: false }, draft.workflowType);
-    void recordAuditEvent(routerMode, "workflow_draft.restored", "Draft restored after app update.", {
-      workflowType: draft.workflowType,
-      migrated: false
-    }, draft.workflowType);
-    return { status: "restored", draft, migrated: false };
+    return restoredDraft(routerMode, draft, false);
   }
-  if (draft.schemaVersion === 1 && draft.workflowType === "kyb") {
-    const migrated = {
-      ...draft,
-      schemaVersion: supportedSchemaVersion,
-      formValues: {
-        ...(draft.formValues as Record<string, unknown>),
-        migrationReviewRequired: true,
-        migratedFromSchemaVersion: 1
-      }
-    } as WorkflowDraft<T>;
+  const migrated = migrateKybDraft(draft);
+  if (migrated) {
     writeJson(key(id), migrated);
-    trackTelemetry("workflow_draft_restored", routerMode, { workflowType: draft.workflowType, migrated: true }, draft.workflowType);
-    void recordAuditEvent(routerMode, "workflow_draft.restored", "Draft restored after app update and migrated.", {
-      workflowType: draft.workflowType,
-      migrated: true,
-      fromSchemaVersion: 1
-    }, draft.workflowType);
-    return { status: "restored", draft: migrated, migrated: true };
+    return restoredDraft(routerMode, migrated, true, draft.schemaVersion);
   }
-  void recordAuditEvent(routerMode, "workflow_draft.incompatible", "Draft schema was incompatible and required review.", {
-    workflowType: draft.workflowType,
-    schemaVersion: draft.schemaVersion
-  }, draft.workflowType);
-  return {
-    status: "incompatible",
-    draft,
-    reason: `Draft schema ${draft.schemaVersion} is not compatible with schema ${supportedSchemaVersion}.`
-  };
+  return incompatibleDraft(routerMode, draft);
 }
 
 export function clearWorkflowDraft(id: string) {

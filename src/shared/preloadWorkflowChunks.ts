@@ -5,8 +5,14 @@ import { trackTelemetry } from "./telemetry";
 import type { PreloadStatus, RouterMode, WorkflowType } from "./types";
 
 type Loader = () => Promise<unknown>;
+type PreloadRegistryEntry = {
+  workflowType: WorkflowType;
+  required: boolean;
+  lazyMechanism: PreloadStatus["lazyMechanism"];
+  load: Loader;
+};
 
-const registry: Record<string, { workflowType: WorkflowType; required: boolean; lazyMechanism: PreloadStatus["lazyMechanism"]; load: Loader }> = {
+const registry: Record<string, PreloadRegistryEntry> = {
   "payment-recipient": {
     workflowType: "payment",
     required: true,
@@ -86,44 +92,48 @@ function updateStatus(route: string, routerMode: RouterMode, status: Omit<Preloa
   window.dispatchEvent(new CustomEvent("chunk-skew-preload", { detail: { route, routerMode } }));
 }
 
+function writePreloadStatus(
+  route: string,
+  routerMode: RouterMode,
+  entry: PreloadRegistryEntry,
+  status: PreloadStatus["status"],
+  lastPreloadError?: string
+) {
+  updateStatus(route, routerMode, {
+    workflowType: entry.workflowType,
+    lazyMechanism: entry.lazyMechanism,
+    status,
+    lastPreloadError,
+    requiredToFinishWorkflow: entry.required
+  });
+}
+
+async function loadRouteChunk(route: string, routerMode: RouterMode, entry: PreloadRegistryEntry) {
+  if (shouldSimulateChunkFailure(route, routerMode)) {
+    throw createSyntheticChunkError(route);
+  }
+  await entry.load();
+}
+
+async function preloadRoute(route: string, routerMode: RouterMode) {
+  const entry = registry[route];
+  if (!entry) {
+    return;
+  }
+  writePreloadStatus(route, routerMode, entry, "started");
+  trackTelemetry("route_preload_started", routerMode, { route }, entry.workflowType);
+  try {
+    await loadRouteChunk(route, routerMode, entry);
+    writePreloadStatus(route, routerMode, entry, "succeeded");
+    trackTelemetry("route_preload_succeeded", routerMode, { route }, entry.workflowType);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    writePreloadStatus(route, routerMode, entry, "failed", message);
+    trackTelemetry("route_preload_failed", routerMode, { route, message }, entry.workflowType);
+  }
+}
+
 export async function preloadWorkflowChunks(workflowType: WorkflowType, routerMode: RouterMode) {
   const routes = workflowRoutes[workflowType];
-  await Promise.all(
-    routes.map(async (route) => {
-      const entry = registry[route];
-      if (!entry) {
-        return;
-      }
-      updateStatus(route, routerMode, {
-        workflowType: entry.workflowType,
-        lazyMechanism: entry.lazyMechanism,
-        status: "started",
-        requiredToFinishWorkflow: entry.required
-      });
-      trackTelemetry("route_preload_started", routerMode, { route }, entry.workflowType);
-      try {
-        if (shouldSimulateChunkFailure(route, routerMode)) {
-          throw createSyntheticChunkError(route);
-        }
-        await entry.load();
-        updateStatus(route, routerMode, {
-          workflowType: entry.workflowType,
-          lazyMechanism: entry.lazyMechanism,
-          status: "succeeded",
-          requiredToFinishWorkflow: entry.required
-        });
-        trackTelemetry("route_preload_succeeded", routerMode, { route }, entry.workflowType);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        updateStatus(route, routerMode, {
-          workflowType: entry.workflowType,
-          lazyMechanism: entry.lazyMechanism,
-          status: "failed",
-          lastPreloadError: message,
-          requiredToFinishWorkflow: entry.required
-        });
-        trackTelemetry("route_preload_failed", routerMode, { route, message }, entry.workflowType);
-      }
-    })
-  );
+  await Promise.all(routes.map((route) => preloadRoute(route, routerMode)));
 }

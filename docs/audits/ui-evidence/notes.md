@@ -27,10 +27,10 @@ Screenshots were captured from the local app on July 1, 2026 with debug mode ena
 
 ## Accessibility Risks
 
-- Screenshots cannot prove keyboard order, focus visibility, live-region announcements, or screen-reader reading order.
+- Screenshots cannot prove full keyboard order, live-region announcements, or screen-reader reading order. The Simple examples reset/retest path is now covered by a keyboard activation test.
 - Small badge and code-label text should be checked for contrast and legibility at browser zoom levels.
 
 ## Evidence Limits
 
 - These captures are desktop-only visual evidence.
-- They do not replace Playwright behavior tests, keyboard testing, or assistive technology checks.
+- They do not replace Playwright behavior tests, broader keyboard traversal checks, or assistive technology checks.

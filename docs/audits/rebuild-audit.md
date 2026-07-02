@@ -33,10 +33,14 @@ Measured from the codebase graph after the latest fast index.
 | Guided lab | `VersionSkewDebugPage` | 0 | The page now renders controls while named helpers own scenario preparation. |
 | Guided lab | `prepareGuidedScenario` / `finishGuidedScenario` | 0 / 1 | Reset, mode setup, seeding, and navigation are named as the learner sees them. |
 | Payment | `PaymentWorkflow` / `usePaymentDraft` | 3 / 1 | The primary walkthrough keeps rendering local while submit/vendor guard envelopes are named helpers. |
+| Draft restore | `restoreWorkflowDraft` / `restoredDraft` / `migrateKybDraft` | 3 / 0 / 1 | The safe-refresh store now names restored, migrated, and incompatible outcomes instead of mixing telemetry, audit, migration, and return shapes inline. |
 | Invoice approval | `InvoiceApprovalModal` | 2 | Reject-note autosave and approve/reject guard rules are named; optimistic rollback remains local. |
 | KYB | `KybWorkflow` / `useKybDraft` | 2 / 0 | The workflow renders steps while restore, hydrate, save-if-ready, and schema fallback rules are named helpers. |
 | Card controls | `CardDetailRoute.Component` / `useCardLimitDraft` | 3 / 1 | The route still renders the card UI, while draft and action guard rules are named helpers. |
 | Transaction monitoring | `TransactionsPage` / `TransactionReportRoute.Component` | 0 / 0 | The list, lazy drawer, and heavy report are already simple enough as supporting examples. |
+| Lazy route recovery | `reactRouterLazy` / `tanstackLazyImport` / `componentLazyImport` | 0 / 0 / 0 | Router-specific wrappers now only bind route, router, and workflow; shared helpers own import, synthetic failure, recovery, and rethrow. |
+| Chunk recovery controller | `handleChunkFailure` / `attemptSafeReload` / `preventReloadLoop` | 1 / 0 / 0 | The central recovery rule now reads as classify, count, notify, record, reload once, or prevent the loop. |
+| Chunk preloading | `preloadWorkflowChunks` / `preloadRoute` / `loadRouteChunk` | 0 / 4 / 1 | The public entry now reads as workflow-to-route orchestration while route status, telemetry, and simulated chunk loading are named steps. |
 | Settings | `SettingsPage` | 2 | Role switching, session expiry, and API key generation are compact but still guarded by shared mutation safety. |
 | Release UI | `BuildVersionStamp` | 0 | Bundle, session, and latest release labels are now explicit without extra branching. |
 | Mutation safety | `guardSensitiveMutation` / `handleBlockedMutationGuard` | 3 / 2 | Session, permission, update policy, and blocked-result packaging now read as named decisions. |
@@ -106,6 +110,10 @@ Change made in this pass:
 - Collapsed repeated update-policy result boilerplate so `decideUpdatePolicy` reads as ordered product rules.
 - Added a pure update-policy proof so core decisions can be tested without browser storage setup.
 - Expanded the cognitive snapshot to include invoice approval, transaction monitoring, and settings so the audit covers the supporting examples, not only the primary walkthrough.
+- Split workflow chunk preloading into public orchestration, route lifecycle, and chunk-load helpers so asset-retention and lazy-route recovery examples are easier to read from the top down.
+- Split draft restore outcomes into named helpers so the shared safe-refresh rule reads as missing, restored, migrated, or incompatible.
+- Collapsed React Router, TanStack Router, and component-lazy import recovery into one shared lazy-route loader so router examples differ only where the router APIs differ.
+- Split chunk recovery side effects into named attempt, notification, audit, reload, and loop-prevention helpers so the robust source matches the tiny reload-once/show-fallback rule.
 
 ### 4. Debug controls are powerful but dense
 
@@ -240,7 +248,7 @@ This matrix is the completion check for the rebuild goal. A row is only strong w
 | Debug controls stay out of the primary path. | Manual modes, release state, preload table, telemetry, and audit table live under **Advanced diagnostics**. | `Version debug panel works` expects diagnostics hidden until opened. |
 | POC stays standalone and fake-data only. | `README.md` states the standalone/non-goal contract; `package.json` stays React/Vite/Express/Playwright without Next.js or real banking/auth dependencies; mock data uses fake notices and `.example.test` identities. | `pnpm test:learning:windows`, including `tests/project-contract.spec.ts`. |
 | Release awareness avoids live code streaming. | Release awareness uses polling plus SSE/WebSocket metadata; the optional service worker is gated by `VITE_ENABLE_SERVICE_WORKER`, caches `/version.json`, and can warm declared workflow assets without handling `index.html` or opening windows. | `pnpm test:learning:windows`, including `tests/project-contract.spec.ts`. |
-| Reset/retest behavior is obvious. | Reset reloads with a success strip and build stamp returns to `Session dev-local` with `in sync` status; guided setups expose **Return to example** after visiting Lab controls. | `pnpm test:learning:windows` covers reset confirmation and return navigation. |
+| Reset/retest behavior is obvious. | Reset reloads with a success strip and build stamp returns to `Session dev-local` with `in sync` status; guided setups expose **Return to example** after visiting Lab controls; the Simple examples reset path works from keyboard focus. | `pnpm test:learning:windows` covers keyboard reset navigation, reset confirmation, and return navigation. |
 | Vocabulary matches across UI, docs, and tests. | Root README, Knowledge Map, Pattern Index, Example Index, Search Index, Production Checklist, and Release Identity note use the same **Solve in this order**, **Minimal rule**, **Robust source**, named setup buttons, **Lab controls**, visible build status, **Update policy**, **Status**, and **Return to example** path. | `pnpm test:learning:windows`, including `tests/simple-patterns.spec.ts` docs-vocabulary assertions. |
 | Sensitive mutation metadata is explicit. | `apiFetch` builds one header envelope for release ID, deployment ID, router mode, user ID, organization ID, API contract version, idempotency key, mutation intent, and mutation-created timestamp. | `pnpm test:learning:windows`, including `tests/api-client.spec.ts`. |
-| Safety guarantees still hold. | Payment safe refresh, required update gates, idempotency replay, chunk fallback, draft restore, asset retention, router recovery, and telemetry stay covered by e2e tests. | Full `tests/version-skew.spec.ts` passed 50 tests with `pnpm test:e2e:windows test tests/version-skew.spec.ts --project=chromium --reporter=list`. |
+| Safety guarantees still hold. | Payment safe refresh, required update gates, idempotency replay, chunk fallback, draft restore, asset retention, router recovery, and telemetry stay covered by e2e tests. | Full `tests/version-skew.spec.ts` passed 52 tests with `pnpm test:e2e:windows test tests/version-skew.spec.ts --project=chromium --reporter=list`. |
