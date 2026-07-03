@@ -192,6 +192,14 @@ a {
   white-space: nowrap;
 }
 
+.badge-build {
+  max-width: 100%;
+}
+
+.badge-build-status-compact {
+  margin-left: auto;
+}
+
 .user-chip {
   display: grid;
   justify-items: end;
@@ -491,6 +499,88 @@ a {
 .learning-summary span {
   color: #34433f;
   line-height: 1.5;
+}
+
+.reset-panel {
+  display: grid;
+  justify-items: end;
+  gap: 7px;
+  max-width: min(100%, 380px);
+}
+
+.reset-panel small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: right;
+}
+
+.release-snapshot {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: var(--shadow);
+}
+
+.release-snapshot-current {
+  border-color: #9acbb2;
+  background: linear-gradient(180deg, #ffffff, #f5fbf7);
+}
+
+.release-snapshot-required {
+  border-color: #d99aa2;
+  background: linear-gradient(180deg, #ffffff, #fff7f8);
+}
+
+.release-snapshot header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.release-snapshot h2 {
+  margin: 0;
+  letter-spacing: 0;
+}
+
+.release-snapshot .badge-build {
+  max-width: min(100%, 540px);
+}
+
+.release-snapshot-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.release-snapshot-item {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  min-height: 88px;
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+}
+
+.release-snapshot-item span,
+.release-snapshot-item small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.release-snapshot-item strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 15px;
 }
 
 .eyebrow {
@@ -1073,14 +1163,11 @@ td code {
 }
 
 .update-toast {
-  position: fixed;
-  right: 24px;
-  top: 82px;
-  z-index: 30;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 12px;
   width: min(420px, calc(100vw - 32px));
+  margin: 16px 28px 0 auto;
   padding: 14px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -1091,7 +1178,7 @@ td code {
 
 .app-shell:has(> .version-debug-panel) .update-toast,
 .debug-panel-open .update-toast {
-  right: calc(292px + 24px);
+  margin-right: 28px;
 }
 
 .update-toast * {
@@ -1396,6 +1483,14 @@ td code {
     justify-content: flex-start;
   }
 
+  .reset-panel {
+    justify-items: start;
+  }
+
+  .reset-panel small {
+    text-align: left;
+  }
+
   .topbar {
     grid-template-columns: 1fr;
   }
@@ -1412,15 +1507,28 @@ td code {
     grid-template-columns: 1fr;
   }
 
+  .release-snapshot header {
+    display: grid;
+  }
+
+  .release-snapshot-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .version-debug-panel {
     position: static;
     width: auto;
     margin: 16px;
   }
 
+  .update-toast {
+    width: auto;
+    margin: 12px 16px 0;
+  }
+
   .app-shell:has(> .version-debug-panel) .update-toast,
   .debug-panel-open .update-toast {
-    right: 16px;
+    margin-right: 16px;
   }
 }
 
@@ -1439,6 +1547,15 @@ td code {
 
   .learning-hero h1 {
     font-size: 30px;
+  }
+
+  .release-snapshot-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .release-snapshot .badge-build > span,
+  .topbar-left .badge-build > span {
+    white-space: normal;
   }
 
   .metric-card strong,

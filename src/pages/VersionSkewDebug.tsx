@@ -12,7 +12,7 @@ import {
   type LucideIcon
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { AssetRetentionWarning } from "../components/UpdateSurfaces";
+import { AssetRetentionWarning, BuildVersionSnapshot } from "../components/UpdateSurfaces";
 import { guidedScenarioCatalog, type GuidedScenarioId } from "../examples/simpleVersionSkewPatterns";
 import { apiFetch } from "../shared/apiClient";
 import { setLocalSkewMode } from "../shared/assetRetentionSimulator";
@@ -142,16 +142,16 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
           <p className="eyebrow">Version skew simulation</p>
           <h1>Lab controls</h1>
         </div>
-        <button
-          className="button"
-          type="button"
-          disabled={resetMutation.isPending}
-          onClick={() => resetMutation.mutate()}
-        >
-          <RefreshCcw aria-hidden="true" />
-          {resetMutation.isPending ? "Resetting..." : "Reset simulation state"}
-        </button>
+        <div className="reset-panel">
+          <button className="button" type="button" disabled={resetMutation.isPending} onClick={() => resetMutation.mutate()}>
+            <RefreshCcw aria-hidden="true" />
+            {resetMutation.isPending ? "Resetting..." : "Reset simulation state"}
+          </button>
+          <small>Clears drafts, release overrides, reload flags, telemetry, and proof setup.</small>
+        </div>
       </section>
+
+      <BuildVersionSnapshot routerMode={routerMode} />
 
       {resetConfirmed ? (
         <div className="notice notice-success" data-testid="reset-confirmation">

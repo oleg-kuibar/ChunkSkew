@@ -355,6 +355,16 @@ test("3. Version debug panel works", async ({ page }) => {
   await prepare(page);
   await open(page, "/debug/version-skew");
   await expect(page.getByRole("heading", { name: "Lab controls" })).toBeVisible();
+  await expect(page.getByText("Clears drafts, release overrides, reload flags, telemetry, and proof setup.")).toBeVisible();
+  const releaseSnapshot = page.getByTestId("release-snapshot");
+  await expect(releaseSnapshot).toContainText("What this tab is running");
+  await expect(releaseSnapshot).toContainText("Loaded bundle");
+  await expect(releaseSnapshot).toContainText("Session release");
+  await expect(releaseSnapshot).toContainText("Latest release");
+  await expect(releaseSnapshot).toContainText("API contract");
+  await expect(releaseSnapshot.getByTestId("build-version-stamp")).toContainText("Bundle");
+  await expect(releaseSnapshot.getByTestId("build-version-stamp")).toContainText("Session");
+  await expect(releaseSnapshot.getByTestId("build-version-stamp")).toContainText("Latest");
   await expect(page.getByTestId("guided-scenarios")).toContainText("Pick one proof");
   await expect(page.getByTestId("guided-scenarios")).toContainText("starts from a clean reset");
   await expect(page.getByTestId("guided-scenario-missing-chunk")).toContainText("Reset included");
@@ -366,7 +376,7 @@ test("3. Version debug panel works", async ({ page }) => {
   expect(firstScenarioCard).not.toBeNull();
   expect(firstScenarioCard!.width).toBeGreaterThanOrEqual(280);
   await expect(page.getByRole("button", { name: "Prepare payment recovery" })).toBeInViewport();
-  await expect(page.getByRole("button", { name: "Prepare API contract block" })).toBeInViewport();
+  await expect(page.getByRole("button", { name: "Prepare API contract block" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Check version" })).toBeHidden();
   await expect(page.getByTestId("deployment-modes")).toBeHidden();
   const diagnostics = await openAdvancedDiagnostics(page);

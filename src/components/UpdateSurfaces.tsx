@@ -78,6 +78,47 @@ export function BuildVersionStamp({
   );
 }
 
+export function BuildVersionSnapshot({ routerMode }: { routerMode: RouterMode }) {
+  const [, setTick] = useState(0);
+  useEffect(() => subscribeVersionState(() => setTick((value) => value + 1)), []);
+  const state = getVersionState(routerMode);
+  const bundle = getBundledReleaseIdentity(routerMode);
+  const { fullyCurrent, status } = getReleaseStatus(state, bundle);
+  const items = [
+    { label: "Loaded bundle", value: bundle.releaseId, hint: "Code in this tab" },
+    { label: "Session release", value: state.current.releaseId, hint: "Recovery target" },
+    { label: "Latest release", value: state.latest.releaseId, hint: "Server version" },
+    { label: "Update policy", value: state.updateSeverity, hint: status },
+    { label: "API contract", value: state.apiContractCompatible ? "compatible" : "blocked", hint: state.current.apiContractVersion },
+    { label: "Lab mode", value: state.latest.skewMode ?? "local", hint: routerMode === "react-router" ? "React Router" : "TanStack Router" }
+  ];
+
+  return (
+    <section
+      className={cx("release-snapshot", fullyCurrent && "release-snapshot-current", state.requiredUpdatePending && "release-snapshot-required")}
+      aria-label="Release recovery snapshot"
+      data-testid="release-snapshot"
+    >
+      <header>
+        <div>
+          <p className="eyebrow">Recovery snapshot</p>
+          <h2>What this tab is running</h2>
+        </div>
+        <BuildVersionStamp routerMode={routerMode} compact />
+      </header>
+      <div className="release-snapshot-grid">
+        {items.map((item) => (
+          <div className="release-snapshot-item" key={item.label}>
+            <span>{item.label}</span>
+            <strong>{shortRelease(item.value)}</strong>
+            <small>{item.hint}</small>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 interface UpdateSurfaceProps {
   routerMode: RouterMode;
   workflowType?: WorkflowType;
@@ -313,15 +354,15 @@ export function VersionDebugPanel({ routerMode }: { routerMode: RouterMode }) {
       </header>
       <dl>
         <div>
-          <dt>Loaded bundle</dt>
+          <dt>Loaded bundle (code)</dt>
           <dd>{bundle.releaseId}</dd>
         </div>
         <div>
-          <dt>Session release</dt>
+          <dt>Session release (recovery)</dt>
           <dd>{state.current.releaseId}</dd>
         </div>
         <div>
-          <dt>Latest release</dt>
+          <dt>Latest release (server)</dt>
           <dd>{state.latest.releaseId}</dd>
         </div>
         <div>
