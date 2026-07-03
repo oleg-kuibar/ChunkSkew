@@ -7,6 +7,7 @@ import { decideUpdatePolicy } from "../shared/updatePolicyEngine";
 import { getVersionState, prepareSafeRefresh, subscribeVersionState } from "../shared/versionCheckClient";
 import type { RouterMode, WorkflowType } from "../shared/types";
 import { cx } from "../shared/format";
+import { withAppBase } from "../shared/routerLinks";
 
 function refreshSafely(routerMode: RouterMode) {
   prepareSafeRefresh(routerMode);
@@ -254,7 +255,7 @@ export function ChunkFailureFallback({
             <RefreshCcw aria-hidden="true" />
             Refresh safely
           </button>
-          <button className="button button-secondary" type="button" onClick={onRetry ?? (() => window.location.assign("/"))}>
+          <button className="button button-secondary" type="button" onClick={onRetry ?? (() => window.location.assign(withAppBase("/")))}>
             Try again
           </button>
         </div>

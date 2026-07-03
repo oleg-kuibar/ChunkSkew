@@ -1,5 +1,6 @@
 import type { ReleaseMetadata, RouterMode } from "./types";
 import { readJson, readSessionFlag, writeJson, writeSessionFlag } from "./storage";
+import { withAppBase } from "./routerLinks";
 
 const defaultDraftVersions = {
   payment: 2,
@@ -78,7 +79,7 @@ export function setDebugMode(enabled: boolean) {
 
 export async function fetchVersionMetadata(routerMode: RouterMode): Promise<ReleaseMetadata> {
   const current = getCurrentReleaseIdentity(routerMode);
-  const response = await fetch(`/version.json?routerMode=${routerMode}&t=${Date.now()}`, {
+  const response = await fetch(`${withAppBase("/version.json")}?routerMode=${routerMode}&t=${Date.now()}`, {
     cache: "no-store",
     headers: {
       "x-router-mode": routerMode,

@@ -15,6 +15,7 @@ import { shouldSimulateChunkFailure } from "../shared/assetRetentionSimulator";
 import { createSyntheticChunkError } from "../shared/chunkErrorClassifier";
 import { handleChunkFailure } from "../shared/chunkRecoveryController";
 import { tanstackLazyImport } from "../shared/lazyRoute";
+import { appBasePath, stripAppBasePath } from "../shared/routerLinks";
 import type { WorkflowType } from "../shared/types";
 
 function RootComponent() {
@@ -239,7 +240,7 @@ const routeTree = rootRoute.addChildren([
   pendingRoute
 ]);
 
-export const tanstackRouter = createRouter({ routeTree });
+export const tanstackRouter = createRouter({ routeTree, basepath: appBasePath() || "/" });
 
 declare module "@tanstack/react-router" {
   interface Register {
@@ -264,7 +265,7 @@ function initialTanStackChunkFailure(pathname: string): { routeId: string; workf
 }
 
 export function TanStackRouterApp() {
-  const initialFailure = initialTanStackChunkFailure(window.location.pathname);
+  const initialFailure = initialTanStackChunkFailure(stripAppBasePath(window.location.pathname));
   const simulatedFailure =
     initialFailure && shouldSimulateChunkFailure(initialFailure.routeId, "tanstack-router") ? initialFailure : null;
   const simulatedError = simulatedFailure ? createSyntheticChunkError(simulatedFailure.routeId) : null;
