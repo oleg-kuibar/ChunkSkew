@@ -28,9 +28,16 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Prepare release identity
+        run: |
+          short_sha="${GITHUB_SHA::7}"
+          build_time="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "VITE_RELEASE_ID=gh-${short_sha}" >> "$GITHUB_ENV"
+          echo "VITE_GIT_SHA=${short_sha}" >> "$GITHUB_ENV"
+          echo "VITE_DEPLOYMENT_ID=pages-${GITHUB_RUN_ID}" >> "$GITHUB_ENV"
+          echo "VITE_BUILD_TIME=${build_time}" >> "$GITHUB_ENV"
+          echo "VITE_ASSET_BASE_PATH=/ChunkSkew/" >> "$GITHUB_ENV"
       - run: pnpm build
-        env:
-          VITE_ASSET_BASE_PATH: /ChunkSkew/
       - run: cp dist/index.html dist/404.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
