@@ -91,6 +91,15 @@ export function decideUpdatePolicyForState(input: PolicyInput, versionState: Ver
   }
 
   if (versionState.requiredUpdatePending) {
+    if (input.sensitiveWorkflow && input.requiredWorkflowChunksPreloaded && !input.dirtyForm && !input.mfaPending) {
+      return policyResult(
+        versionState,
+        "allow-current-step-only",
+        "You can finish reviewing this step, but refresh before starting another sensitive action.",
+        { blocksMutation: true, blocksNavigation: true }
+      );
+    }
+
     if (input.dirtyForm || input.mfaPending || input.sensitiveWorkflow) {
       return policyResult(
         versionState,

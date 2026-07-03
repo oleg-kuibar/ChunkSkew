@@ -109,6 +109,7 @@ Change made in this pass:
 - Split sensitive mutation guard outcomes into named session, permission, update policy, and required-update result helpers so the shared safety path reads like the production checklist.
 - Collapsed repeated update-policy result boilerplate so `decideUpdatePolicy` reads as ordered product rules.
 - Added a pure update-policy proof so core decisions can be tested without browser storage setup.
+- Made the previously type-only `allow-current-step-only` decision reachable for required updates in preloaded sensitive workflows, then expanded the pure policy proof so every named policy output has a direct case.
 - Expanded the cognitive snapshot to include invoice approval, transaction monitoring, and settings so the audit covers the supporting examples, not only the primary walkthrough.
 - Split workflow chunk preloading into public orchestration, route lifecycle, and chunk-load helpers so asset-retention and lazy-route recovery examples are easier to read from the top down.
 - Expanded workflow chunk preloading from representative rows to named completion chunks for payment, invoice, card, KYB, transaction monitoring, and TanStack migration paths.
@@ -120,6 +121,8 @@ Change made in this pass:
 - Split draft restore outcomes into named helpers so the shared safe-refresh rule reads as missing, restored, migrated, or incompatible.
 - Collapsed React Router, TanStack Router, and component-lazy import recovery into one shared lazy-route loader so router examples differ only where the router APIs differ.
 - Split chunk recovery side effects into named attempt, notification, audit, reload, and loop-prevention helpers so the robust source matches the tiny reload-once/show-fallback rule.
+- Added one recursive privacy redactor for telemetry, client audit posts, server audit persistence, and rendered audit-table metadata, with a focused proof for nested account/card/document/tax/secret/idempotency values.
+- Added a repo-level cognitive-complexity guardrail that flags new high-branch or long functions while documenting the few remaining larger teaching surfaces as intentional learning tradeoffs.
 
 ### 4. Debug controls are powerful but dense
 

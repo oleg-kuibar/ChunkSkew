@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Download } from "lucide-react";
 import { fetchAuditEvents } from "../shared/auditLogClient";
+import { redactSensitiveMetadata } from "../shared/privacy";
 import { readTelemetryEvents } from "../shared/telemetry";
 import type { RouterMode } from "../shared/types";
 
@@ -18,7 +19,7 @@ export function AuditEventTable({ routerMode, includeTelemetry = true }: { route
       createdAt: event.createdAt,
       message: event.message,
       source: "audit",
-      metadata: event.metadata
+      metadata: redactSensitiveMetadata(event.metadata)
     })),
     ...telemetry.slice(0, 50).map((event) => ({
       id: event.id,
@@ -26,7 +27,7 @@ export function AuditEventTable({ routerMode, includeTelemetry = true }: { route
       createdAt: event.createdAt,
       message: `${event.routerMode}${event.workflowType ? ` · ${event.workflowType}` : ""}`,
       source: "telemetry",
-      metadata: event.properties
+      metadata: redactSensitiveMetadata(event.properties)
     }))
   ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 

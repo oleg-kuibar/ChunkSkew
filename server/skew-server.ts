@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import express from "express";
 import { WebSocketServer } from "ws";
+import { redactSensitiveMetadata } from "../src/shared/privacy";
 import {
   accounts,
   apiKeys,
@@ -110,11 +111,11 @@ function appendAudit(req: express.Request, type: string, message: string, metada
     deploymentId: requestMeta.deploymentId,
     routerMode: requestMeta.routerMode,
     createdAt: new Date().toISOString(),
-    metadata: {
+    metadata: redactSensitiveMetadata({
       ...metadata,
       mutationIntent: requestMeta.mutationIntent,
       mutationCreatedAt: requestMeta.mutationCreatedAt
-    }
+    }) as Record<string, unknown>
   };
   auditEvents.unshift(event);
   auditEvents.splice(250);

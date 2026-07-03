@@ -1,4 +1,5 @@
 import { apiFetch } from "./apiClient";
+import { redactSensitiveMetadata } from "./privacy";
 import { trackTelemetry } from "./telemetry";
 import type { AuditEvent, RouterMode, WorkflowType } from "./types";
 
@@ -9,11 +10,12 @@ export async function recordAuditEvent(
   metadata: Record<string, unknown> = {},
   workflowType: WorkflowType = "none"
 ) {
-  trackTelemetry(type.includes("chunk") ? "chunk_load_failed" : "version_check_succeeded", routerMode, { type, ...metadata }, workflowType);
+  const safeMetadata = redactSensitiveMetadata(metadata) as Record<string, unknown>;
+  trackTelemetry(type.includes("chunk") ? "chunk_load_failed" : "version_check_succeeded", routerMode, { type, ...safeMetadata }, workflowType);
   try {
     await apiFetch<AuditEvent>("/api/audit-events", routerMode, {
       method: "POST",
-      body: JSON.stringify({ type, message, metadata })
+      body: JSON.stringify({ type, message, metadata: safeMetadata })
     });
   } catch (error) {
     console.warn("Unable to record audit event", error);

@@ -1,4 +1,5 @@
 import { getCurrentReleaseIdentity } from "./releaseIdentity";
+import { redactSensitiveMetadata } from "./privacy";
 import { readJson, writeJson } from "./storage";
 import type { RouterMode, TelemetryEvent, TelemetryEventName, WorkflowType } from "./types";
 
@@ -6,20 +7,7 @@ const telemetryKey = "telemetry-events";
 const emitter = new EventTarget();
 
 function redact(properties: Record<string, unknown>) {
-  const result: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(properties)) {
-    const lower = key.toLowerCase();
-    if (lower.includes("card") || lower.includes("account") || lower.includes("document") || lower.includes("secret")) {
-      result[key] = typeof value === "string" ? value.replace(/[A-Za-z0-9](?=.{4})/g, "*") : "[redacted]";
-      continue;
-    }
-    if (lower.includes("idempotency")) {
-      result[key] = Boolean(value) ? "present" : "missing";
-      continue;
-    }
-    result[key] = value;
-  }
-  return result;
+  return redactSensitiveMetadata(properties) as Record<string, unknown>;
 }
 
 export function trackTelemetry(
