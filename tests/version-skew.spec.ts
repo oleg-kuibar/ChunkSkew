@@ -305,6 +305,44 @@ test("1i. Recovery surfaces are keyboard reachable and announced", async ({ page
   await expect(page.getByRole("heading", { name: /Understand the failure/ })).toBeVisible();
 });
 
+test("1j. Persistent lab controls dock changes simulation state from workflow routes", async ({ page }) => {
+  await prepare(page, "react", "asset-retention");
+  await open(page, "/kyb/documents");
+  await expect(page.getByRole("heading", { name: "Business verification" })).toBeVisible();
+  await expect(page.getByTestId("lab-controls-toggle")).toBeVisible();
+
+  await page.getByTestId("lab-controls-toggle").click();
+  const dock = page.getByTestId("lab-controls-dock");
+  await expect(dock).toBeVisible();
+  await expect(dock.getByTestId("build-version-stamp")).toContainText("Build");
+
+  await dock.getByRole("button", { name: "Left" }).click();
+  await expect(dock).toHaveClass(/lab-controls-left/);
+  await dock.getByRole("button", { name: "Details" }).click();
+  await expect(dock).toContainText("Preloads");
+
+  await dock.getByTestId("lab-dock-mode-broken").click();
+  await expect(dock).toContainText("Missing chunks active");
+  await expect(page.getByTestId("update-banner")).toBeVisible();
+  await expect(page.locator(".topbar").getByTestId("build-version-stamp").locator("small")).toHaveText("required pending");
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const modes = JSON.parse(window.localStorage.getItem("chunk-skew-finance:local-skew-mode") ?? "{}");
+        return modes["react-router"];
+      })
+    )
+    .toBe("broken");
+
+  await dock.getByTestId("lab-dock-reset").click();
+  await expect(dock).toContainText("Simulation state reset");
+  await expect(page).toHaveURL(/kyb\/documents/);
+  await expect(page.locator(".topbar").getByTestId("build-version-stamp").locator("small")).toHaveText("in sync");
+
+  await dock.getByRole("button", { name: "Collapse lab controls" }).click();
+  await expect(page.getByTestId("lab-controls-toggle")).toBeVisible();
+});
+
 test("2. Bundle, session, and latest release IDs are visible in debug mode", async ({ page }) => {
   await prepare(page);
   await open(page);

@@ -1327,6 +1327,245 @@ td code {
   font-weight: 800;
 }
 
+.lab-controls-toggle,
+.lab-controls-window {
+  position: fixed;
+  z-index: 45;
+  right: 18px;
+  bottom: 18px;
+}
+
+.lab-controls-left {
+  right: auto;
+  left: 18px;
+}
+
+.lab-controls-toggle {
+  display: inline-grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 2px 9px;
+  max-width: min(280px, calc(100vw - 36px));
+  min-height: 48px;
+  padding: 9px 12px;
+  border: 1px solid #94b8a8;
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--ink);
+  box-shadow: 0 14px 34px rgba(18, 42, 35, 0.18);
+}
+
+.lab-controls-toggle:hover,
+.lab-controls-toggle:focus-visible {
+  border-color: var(--green);
+  background: #f4fbf7;
+  outline: none;
+}
+
+.lab-controls-toggle svg,
+.lab-controls-footer svg {
+  width: 16px;
+  height: 16px;
+}
+
+.lab-controls-toggle span,
+.lab-controls-toggle small {
+  min-width: 0;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lab-controls-toggle span {
+  font-weight: 800;
+}
+
+.lab-controls-toggle small {
+  grid-column: 2;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.lab-controls-window {
+  display: grid;
+  gap: 12px;
+  width: min(420px, calc(100vw - 36px));
+  min-width: 320px;
+  max-width: calc(100vw - 36px);
+  max-height: min(720px, calc(100vh - 36px));
+  overflow: auto;
+  resize: both;
+  padding: 14px;
+  border: 1px solid #b8cbc2;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 22px 60px rgba(17, 33, 29, 0.22);
+}
+
+.lab-controls-header,
+.lab-controls-footer,
+.lab-controls-config {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.lab-controls-header h2 {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: 0;
+}
+
+.lab-controls-window .badge-build {
+  width: 100%;
+}
+
+.lab-controls-window .badge-build > span {
+  white-space: normal;
+}
+
+.lab-controls-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.lab-controls-actions .button,
+.lab-controls-footer .button,
+.lab-controls-config .button {
+  width: 100%;
+  min-width: 0;
+}
+
+.lab-controls-config {
+  align-items: center;
+}
+
+.lab-controls-config .segmented {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.lab-controls-config .segmented button {
+  flex: 1;
+  min-width: 88px;
+}
+
+.lab-mode-list {
+  display: grid;
+  gap: 8px;
+}
+
+.lab-mode-button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 58px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+  color: var(--ink);
+  text-align: left;
+}
+
+.lab-mode-button:hover,
+.lab-mode-button:focus-visible {
+  border-color: #9bbbab;
+  background: #f4fbf7;
+  outline: none;
+}
+
+.lab-mode-button.active {
+  border-color: var(--green);
+  background: var(--green-soft);
+}
+
+.lab-mode-button span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.lab-mode-button strong,
+.lab-mode-button small {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.lab-mode-button small {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.lab-mode-button em {
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: #edf1ee;
+  color: #43504c;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.lab-controls-details dl {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.lab-controls-details div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 9px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+}
+
+.lab-controls-details dt {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.lab-controls-details dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.lab-controls-footer {
+  align-items: center;
+}
+
+.lab-controls-footer span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: #34433f;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.lab-controls-footer span svg {
+  color: var(--green);
+  flex: 0 0 auto;
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -1521,6 +1760,33 @@ td code {
     margin: 16px;
   }
 
+  .lab-controls-toggle {
+    right: 12px;
+    bottom: 12px;
+    max-width: calc(100vw - 24px);
+  }
+
+  .lab-controls-toggle.lab-controls-left {
+    right: auto;
+    left: 12px;
+  }
+
+  .lab-controls-window,
+  .lab-controls-window.lab-controls-left {
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    max-height: min(78vh, calc(100vh - 24px));
+    resize: none;
+  }
+
+  .lab-controls-details dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .update-toast {
     width: auto;
     margin: 12px 16px 0;
@@ -1564,6 +1830,19 @@ td code {
   }
 
   .fallback-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .lab-controls-actions,
+  .lab-controls-details dl {
+    grid-template-columns: 1fr;
+  }
+
+  .lab-controls-config {
+    display: grid;
+  }
+
+  .lab-mode-button {
     grid-template-columns: 1fr;
   }
 }

@@ -23,6 +23,7 @@ import { debugRouteHref } from "../shared/routerLinks";
 import { getSessionSnapshot } from "../shared/sessionSimulation";
 import { checkForVersionUpdate } from "../shared/versionCheckClient";
 import type { RouterMode } from "../shared/types";
+import { LabControlsDock } from "./LabControlsDock";
 import { BuildVersionStamp, UpdateBanner, UpdateToast, VersionDebugPanel } from "./UpdateSurfaces";
 
 export type LinkRenderer = (props: { to: string; children: ReactNode; className?: string }) => ReactNode;
@@ -160,6 +161,7 @@ export function AppShell({
         />
         <main className="content">{children}</main>
       </div>
+      <LabControlsDock routerMode={routerMode} />
       <VersionDebugPanel routerMode={routerMode} />
     </div>
   );
