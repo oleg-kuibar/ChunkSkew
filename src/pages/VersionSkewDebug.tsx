@@ -15,12 +15,13 @@ import { useEffect, useState } from "react";
 import { AssetRetentionWarning, BuildVersionSnapshot } from "../components/UpdateSurfaces";
 import { guidedScenarioCatalog, type GuidedScenarioId } from "../examples/simpleVersionSkewPatterns";
 import { apiFetch } from "../shared/apiClient";
-import { setLocalSkewMode } from "../shared/assetRetentionSimulator";
+import { getLocalSkewMode, setLocalSkewMode } from "../shared/assetRetentionSimulator";
 import { readPreloadStatuses } from "../shared/preloadWorkflowChunks";
 import { cx } from "../shared/format";
 import { writeGuidedScenarioState } from "../shared/guidedScenarioState";
 import { getBundledReleaseIdentity } from "../shared/releaseIdentity";
 import { debugRouteHref } from "../shared/routerLinks";
+import { isStaticDemoHost } from "../shared/staticDemo";
 import { seedIncompatibleKybDraft } from "../shared/workflowDraftStore";
 import { clearTelemetryEvents } from "../shared/telemetry";
 import { applyReleasePayload, checkForVersionUpdate, getVersionState } from "../shared/versionCheckClient";
@@ -42,6 +43,15 @@ const modeEvent: Partial<Record<SkewMode, Parameters<typeof applyReleasePayload>
   "api-contract-incompatible": "api.contract.deprecating"
 };
 
+const modeSeverity: Record<SkewMode, "optional" | "recommended" | "required"> = {
+  "no-affinity": "recommended",
+  affinity: "optional",
+  "asset-retention": "recommended",
+  broken: "required",
+  "compatibility-window-expired": "required",
+  "api-contract-incompatible": "required"
+};
+
 const scenarioIcons: Record<GuidedScenarioId, LucideIcon> = {
   "payment-safe-refresh": WalletCards,
   "missing-chunk": Bug,
@@ -61,13 +71,71 @@ interface DebugState {
   version: ReleaseMetadata;
 }
 
-async function prepareGuidedScenario(routerMode: RouterMode, scenario: GuidedScenario) {
-  resetBrowserSimulationState(routerMode);
-  await apiFetch<DebugState>("/api/debug/version-skew/reset", routerMode, { method: "POST" });
-  const data = await apiFetch<DebugState>("/api/debug/version-skew/mode", routerMode, {
+function staticDebugState(routerMode: RouterMode, mode = getLocalSkewMode(routerMode) ?? "asset-retention"): DebugState {
+  const current = getVersionState(routerMode).current;
+  const releaseId = "release-b";
+  const compatibilityWindowExpiresAt =
+    mode === "compatibility-window-expired" ? new Date(Date.now() - 60_000).toISOString() : new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString();
+  return {
+    mode,
+    activeReleaseId: mode === "no-affinity" ? releaseId : current.releaseId,
+    latestReleaseId: releaseId,
+    updateSeverity: modeSeverity[mode],
+    apiContractVersion: mode === "api-contract-incompatible" ? "2026-07" : current.apiContractVersion,
+    version: {
+      ...current,
+      releaseId,
+      deploymentId: `deployment-${releaseId}`,
+      minimumSupportedClientRelease: modeSeverity[mode] === "required" ? releaseId : current.releaseId,
+      updateSeverity: modeSeverity[mode],
+      assetBasePath: mode === "affinity" ? `/releases/${current.releaseId}/` : `/releases/${releaseId}/`,
+      compatibilityWindowExpiresAt,
+      featureFlagSnapshotVersion: `ff-${releaseId}`,
+      apiContractVersion: mode === "api-contract-incompatible" ? "2026-07" : current.apiContractVersion,
+      skewMode: mode
+    }
+  };
+}
+
+function staticResetDebugState(routerMode: RouterMode): DebugState {
+  const current = getVersionState(routerMode).current;
+  return {
+    mode: "asset-retention",
+    activeReleaseId: current.releaseId,
+    latestReleaseId: current.releaseId,
+    updateSeverity: "optional",
+    apiContractVersion: current.apiContractVersion,
+    version: { ...current, updateSeverity: "optional", skewMode: undefined }
+  };
+}
+
+async function readDebugState(routerMode: RouterMode) {
+  return isStaticDemoHost() ? staticDebugState(routerMode) : apiFetch<DebugState>("/api/debug/version-skew", routerMode);
+}
+
+async function setDebugModeState(routerMode: RouterMode, mode: SkewMode) {
+  if (isStaticDemoHost()) {
+    return staticDebugState(routerMode, mode);
+  }
+  return apiFetch<DebugState>("/api/debug/version-skew/mode", routerMode, {
     method: "POST",
-    body: JSON.stringify({ mode: scenario.mode })
+    body: JSON.stringify({ mode })
   });
+}
+
+async function resetDebugState(routerMode: RouterMode) {
+  resetBrowserSimulationState(routerMode);
+  if (isStaticDemoHost()) {
+    return staticResetDebugState(routerMode);
+  }
+  return apiFetch<DebugState>("/api/debug/version-skew/reset", routerMode, {
+    method: "POST"
+  });
+}
+
+async function prepareGuidedScenario(routerMode: RouterMode, scenario: GuidedScenario) {
+  await resetDebugState(routerMode);
+  const data = await setDebugModeState(routerMode, scenario.mode);
   return { data, scenario };
 }
 
@@ -91,13 +159,9 @@ function finishGuidedScenario(routerMode: RouterMode, data: DebugState, scenario
 export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode }) {
   const queryClient = useQueryClient();
   const [, setTick] = useState(0);
-  const query = useQuery({ queryKey: ["debug-version-skew", routerMode], queryFn: () => apiFetch<DebugState>("/api/debug/version-skew", routerMode) });
+  const query = useQuery({ queryKey: ["debug-version-skew", routerMode], queryFn: () => readDebugState(routerMode) });
   const mutation = useMutation({
-    mutationFn: (mode: SkewMode) =>
-      apiFetch<DebugState>("/api/debug/version-skew/mode", routerMode, {
-        method: "POST",
-        body: JSON.stringify({ mode })
-      }),
+    mutationFn: (mode: SkewMode) => setDebugModeState(routerMode, mode),
     onSuccess(data) {
       setLocalSkewMode(routerMode, data.mode);
       applyReleasePayload(routerMode, data.version, modeEvent[data.mode]);
@@ -106,12 +170,7 @@ export function VersionSkewDebugPage({ routerMode }: { routerMode: RouterMode })
     }
   });
   const resetMutation = useMutation({
-    mutationFn: () => {
-      resetBrowserSimulationState(routerMode);
-      return apiFetch<DebugState>("/api/debug/version-skew/reset", routerMode, {
-        method: "POST"
-      });
-    },
+    mutationFn: () => resetDebugState(routerMode),
     onSuccess() {
       window.location.assign(debugRouteHref("/debug/version-skew?reset=1", routerMode));
     }

@@ -1,5 +1,6 @@
 import { fetchVersionMetadata, getCurrentReleaseIdentity, setCurrentReleaseIdentityOverride } from "./releaseIdentity";
 import { readJson, writeJson } from "./storage";
+import { isStaticDemoHost } from "./staticDemo";
 import { trackTelemetry } from "./telemetry";
 import type { ReleaseMetadata, RouterMode, UpdateSeverity } from "./types";
 
@@ -175,6 +176,9 @@ export function startVersionChecks(routerMode: RouterMode) {
 function startReleaseBus(routerMode: RouterMode) {
   releaseBus?.close();
   const busMode = import.meta.env.VITE_RELEASE_BUS_MODE ?? "sse";
+  if (busMode === "off" || isStaticDemoHost()) {
+    return;
+  }
   if (busMode === "websocket") {
     const protocol = window.location.protocol === "https:" ? "wss" : "ws";
     const socket = new WebSocket(`${protocol}://${window.location.host}/events-ws`);

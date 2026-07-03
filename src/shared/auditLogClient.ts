@@ -1,5 +1,6 @@
 import { apiFetch } from "./apiClient";
 import { redactSensitiveMetadata } from "./privacy";
+import { isStaticDemoHost } from "./staticDemo";
 import { trackTelemetry } from "./telemetry";
 import type { AuditEvent, RouterMode, WorkflowType } from "./types";
 
@@ -12,6 +13,9 @@ export async function recordAuditEvent(
 ) {
   const safeMetadata = redactSensitiveMetadata(metadata) as Record<string, unknown>;
   trackTelemetry(type.includes("chunk") ? "chunk_load_failed" : "version_check_succeeded", routerMode, { type, ...safeMetadata }, workflowType);
+  if (isStaticDemoHost()) {
+    return;
+  }
   try {
     await apiFetch<AuditEvent>("/api/audit-events", routerMode, {
       method: "POST",
@@ -23,5 +27,8 @@ export async function recordAuditEvent(
 }
 
 export async function fetchAuditEvents(routerMode: RouterMode) {
+  if (isStaticDemoHost()) {
+    return [];
+  }
   return apiFetch<AuditEvent[]>("/api/audit-events", routerMode);
 }
