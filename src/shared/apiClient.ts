@@ -1,5 +1,6 @@
 import { getCurrentReleaseIdentity } from "./releaseIdentity";
 import { getSessionSnapshot } from "./sessionSimulation";
+import { isStaticDemoHost } from "./staticDemo";
 import type { ReleaseMetadata, RouterMode, SensitiveMutationIntent, SessionSnapshot } from "./types";
 
 export interface ApiOptions extends RequestInit {
@@ -32,6 +33,13 @@ export function buildApiHeaders(
 }
 
 export async function apiFetch<T>(path: string, routerMode: RouterMode, options: ApiOptions = {}): Promise<T> {
+  if (isStaticDemoHost() && path.startsWith("/api/")) {
+    const { staticApiResponse } = await import("./staticApi");
+    const staticPayload = staticApiResponse<T>(path, options);
+    if (staticPayload !== undefined) {
+      return staticPayload;
+    }
+  }
   const headers = buildApiHeaders(routerMode, options);
   const response = await fetch(path, { ...options, headers });
   const contentType = response.headers.get("content-type") ?? "";
