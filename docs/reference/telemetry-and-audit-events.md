@@ -1,8 +1,10 @@
-# Telemetry And Audit Events
+# Event Trace
 
-Telemetry explains how often build version skew happens. Audit events explain what happened during sensitive workflows.
+The app shows a readable event trace so a learner can verify what happened without decoding raw observability jargon.
 
-## Important Telemetry Events
+The raw implementation still stores telemetry-style browser events and server-side audit events. The UI maps the important ones to plain labels such as **Chunk load failed**, **Draft restored**, and **Required update blocked submit**.
+
+## Raw Event Names
 
 - `version_check_started`
 - `version_check_succeeded`
@@ -19,13 +21,11 @@ Telemetry explains how often build version skew happens. Audit events explain wh
 - `chunk_reload_loop_prevented`
 - `workflow_draft_saved`
 - `workflow_draft_restored`
-- `payment_submit_started`
-- `payment_submit_succeeded`
-- `payment_submit_deduped`
-- `payment_submit_blocked_required_update`
-- `invoice_approval_blocked_required_update`
-- `card_update_blocked_required_update`
-- `kyb_submit_blocked_required_update`
+- `draft_submit_started`
+- `draft_submit_succeeded`
+- `draft_submit_deduped`
+- `draft_submit_blocked_required_update`
+- `old_draft_submit_blocked_required_update`
 - `mutation_deferred_due_to_pending_update`
 - `route_preload_started`
 - `route_preload_succeeded`
@@ -44,8 +44,8 @@ Telemetry explains how often build version skew happens. Audit events explain wh
 
 ## Export
 
-The debug UI can copy telemetry as JSON from the release debug panel.
+The debug UI can copy raw event JSON from the release debug panel or the Event trace table.
 
 ## Privacy Rule
 
-Do not log full account numbers, card numbers, document contents, secrets, or fake sensitive-looking values beyond what is needed to teach the pattern.
+Do not log full account numbers, draft contents, document contents, secrets, or fake sensitive-looking values beyond what is needed to teach the pattern. Rendered event data must stay redacted.

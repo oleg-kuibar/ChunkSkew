@@ -32,11 +32,11 @@ const version = {
   featureFlagSnapshotVersion: process.env.VITE_FEATURE_FLAGS_VERSION ?? `ff-${releaseId}`,
   apiContractVersion: process.env.VITE_API_CONTRACT_VERSION ?? "2026-06",
   draftSchemaVersions: {
-    payment: 2,
-    kyb: 2,
-    card: 2,
-    invoice: 2,
-    vendor: 2
+    draft: 2,
+    oldDraft: 2,
+    control: 2,
+    modal: 2,
+    extraDraft: 2
   }
 };
 

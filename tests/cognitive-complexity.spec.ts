@@ -12,13 +12,13 @@ interface FunctionScore {
 
 const knownTradeoffs: Record<string, string> = {
   "src/pages/VersionSkewDebug.tsx:VersionSkewDebugPage":
-    "Lab controls intentionally keep scenario setup, reset, diagnostics, and audit proof in one visible teaching surface.",
+    "Lab controls intentionally keep scenario setup, reset, diagnostics, and event checks in one visible teaching surface.",
   "src/shared/updatePolicyEngine.ts:decideUpdatePolicyForState":
     "The ordered product decision matrix is deliberately explicit so readers can copy the rules without chasing indirection.",
-  "src/workflows/KybWorkflow.tsx:KybWorkflow":
-    "KYB demonstrates migration, incompatible drafts, document review, and submit safety in one realistic workflow.",
-  "src/workflows/PaymentWorkflow.tsx:PaymentWorkflow":
-    "Payment is the primary walkthrough, keeping autosave, MFA, idempotency, and required-update recovery together."
+  "src/workflows/BadDraftWorkflow.tsx:BadDraftWorkflow":
+    "The bad-draft flow keeps migration, incompatible drafts, and submit safety together for one readable example.",
+  "src/workflows/SaveRefreshWorkflow.tsx:SaveRefreshWorkflow":
+    "The safe-refresh walkthrough keeps autosave, confirmation, idempotency, and required-update recovery together."
 };
 
 function sourceFiles(dir: string): string[] {

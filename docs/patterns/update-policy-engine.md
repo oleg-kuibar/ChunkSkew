@@ -15,7 +15,7 @@ The POC policy considers:
 - Dirty form state.
 - Pending mutation state.
 - Pending navigation state.
-- MFA state.
+- Challenge state.
 - Sensitive workflow flag.
 - Chunk failure state.
 - Preloaded workflow chunks.
@@ -47,7 +47,7 @@ The policy can return:
 
 - Never reload while a mutation is pending.
 - Never reload while the user is typing in a dirty form.
-- Never reload during MFA.
+- Never reload during a confirmation challenge.
 - Optional updates should not block work.
 - Recommended updates should prompt at safe points.
 - Required updates should block new risky mutations while preserving current work.

@@ -20,8 +20,8 @@ Known learning tradeoffs:
 | Function | Why it remains larger |
 | --- | --- |
 | `src/shared/updatePolicyEngine.ts:decideUpdatePolicyForState` | The ordered product decision matrix is explicit so readers can copy the rules without chasing indirection. |
-| `src/workflows/PaymentWorkflow.tsx:PaymentWorkflow` | Payment is the primary walkthrough, keeping autosave, MFA, idempotency, and required-update recovery together. |
-| `src/workflows/KybWorkflow.tsx:KybWorkflow` | KYB demonstrates migration, incompatible drafts, document review, and submit safety in one realistic workflow. |
+| `src/workflows/SaveRefreshWorkflow.tsx:SaveRefreshWorkflow` | Save-refresh is the primary walkthrough, keeping autosave, confirmation, idempotency, and required-update recovery together. |
+| `src/workflows/BadDraftWorkflow.tsx:BadDraftWorkflow` | The bad-draft flow keeps migration, incompatible drafts, and submit safety together for one readable example. |
 | `src/pages/VersionSkewDebug.tsx:VersionSkewDebugPage` | Lab controls intentionally keep scenario setup, reset, diagnostics, and audit proof in one visible teaching surface. |
 
 Policy:

@@ -8,9 +8,13 @@ import { getVersionState, prepareSafeRefresh, subscribeVersionState } from "../s
 import type { RouterMode, WorkflowType } from "../shared/types";
 import { cx } from "../shared/format";
 import { withAppBase } from "../shared/routerLinks";
+import { readStoredValue } from "../shared/storage";
 
 function refreshSafely(routerMode: RouterMode) {
   prepareSafeRefresh(routerMode);
+  if (window.__CHUNK_SKEW_TEST_NO_RELOAD__) {
+    return;
+  }
   window.location.reload();
 }
 
@@ -22,7 +26,7 @@ function activeRouterMode(): RouterMode {
   if (typeof window === "undefined") {
     return "react-router";
   }
-  const stored = window.localStorage.getItem("chunk-skew-finance:router-mode");
+  const stored = readStoredValue(window.localStorage, "router-mode");
   return stored === "tanstack-router" ? "tanstack-router" : "react-router";
 }
 
@@ -83,14 +87,12 @@ export function BuildVersionSnapshot({ routerMode }: { routerMode: RouterMode })
   useEffect(() => subscribeVersionState(() => setTick((value) => value + 1)), []);
   const state = getVersionState(routerMode);
   const bundle = getBundledReleaseIdentity(routerMode);
-  const { fullyCurrent, status } = getReleaseStatus(state, bundle);
+  const { fullyCurrent } = getReleaseStatus(state, bundle);
   const items = [
-    { label: "Loaded bundle", value: bundle.releaseId, hint: "Code in this tab" },
-    { label: "Session release", value: state.current.releaseId, hint: "Recovery target" },
-    { label: "Latest release", value: state.latest.releaseId, hint: "Server version" },
-    { label: "Update policy", value: state.updateSeverity, hint: status },
-    { label: "API contract", value: state.apiContractCompatible ? "compatible" : "blocked", hint: state.current.apiContractVersion },
-    { label: "Lab mode", value: state.latest.skewMode ?? "local", hint: routerMode === "react-router" ? "React Router" : "TanStack Router" }
+    { label: "Loaded bundle", value: bundle.releaseId },
+    { label: "Session release", value: state.current.releaseId },
+    { label: "Latest release", value: state.latest.releaseId },
+    { label: "API contract", value: state.apiContractCompatible ? "compatible" : "blocked" }
   ];
 
   return (
@@ -106,15 +108,14 @@ export function BuildVersionSnapshot({ routerMode }: { routerMode: RouterMode })
         </div>
         <BuildVersionStamp routerMode={routerMode} compact />
       </header>
-      <div className="release-snapshot-grid">
+      <dl className="release-snapshot-grid">
         {items.map((item) => (
           <div className="release-snapshot-item" key={item.label}>
-            <span>{item.label}</span>
+            <dt>{item.label}</dt>
             <strong>{shortRelease(item.value)}</strong>
-            <small>{item.hint}</small>
           </div>
         ))}
-      </div>
+      </dl>
     </section>
   );
 }
@@ -124,10 +125,10 @@ interface UpdateSurfaceProps {
   workflowType?: WorkflowType;
   dirtyForm?: boolean;
   mutationPending?: boolean;
-  mfaPending?: boolean;
+  challengePending?: boolean;
 }
 
-export function UpdateToast({ routerMode, workflowType = "none", dirtyForm = false, mutationPending = false, mfaPending = false }: UpdateSurfaceProps) {
+export function UpdateToast({ routerMode, workflowType = "none", dirtyForm = false, mutationPending = false, challengePending = false }: UpdateSurfaceProps) {
   const [, setTick] = useState(0);
   const [dismissed, setDismissed] = useState(false);
   useEffect(() => subscribeVersionState(() => setTick((value) => value + 1)), []);
@@ -139,7 +140,7 @@ export function UpdateToast({ routerMode, workflowType = "none", dirtyForm = fal
     dirtyForm,
     mutationPending,
     navigationPending: false,
-    mfaPending,
+    challengePending,
     idempotencyKeyPresent: false,
     lastInteractionAt: Date.now(),
     sensitiveWorkflow: workflowType !== "none",
@@ -175,7 +176,7 @@ export function UpdateToast({ routerMode, workflowType = "none", dirtyForm = fal
   );
 }
 
-export function UpdateBanner({ routerMode, workflowType = "none", dirtyForm = false, mutationPending = false, mfaPending = false }: UpdateSurfaceProps) {
+export function UpdateBanner({ routerMode, workflowType = "none", dirtyForm = false, mutationPending = false, challengePending = false }: UpdateSurfaceProps) {
   const [, setTick] = useState(0);
   useEffect(() => subscribeVersionState(() => setTick((value) => value + 1)), []);
   const policy = decideUpdatePolicy({
@@ -186,7 +187,7 @@ export function UpdateBanner({ routerMode, workflowType = "none", dirtyForm = fa
     dirtyForm,
     mutationPending,
     navigationPending: false,
-    mfaPending,
+    challengePending,
     idempotencyKeyPresent: false,
     lastInteractionAt: Date.now(),
     sensitiveWorkflow: workflowType !== "none",
@@ -230,7 +231,15 @@ export function UpdateBanner({ routerMode, workflowType = "none", dirtyForm = fa
   );
 }
 
-export function RequiredUpdateGate({ routerMode, message }: { routerMode: RouterMode; message?: string }) {
+export function RequiredUpdateGate({
+  routerMode,
+  message,
+  onRefresh
+}: {
+  routerMode: RouterMode;
+  message?: string;
+  onRefresh?: () => void;
+}) {
   return (
     <div className="gate gate-required" role="alert" data-testid="required-update-gate">
       <ShieldAlert aria-hidden="true" />
@@ -245,6 +254,7 @@ export function RequiredUpdateGate({ routerMode, message }: { routerMode: Router
         onClick={() => {
           trackTelemetry("update_refresh_clicked", routerMode, { source: "required-update-gate" });
           refreshSafely(routerMode);
+          onRefresh?.();
         }}
       >
         <RefreshCcw aria-hidden="true" />
@@ -350,7 +360,7 @@ export function VersionDebugPanel({ routerMode }: { routerMode: RouterMode }) {
     <aside className="version-debug-panel" data-testid="version-debug-panel">
       <header>
         <Bug aria-hidden="true" />
-        <strong>Release debug</strong>
+        <strong>Build debug</strong>
       </header>
       <dl>
         <div>
@@ -380,7 +390,7 @@ export function VersionDebugPanel({ routerMode }: { routerMode: RouterMode }) {
       </dl>
       <button className="button button-light" type="button" onClick={() => navigator.clipboard.writeText(exportTelemetryJson())}>
         <Download aria-hidden="true" />
-        Copy telemetry JSON
+        Copy event JSON
       </button>
     </aside>
   );
@@ -390,7 +400,7 @@ export function WorkflowAutosaveRestoredNotice({ migrated = false }: { migrated?
   return (
     <div className="notice notice-success" role="status" aria-live="polite" data-testid="draft-restored-notice">
       <CheckCircle2 aria-hidden="true" />
-      <span>{migrated ? "Draft restored after app update. Review migrated fields before submitting." : "Draft restored after app update."}</span>
+      <span>{migrated ? "Draft restored after app update. Check migrated fields before submitting." : "Draft restored after app update."}</span>
     </div>
   );
 }
@@ -402,7 +412,7 @@ export function AssetRetentionWarning({ active }: { active: boolean }) {
   return (
     <div className="notice notice-info" data-testid="asset-retention-warning">
       <CheckCircle2 aria-hidden="true" />
-      <span>Old release assets are retained, so this workflow can finish without a missing chunk.</span>
+      <span>Old release assets are retained, so this example can finish without a missing chunk.</span>
     </div>
   );
 }
@@ -479,7 +489,7 @@ export function DuplicateSubmitPreventedNotice({ visible }: { visible: boolean }
   return (
     <div className="notice notice-success" data-testid="duplicate-submit-prevented">
       <CheckCircle2 aria-hidden="true" />
-      <span>This retry returned the previous result. No duplicate payment or approval was created.</span>
+      <span>This retry returned the previous result. No duplicate action was created.</span>
     </div>
   );
 }

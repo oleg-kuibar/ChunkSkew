@@ -1,26 +1,16 @@
 import {
-  Activity,
-  BadgeDollarSign,
+  BadgeCheck,
   BookOpenCheck,
-  Building2,
-  ClipboardCheck,
-  CreditCard,
-  FileClock,
   Gauge,
   KeyRound,
-  Landmark,
   ListChecks,
-  LayoutDashboard,
   ShieldCheck,
-  Users,
   X
 } from "lucide-react";
-import { Fragment, type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { clearGuidedScenarioState, readGuidedScenarioState, type GuidedScenarioState } from "../shared/guidedScenarioState";
-import { cx } from "../shared/format";
 import { isDebugMode, setDebugMode } from "../shared/releaseIdentity";
 import { debugRouteHref } from "../shared/routerLinks";
-import { getSessionSnapshot } from "../shared/sessionSimulation";
 import { checkForVersionUpdate } from "../shared/versionCheckClient";
 import type { RouterMode } from "../shared/types";
 import { LabControlsDock } from "./LabControlsDock";
@@ -28,17 +18,10 @@ import { BuildVersionStamp, UpdateBanner, UpdateToast, VersionDebugPanel } from 
 
 export type LinkRenderer = (props: { to: string; children: ReactNode; className?: string }) => ReactNode;
 
-const navItems = [
-  { to: "/", label: "Start here", icon: LayoutDashboard },
-  { to: "/examples", label: "Simple examples", icon: BookOpenCheck },
-  { to: "/payments/create/recipient", label: "Payment example", icon: BadgeDollarSign },
-  { to: "/invoices", label: "Invoice example", icon: ClipboardCheck },
-  { to: "/cards", label: "Card example", icon: CreditCard },
-  { to: "/kyb/business", label: "KYB example", icon: Building2 },
-  { to: "/transactions", label: "Report example", icon: Activity },
-  { to: "/settings", label: "Session and roles", icon: Users },
-  { to: "/audit", label: "Audit log", icon: FileClock },
-  { to: "/debug/version-skew", label: "Lab controls", icon: Gauge }
+const primaryNavItems = [
+  { to: "/", label: "Start", icon: BookOpenCheck },
+  { to: "/examples", label: "Examples", icon: BadgeCheck },
+  { to: "/debug/version-skew", label: "Controls", icon: Gauge }
 ];
 
 export function AppShell({
@@ -54,7 +37,6 @@ export function AppShell({
 }) {
   const [debug, setDebug] = useState(isDebugMode());
   const [guidedScenario, setGuidedScenario] = useState(() => readGuidedScenarioState());
-  const session = getSessionSnapshot();
   const routerHref = (target: "react" | "tanstack") => {
     if (typeof window === "undefined") {
       return `/?router=${target}`;
@@ -86,17 +68,17 @@ export function AppShell({
     <div className={debug ? "app-shell debug-panel-open" : "app-shell"}>
       <aside className="sidebar">
         <div className="brand">
-          <Landmark aria-hidden="true" />
+          <BookOpenCheck aria-hidden="true" />
           <div>
             <strong>ChunkSkew Lab</strong>
-            <span>Build version skew examples</span>
+            <span>Small version-skew examples</span>
           </div>
         </div>
         <nav aria-label="Primary">
-          {navItems.map((item) => {
+          {primaryNavItems.map((item) => {
             const Icon = item.icon;
             return (
-              <Fragment key={item.to}>
+              <div key={item.to}>
                 {link({
                   to: item.to,
                   className: "nav-link",
@@ -107,7 +89,7 @@ export function AppShell({
                     </>
                   )
                 })}
-              </Fragment>
+              </div>
             );
           })}
         </nav>
@@ -126,7 +108,7 @@ export function AppShell({
             <BuildVersionStamp routerMode={routerMode} compact />
             <span className="badge badge-muted">
               <ShieldCheck aria-hidden="true" />
-              Fake data only
+              Local lab
             </span>
           </div>
           <div className="topbar-right">
@@ -144,8 +126,8 @@ export function AppShell({
               <KeyRound aria-hidden="true" />
             </button>
             <div className="user-chip">
-              <span>{session.user.name}</span>
-              <small>{session.user.role}</small>
+              <span>Local</span>
+              <small>This tab</small>
             </div>
           </div>
         </header>
@@ -184,21 +166,15 @@ function GuidedScenarioBanner({
   const lastStepIndex = Math.max(scenario.steps.length - 1, 0);
   const activeStepIndex = Math.min(scenario.targetStepIndex ?? lastStepIndex, lastStepIndex);
   const status = `${isTargetRoute ? "Current" : "Ready"}: step ${activeStepIndex + 1} of ${scenario.steps.length}`;
+  const activeStep = scenario.steps[activeStepIndex];
 
   return (
-    <section className="guided-scenario-banner" data-testid="guided-scenario-banner" aria-label="Active proof setup">
+    <section className="guided-scenario-banner" data-testid="guided-scenario-banner" aria-label="Active example">
       <ListChecks aria-hidden="true" />
       <div>
         <strong>{scenario.title}</strong>
         <small data-testid="guided-scenario-status">{status}</small>
-        <span>{scenario.outcome}</span>
-        <ol>
-          {scenario.steps.map((step, index) => (
-            <li className={cx(index < activeStepIndex && "complete", index === activeStepIndex && "active")} key={step}>
-              {step}
-            </li>
-          ))}
-        </ol>
+        <span>{activeStep}</span>
       </div>
       <div className="guided-scenario-actions">
         {!isTargetRoute ? (
@@ -209,7 +185,7 @@ function GuidedScenarioBanner({
         <a className="button button-light" href={debugRouteHref("/debug/version-skew", routerMode)}>
           Lab controls
         </a>
-        <button className="icon-button" type="button" aria-label="Clear proof setup" title="Clear proof setup" onClick={onClear}>
+        <button className="icon-button" type="button" aria-label="Clear active example" title="Clear active example" onClick={onClear}>
           <X aria-hidden="true" />
         </button>
       </div>

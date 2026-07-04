@@ -1,6 +1,7 @@
 import { apiFetch } from "./apiClient";
 import { getLocalSkewMode, setLocalSkewMode } from "./assetRetentionSimulator";
 import { isStaticDemoHost } from "./staticDemo";
+import { storageKey } from "./storage";
 import { applyReleasePayload, getVersionState } from "./versionCheckClient";
 import type { ReleaseMetadata, RouterMode, SkewMode, UpdateSeverity } from "./types";
 
@@ -40,11 +41,11 @@ export interface DebugState {
 export function modeLabel(mode: SkewMode) {
   const labels: Record<SkewMode, string> = {
     "no-affinity": "No affinity",
-    affinity: "Deployment affinity",
-    "asset-retention": "Retained assets",
-    broken: "Missing chunks",
+    affinity: "Sticky tab",
+    "asset-retention": "Retained file",
+    broken: "Missing file",
     "compatibility-window-expired": "Expired retention",
-    "api-contract-incompatible": "API contract block"
+    "api-contract-incompatible": "Submit block"
   };
   return labels[mode];
 }
@@ -52,11 +53,11 @@ export function modeLabel(mode: SkewMode) {
 export function modeCopy(mode: SkewMode) {
   const copy: Record<SkewMode, string> = {
     "no-affinity": "Latest shell, old chunks may disappear.",
-    affinity: "Client stays on original deployment.",
-    "asset-retention": "Old chunks remain during window.",
-    broken: "Old chunks are missing on purpose.",
-    "compatibility-window-expired": "Retention window has expired.",
-    "api-contract-incompatible": "Risky mutations become read-only."
+    affinity: "Keep this tab on its first build.",
+    "asset-retention": "Old lazy files still load.",
+    broken: "Old lazy file is gone.",
+    "compatibility-window-expired": "Old lazy file expired.",
+    "api-contract-incompatible": "New writes are blocked."
   };
   return copy[mode];
 }
@@ -114,17 +115,16 @@ export async function setDebugModeState(routerMode: RouterMode, mode: SkewMode) 
 }
 
 export function resetBrowserSimulationState(routerMode: RouterMode) {
-  const prefix = "chunk-skew-finance:";
   for (const storage of [window.localStorage, window.sessionStorage]) {
     const keys = Array.from({ length: storage.length }, (_, index) => storage.key(index)).filter(
-      (key): key is string => Boolean(key?.startsWith(prefix))
+      (key): key is string => Boolean(key && key.startsWith("chunk-skew-lab:"))
     );
     for (const key of keys) {
       storage.removeItem(key);
     }
   }
-  window.localStorage.setItem(`${prefix}debug`, "1");
-  window.localStorage.setItem(`${prefix}router-mode`, routerMode);
+  window.localStorage.setItem(storageKey("debug"), "1");
+  window.localStorage.setItem(storageKey("router-mode"), routerMode);
   window.dispatchEvent(new CustomEvent("chunk-skew-storage", { detail: { key: "simulation-reset" } }));
 }
 

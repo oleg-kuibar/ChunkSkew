@@ -6,8 +6,8 @@ export function AuditLogPage({ routerMode }: { routerMode: RouterMode }) {
     <div className="page-stack">
       <section className="page-heading">
         <div>
-          <p className="eyebrow">Auditability</p>
-          <h1>Audit log</h1>
+          <p className="eyebrow">Optional</p>
+          <h1>Event log</h1>
         </div>
       </section>
       <AuditEventTable routerMode={routerMode} />

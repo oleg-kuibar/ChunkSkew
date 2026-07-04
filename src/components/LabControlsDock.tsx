@@ -16,12 +16,9 @@ import { getLocalSkewMode } from "../shared/assetRetentionSimulator";
 import { cx } from "../shared/format";
 import {
   applyDebugState,
-  modeCopy,
   modeLabel,
-  modeSeverity,
   resetDebugState,
-  setDebugModeState,
-  skewModes
+  setDebugModeState
 } from "../shared/labStateControls";
 import { readPreloadStatuses } from "../shared/preloadWorkflowChunks";
 import { getBundledReleaseIdentity } from "../shared/releaseIdentity";
@@ -29,7 +26,7 @@ import { debugRouteHref } from "../shared/routerLinks";
 import { clearTelemetryEvents } from "../shared/telemetry";
 import type { RouterMode, SkewMode } from "../shared/types";
 import { checkForVersionUpdate, getVersionState, subscribeVersionState } from "../shared/versionCheckClient";
-import { seedIncompatibleKybDraft } from "../shared/workflowDraftStore";
+import { seedOldDraftExample } from "../shared/workflowDraftStore";
 import { BuildVersionStamp } from "./UpdateSurfaces";
 
 type DockSide = "left" | "right";
@@ -150,6 +147,7 @@ function DockToggle({ currentMode, side, onOpen }: { currentMode: SkewMode; side
     <button
       className={cx("lab-controls-toggle", `lab-controls-${side}`)}
       type="button"
+      aria-label={`Open lab controls, current mode ${modeLabel(currentMode)}`}
       aria-controls="lab-controls-dock"
       aria-expanded="false"
       data-testid="lab-controls-toggle"
@@ -212,20 +210,27 @@ function DockWindow({
         </button>
       </header>
       <BuildVersionStamp routerMode={routerMode} label="Build" compact />
-      <DockActions pendingAction={pendingAction} routerMode={routerMode} runAction={runAction} />
-      <DockConfig details={details} setDetails={setDetails} setSide={setSide} side={side} />
-      <DockModeList currentMode={currentMode} pendingAction={pendingAction} changeMode={changeMode} />
-      {details ? <DockDetails bundle={bundle} statusesCount={statusesCount} versionState={versionState} /> : null}
+      <DockPrimaryActions changeMode={changeMode} currentMode={currentMode} pendingAction={pendingAction} routerMode={routerMode} runAction={runAction} />
+      <details className="lab-controls-more">
+        <summary>More controls</summary>
+        <DockUtilityActions pendingAction={pendingAction} routerMode={routerMode} runAction={runAction} />
+        <DockConfig details={details} setDetails={setDetails} setSide={setSide} side={side} />
+        {details ? <DockDetails bundle={bundle} statusesCount={statusesCount} versionState={versionState} /> : null}
+      </details>
       <DockFooter fullLabHref={fullLabHref} message={message} />
     </aside>
   );
 }
 
-function DockActions({
+function DockPrimaryActions({
+  changeMode,
+  currentMode,
   pendingAction,
   routerMode,
   runAction
 }: {
+  changeMode: (mode: SkewMode) => void;
+  currentMode: SkewMode;
   pendingAction: string | null;
   routerMode: RouterMode;
   runAction: RunAction;
@@ -251,29 +256,67 @@ function DockActions({
       <button
         className="button button-light"
         type="button"
+        data-testid="lab-dock-mode-broken"
+        disabled={disabled}
+        aria-pressed={currentMode === "broken"}
+        onClick={() => changeMode("broken")}
+      >
+        <FileClock aria-hidden="true" />
+        Make tab old
+      </button>
+      <button
+        className="button button-light"
+        type="button"
+        data-testid="lab-dock-mode-api-contract-incompatible"
+        disabled={disabled}
+        aria-pressed={currentMode === "api-contract-incompatible"}
+        onClick={() => changeMode("api-contract-incompatible")}
+      >
+        <ClipboardList aria-hidden="true" />
+        Block submit
+      </button>
+    </section>
+  );
+}
+
+function DockUtilityActions({
+  pendingAction,
+  routerMode,
+  runAction
+}: {
+  pendingAction: string | null;
+  routerMode: RouterMode;
+  runAction: RunAction;
+}) {
+  const disabled = pendingAction !== null;
+  return (
+    <section className="lab-controls-actions" aria-label="Extra state controls">
+      <button
+        className="button button-light"
+        type="button"
         disabled={disabled}
         onClick={() => runAction("check", "Version check complete", () => checkForVersionUpdate(routerMode, "lab-dock"))}
       >
         <RefreshCcw aria-hidden="true" />
-        Check
+        Check version
       </button>
       <button
         className="button button-secondary"
         type="button"
         disabled={disabled}
-        onClick={() => runAction("kyb-draft", "KYB draft seeded", () => seedIncompatibleKybDraft(routerMode))}
+        onClick={() => runAction("old-draft", "Old draft ready", () => seedOldDraftExample(routerMode))}
       >
         <FileClock aria-hidden="true" />
-        KYB draft
+        Old draft
       </button>
       <button
         className="button button-secondary"
         type="button"
         disabled={disabled}
-        onClick={() => runAction("telemetry", "Telemetry cleared", clearTelemetryEvents)}
+        onClick={() => runAction("log", "Log cleared", clearTelemetryEvents)}
       >
         <Trash2 aria-hidden="true" />
-        Telemetry
+        Clear log
       </button>
     </section>
   );
@@ -310,62 +353,6 @@ function DockConfig({
   );
 }
 
-function DockModeList({
-  currentMode,
-  pendingAction,
-  changeMode
-}: {
-  currentMode: SkewMode;
-  pendingAction: string | null;
-  changeMode: (mode: SkewMode) => void;
-}) {
-  return (
-    <section className="lab-mode-list" aria-label="Deployment mode controls">
-      {skewModes.map((mode) => (
-        <DockModeButton
-          active={currentMode === mode}
-          disabled={pendingAction !== null}
-          key={mode}
-          mode={mode}
-          pending={pendingAction === `mode:${mode}`}
-          onClick={() => changeMode(mode)}
-        />
-      ))}
-    </section>
-  );
-}
-
-function DockModeButton({
-  active,
-  disabled,
-  mode,
-  pending,
-  onClick
-}: {
-  active: boolean;
-  disabled: boolean;
-  mode: SkewMode;
-  pending: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      className={cx("lab-mode-button", active && "active")}
-      data-testid={`lab-dock-mode-${mode}`}
-      type="button"
-      aria-pressed={active}
-      disabled={disabled}
-      onClick={onClick}
-    >
-      <span>
-        <strong>{modeLabel(mode)}</strong>
-        <small>{modeCopy(mode)}</small>
-      </span>
-      <em>{pending ? "..." : modeSeverity[mode]}</em>
-    </button>
-  );
-}
-
 function DockDetails({
   bundle,
   statusesCount,
@@ -380,7 +367,7 @@ function DockDetails({
     ["Session", shortRelease(versionState.current.releaseId)],
     ["Latest", shortRelease(versionState.latest.releaseId)],
     ["Policy", versionState.updateSeverity],
-    ["Preloads", String(statusesCount)]
+    ["Chunks", String(statusesCount)]
   ];
   return (
     <section className="lab-controls-details" aria-label="Release details">

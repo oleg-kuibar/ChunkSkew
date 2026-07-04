@@ -1,19 +1,19 @@
 import { expect, test } from "@playwright/test";
 import { decideUpdatePolicyForState, type PolicyInput } from "../src/shared/updatePolicyEngine";
-import type { ReleaseMetadata, UpdateSeverity } from "../src/shared/types";
 import type { VersionState } from "../src/shared/versionCheckClient";
+import { testRelease, versionState } from "./release-fixtures";
 
 const routerMode = "react-router";
 
 const baseInput: PolicyInput = {
   routerMode,
-  currentRoute: "/payments/create/review",
-  workflowType: "payment",
+  currentRoute: "/draft/check",
+  workflowType: "none",
   routeIsLazyLoaded: true,
   dirtyForm: false,
   mutationPending: false,
   navigationPending: false,
-  mfaPending: false,
+  challengePending: false,
   idempotencyKeyPresent: true,
   lastInteractionAt: 0,
   sensitiveWorkflow: false,
@@ -23,45 +23,15 @@ const baseInput: PolicyInput = {
   apiContractCompatible: true
 };
 
-function release(releaseId: string, updateSeverity: UpdateSeverity = "optional", apiContractVersion = "2026-06"): ReleaseMetadata {
-  return {
-    releaseId,
-    buildTime: "2026-07-01T00:00:00.000Z",
-    gitSha: releaseId,
-    deploymentId: `deployment-${releaseId}`,
-    minimumSupportedClientRelease: updateSeverity === "required" ? releaseId : "release-a",
-    updateSeverity,
-    routerMode,
-    assetBasePath: `/releases/${releaseId}/`,
-    compatibilityWindowExpiresAt: "2026-07-04T00:00:00.000Z",
-    featureFlagSnapshotVersion: `ff-${releaseId}`,
-    apiContractVersion,
-    draftSchemaVersions: { payment: 2, kyb: 2, card: 2, invoice: 2, vendor: 2 }
-  };
-}
-
-function versionState(current: ReleaseMetadata, latest: ReleaseMetadata): VersionState {
-  const updateAvailable = current.releaseId !== latest.releaseId;
-  return {
-    current,
-    latest,
-    updateAvailable,
-    updateSeverity: latest.updateSeverity,
-    requiredUpdatePending: updateAvailable && latest.updateSeverity === "required",
-    apiContractCompatible: current.apiContractVersion === latest.apiContractVersion,
-    checkedAt: "2026-07-01T00:00:00.000Z"
-  };
-}
-
 function decide(overrides: Partial<PolicyInput>, state: VersionState, now = 0) {
   return decideUpdatePolicyForState({ ...baseInput, ...overrides }, state, now);
 }
 
 test("update policy decisions stay copy-pasteable", () => {
-  const releaseA = release("release-a");
-  const releaseBRecommended = release("release-b", "recommended");
-  const releaseBRequired = release("release-b", "required");
-  const incompatibleApi = release("release-b", "required", "2026-07");
+  const releaseA = testRelease("release-a");
+  const releaseBRecommended = testRelease("release-b", { updateSeverity: "recommended" });
+  const releaseBRequired = testRelease("release-b", { updateSeverity: "required" });
+  const incompatibleApi = testRelease("release-b", { apiContractVersion: "2026-07", updateSeverity: "required" });
   const decisions = new Set<string>();
 
   const cleanSession = decide({}, versionState(releaseA, releaseA));

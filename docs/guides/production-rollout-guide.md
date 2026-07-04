@@ -4,7 +4,7 @@ This guide turns the POC into a practical rollout sequence for an existing React
 
 ## Phase 1: Measure Before Blocking
 
-Add release metadata and telemetry first.
+Add release metadata and a readable event trace first.
 
 - Generate a build release ID.
 - Publish `/version.json`.
@@ -19,15 +19,14 @@ Code anchors:
 - `src/shared/telemetry.ts`
 - `src/shared/apiClient.ts`
 
-## Phase 2: Preserve Workflows
+## Phase 2: Preserve Protected Work
 
-Add autosave and idempotency to workflows where a reload would hurt.
+Add autosave and idempotency to flows where a reload would hurt.
 
-- Payment creation.
-- Invoice approval/rejection.
-- Card freeze/unfreeze and limit controls.
-- KYB/KYC submission.
-- Vendor creation.
+- Draft creation or editing.
+- Lazy check steps.
+- Draft review and submit.
+- Related-record creation.
 - Role and API key changes.
 
 Code anchors:
@@ -35,8 +34,8 @@ Code anchors:
 - `src/shared/workflowDraftStore.ts`
 - `src/shared/idempotencyKeyStore.ts`
 - `src/shared/sensitiveMutationGuard.ts`
-- `src/workflows/PaymentWorkflow.tsx`
-- `src/workflows/KybWorkflow.tsx`
+- `src/workflows/SaveRefreshWorkflow.tsx`
+- `src/workflows/BadDraftWorkflow.tsx`
 
 ## Phase 3: Add Lazy Boundary Recovery
 
@@ -59,7 +58,7 @@ Code anchors:
 Use update severity and workflow context to decide the UX.
 
 - Optional: passive toast.
-- Recommended: sticky banner during sensitive workflow.
+- Recommended: sticky banner during protected work.
 - Required: block next risky mutation; preserve draft; offer safe refresh.
 - Incompatible API: readonly/block risky mutation.
 - Chunk failure: controlled fallback.
@@ -88,7 +87,7 @@ Code anchors:
 
 ## Phase 6: Tighten Gates
 
-Only after telemetry and recovery are working:
+Only after the event trace and recovery are working:
 
 - Block risky mutations for required updates.
 - Block or readonly incompatible API contracts.
@@ -98,10 +97,10 @@ Only after telemetry and recovery are working:
 ## Done Criteria
 
 - Old tabs can detect a new release.
-- Dirty workflows are not force-refreshed.
+- Dirty drafts are not force-refreshed.
 - Pending mutations are never interrupted.
 - Required updates block risky new mutations.
 - Autosaved drafts restore after reload.
 - Idempotency prevents duplicate submits.
-- Missing chunks show controlled recovery.
+- Missing files show controlled recovery.
 - Tests cover React Router and TanStack Router paths.

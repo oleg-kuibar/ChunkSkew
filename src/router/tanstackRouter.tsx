@@ -2,15 +2,13 @@ import { Link, Outlet, RouterProvider, createLazyRoute, createRootRoute, createR
 import { useEffect } from "react";
 import { AppShell } from "../components/AppShell";
 import { ChunkFailureFallback } from "../components/UpdateSurfaces";
-import { DashboardPage } from "../pages/Dashboard";
+import { StartPage } from "../pages/StartPage";
 import { SimpleExamplesPage } from "../pages/SimpleExamples";
-import { InvoicesPage } from "../pages/Invoices";
-import { CardsPage } from "../pages/Cards";
-import { TransactionsPage } from "../pages/Transactions";
+import { EventRowsPage } from "../pages/EventRows";
 import { SettingsPage } from "../pages/Settings";
 import { AuditLogPage } from "../pages/AuditLogPage";
 import { VersionSkewDebugPage } from "../pages/VersionSkewDebug";
-import { TanStackKybPage } from "../pages/tanstack/TanStackKybPage";
+import { TanStackBadDraftPage } from "../pages/tanstack/TanStackBadDraftPage";
 import { shouldSimulateChunkFailure } from "../shared/assetRetentionSimulator";
 import { createSyntheticChunkError } from "../shared/chunkErrorClassifier";
 import { handleChunkFailure } from "../shared/chunkRecoveryController";
@@ -43,10 +41,10 @@ const rootRoute = createRootRoute({
   )
 });
 
-const dashboardRoute = createRoute({
+const startRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
-  component: () => <DashboardPage routerMode="tanstack-router" />
+  component: () => <StartPage routerMode="tanstack-router" />
 });
 
 const examplesRoute = createRoute({
@@ -55,30 +53,31 @@ const examplesRoute = createRoute({
   component: () => <SimpleExamplesPage routerMode="tanstack-router" />
 });
 
-const paymentRoute = createRoute({
+const draftRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/payments/create/$step",
-  pendingComponent: () => <div className="loading-panel">Loading payment route...</div>,
+  path: "/draft/$step",
+  pendingComponent: () => <div className="loading-panel">Loading draft...</div>,
   errorComponent: ({ error }) => (
-    <ChunkFailureFallback error={error} routerMode="tanstack-router" workflowType="payment" routeId="tanstack-payment-lazy" />
+    <ChunkFailureFallback error={error} routerMode="tanstack-router" workflowType="draft" routeId="tanstack-draft-route" />
   )
 }).lazy(async () => {
   try {
-    return await tanstackLazyImport("tanstack-payment-lazy", "payment", () =>
-      import("../pages/tanstack/Payment.lazy").then((module) => module.Route)
+    return await tanstackLazyImport("tanstack-draft-route", "draft", () =>
+      import("../pages/tanstack/SaveRefresh.lazy").then((module) => module.DraftRoute)
     )();
   } catch (error) {
-    return createLazyRoute("/payments/create/$step")({
-      component: () => <ChunkFailureFallback error={error} routerMode="tanstack-router" workflowType="payment" routeId="tanstack-payment-lazy" />
+    return createLazyRoute("/draft/$step")({
+      component: () => <ChunkFailureFallback error={error} routerMode="tanstack-router" workflowType="draft" routeId="tanstack-draft-route" />
     });
   }
 });
 
-const invoicesRoute = createRoute({
+const eventRowsRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/invoices",
+  path: "/event-rows",
   component: () => (
-    <InvoicesPage
+    <EventRowsPage
+      retainedFilePath="/retained-file"
       routerMode="tanstack-router"
       link={(to, children) => (
         <Link to={to} className="button button-light">
@@ -89,112 +88,44 @@ const invoicesRoute = createRoute({
   )
 });
 
-const invoiceDetailRoute = createRoute({
+const retainedFileRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/invoices/$invoiceId",
-  pendingComponent: () => <div className="loading-panel">Loading invoice route...</div>,
+  path: "/retained-file",
+  pendingComponent: () => <div className="loading-panel">Loading retained file route...</div>,
   errorComponent: ({ error }) => (
-    <ChunkFailureFallback error={error} routerMode="tanstack-router" workflowType="invoice" routeId="tanstack-invoice-lazy" />
+    <ChunkFailureFallback error={error} routerMode="tanstack-router" workflowType="event" routeId="tanstack-retained-file-route" />
   )
 }).lazy(async () => {
   try {
-    return await tanstackLazyImport("tanstack-invoice-lazy", "invoice", () =>
-      import("../pages/tanstack/InvoiceDetail.lazy").then((module) => module.Route)
+    return await tanstackLazyImport("tanstack-retained-file-route", "event", () =>
+      import("../pages/tanstack/Report.lazy").then((module) => module.RetainedFileRoute)
     )();
   } catch (error) {
-    return createLazyRoute("/invoices/$invoiceId")({
-      component: () => <ChunkFailureFallback error={error} routerMode="tanstack-router" workflowType="invoice" routeId="tanstack-invoice-lazy" />
+    return createLazyRoute("/retained-file")({
+      component: () => <ChunkFailureFallback error={error} routerMode="tanstack-router" workflowType="event" routeId="tanstack-retained-file-route" />
     });
   }
 });
 
-const cardsRoute = createRoute({
+const badDraftRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/cards",
-  component: () => (
-    <CardsPage
-      routerMode="tanstack-router"
-      link={(to, children) => (
-        <Link to={to} className="button button-light">
-          {children}
-        </Link>
-      )}
-    />
-  )
-});
-
-const cardDetailRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/cards/$cardId",
-  pendingComponent: () => <div className="loading-panel">Loading card route...</div>,
-  errorComponent: ({ error }) => (
-    <ChunkFailureFallback error={error} routerMode="tanstack-router" workflowType="card" routeId="tanstack-card-lazy" />
-  )
-}).lazy(async () => {
-  try {
-    return await tanstackLazyImport("tanstack-card-lazy", "card", () =>
-      import("../pages/tanstack/CardDetail.lazy").then((module) => module.Route)
-    )();
-  } catch (error) {
-    return createLazyRoute("/cards/$cardId")({
-      component: () => <ChunkFailureFallback error={error} routerMode="tanstack-router" workflowType="card" routeId="tanstack-card-lazy" />
-    });
-  }
-});
-
-const transactionsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/transactions",
-  component: () => (
-    <TransactionsPage
-      routerMode="tanstack-router"
-      link={(to, children) => (
-        <Link to={to} className="button button-light">
-          {children}
-        </Link>
-      )}
-    />
-  )
-});
-
-const transactionReportRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/transactions/report",
-  pendingComponent: () => <div className="loading-panel">Loading report route...</div>,
-  errorComponent: ({ error }) => (
-    <ChunkFailureFallback error={error} routerMode="tanstack-router" workflowType="transaction" routeId="tanstack-report-lazy" />
-  )
-}).lazy(async () => {
-  try {
-    return await tanstackLazyImport("tanstack-report-lazy", "transaction", () =>
-      import("../pages/tanstack/Report.lazy").then((module) => module.Route)
-    )();
-  } catch (error) {
-    return createLazyRoute("/transactions/report")({
-      component: () => <ChunkFailureFallback error={error} routerMode="tanstack-router" workflowType="transaction" routeId="tanstack-report-lazy" />
-    });
-  }
-});
-
-const kybRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/kyb/$step",
+  path: "/bad-draft/$step",
   component: () => {
-    const params = kybRoute.useParams();
-    return <TanStackKybPage step={params.step} />;
+    const params = badDraftRoute.useParams();
+    return <TanStackBadDraftPage routeBase="/bad-draft" routeTo="/bad-draft/$step" step={params.step} />;
   },
-  errorComponent: ({ error }) => <ChunkFailureFallback error={error} routerMode="tanstack-router" workflowType="kyb" routeId="tanstack-error-lazy" />
+  errorComponent: ({ error }) => <ChunkFailureFallback error={error} routerMode="tanstack-router" workflowType="old-draft" routeId="tanstack-bad-draft-route" />
 });
 
-const settingsRoute = createRoute({
+const guardedActionRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/settings",
+  path: "/guarded-action",
   component: () => <SettingsPage routerMode="tanstack-router" />
 });
 
-const auditRoute = createRoute({
+const eventLogRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/audit",
+  path: "/event-log",
   component: () => <AuditLogPage routerMode="tanstack-router" />
 });
 
@@ -209,33 +140,29 @@ const pendingRoute = createRoute({
   path: "/debug/tanstack-pending",
   pendingComponent: () => <div className="loading-panel">Loading TanStack pending route...</div>,
   errorComponent: ({ error }) => (
-    <ChunkFailureFallback error={error} routerMode="tanstack-router" workflowType="admin" routeId="tanstack-pending-lazy" />
+    <ChunkFailureFallback error={error} routerMode="tanstack-router" workflowType="guarded" routeId="tanstack-pending-lazy" />
   )
 }).lazy(async () => {
   try {
-    return await tanstackLazyImport("tanstack-pending-lazy", "admin", () =>
+    return await tanstackLazyImport("tanstack-pending-lazy", "guarded", () =>
       import("../pages/tanstack/Pending.lazy").then((module) => module.Route)
     )();
   } catch (error) {
     return createLazyRoute("/debug/tanstack-pending")({
-      component: () => <ChunkFailureFallback error={error} routerMode="tanstack-router" workflowType="admin" routeId="tanstack-pending-lazy" />
+      component: () => <ChunkFailureFallback error={error} routerMode="tanstack-router" workflowType="guarded" routeId="tanstack-pending-lazy" />
     });
   }
 });
 
 const routeTree = rootRoute.addChildren([
-  dashboardRoute,
+  startRoute,
   examplesRoute,
-  paymentRoute,
-  invoicesRoute,
-  invoiceDetailRoute,
-  cardsRoute,
-  cardDetailRoute,
-  transactionsRoute,
-  transactionReportRoute,
-  kybRoute,
-  settingsRoute,
-  auditRoute,
+  draftRoute,
+  eventRowsRoute,
+  retainedFileRoute,
+  badDraftRoute,
+  guardedActionRoute,
+  eventLogRoute,
   debugRoute,
   pendingRoute
 ]);
@@ -249,17 +176,14 @@ declare module "@tanstack/react-router" {
 }
 
 function initialTanStackChunkFailure(pathname: string): { routeId: string; workflowType: WorkflowType } | null {
-  if (pathname.startsWith("/payments/create/")) {
-    return { routeId: "tanstack-payment-lazy", workflowType: "payment" };
+  if (pathname.startsWith("/draft/")) {
+    return { routeId: "tanstack-draft-route", workflowType: "draft" };
   }
-  if (pathname.startsWith("/invoices/")) {
-    return { routeId: "tanstack-invoice-lazy", workflowType: "invoice" };
-  }
-  if (pathname === "/transactions/report") {
-    return { routeId: "tanstack-report-lazy", workflowType: "transaction" };
+  if (pathname === "/retained-file") {
+    return { routeId: "tanstack-retained-file-route", workflowType: "event" };
   }
   if (pathname === "/debug/tanstack-pending") {
-    return { routeId: "tanstack-pending-lazy", workflowType: "admin" };
+    return { routeId: "tanstack-pending-lazy", workflowType: "guarded" };
   }
   return null;
 }

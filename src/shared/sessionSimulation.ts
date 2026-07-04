@@ -4,20 +4,19 @@ import type { SessionSnapshot } from "./types";
 const defaultSession: SessionSnapshot = {
   authenticated: true,
   user: {
-    id: "usr_olivia",
-    name: "Olivia Harper",
-    email: "olivia.harper@example.test",
+    id: "usr_example",
+    name: "Reader",
+    email: "demo.user@example.test",
     role: "owner",
-    mfaEnabled: true
+    challengeEnabled: true
   },
   organization: {
-    id: "org_northstar",
-    name: "Northstar Fabrication LLC",
-    fakeDataNotice: "All data in this POC is fake and deterministic.",
-    riskTier: "medium"
+    id: "org_example",
+    name: "Example Org",
+    fakeDataNotice: "All data in this POC is fake and deterministic."
   },
-  permissions: ["payments:create", "invoices:approve", "cards:update", "kyb:submit", "admin:write", "api-keys:create"],
-  mfaRequiredForSensitiveActions: true,
+  permissions: ["protected:create", "admin:write", "api-keys:create"],
+  challengeRequiredForSensitiveActions: true,
   expiresAt: new Date(Date.now() + 45 * 60 * 1000).toISOString()
 };
 
@@ -36,11 +35,11 @@ export function expireSession() {
 
 export function switchRole(role: SessionSnapshot["user"]["role"]) {
   const permissionsByRole: Record<SessionSnapshot["user"]["role"], string[]> = {
-    owner: ["payments:create", "invoices:approve", "cards:update", "kyb:submit", "admin:write", "api-keys:create"],
-    admin: ["payments:create", "invoices:approve", "cards:update", "admin:read", "api-keys:create"],
-    "finance-manager": ["payments:create", "invoices:approve", "cards:update", "admin:read"],
-    employee: ["cards:read", "payments:read"],
-    auditor: ["audit:read", "transactions:read", "admin:read"]
+    owner: ["protected:create", "admin:write", "api-keys:create"],
+    admin: ["protected:create", "admin:read", "api-keys:create"],
+    reviewer: ["protected:create", "admin:read"],
+    employee: [],
+    auditor: ["audit:read", "admin:read"]
   };
   const session = getSessionSnapshot();
   setSessionSnapshot({

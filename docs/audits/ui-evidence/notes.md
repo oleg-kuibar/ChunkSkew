@@ -6,16 +6,16 @@ Screenshots were captured from the local app on July 1, 2026 with debug mode ena
 
 | Step | Screenshot | Health | Notes |
 | --- | --- | --- | --- |
-| 1 | `01-start.png` | Good after follow-up | The first screen explains the deploy, lazy route, missing chunk, and safe recovery model before showing fintech examples, with all four checkpoints visible in the desktop viewport. |
-| 2 | `02-simple-examples.png` | Good after follow-up | The ordered simple examples expose the implementation anchors and proof command. A later CSS pass moved the update toast away from the release debug rail. |
-| 3 | `03-guided-lab-controls.png` | Good after follow-up | Guided scenario cards make reset, lab mode, starting step, and setup actions visible; advanced diagnostics stay below the primary path. |
-| 4 | `04-payment-required-update.png` | Good | The required-update payment state shows saved work, explicit `Bundle / Session / Latest` identity, and a safe refresh affordance. |
-| 5 | `05-kyb-incompatible-draft.png` | Good | The incompatible draft fallback explains why review is needed and avoids submitting migrated sensitive data automatically. |
+| 1 | `01-start.png` | Good after follow-up | The first screen shows three plain examples before optional setup routes. |
+| 2 | `02-simple-examples.png` | Good after follow-up | The ordered simple examples are now just three rows, a reset link, and a compact build stamp. A later CSS pass moved the update toast away from the release debug rail. |
+| 3 | `03-guided-lab-controls.png` | Good after follow-up | Guided scenario controls make reset, lab mode, starting step, and setup actions visible; advanced diagnostics stay below the primary path. |
+| 4 | `04-save-text-required-update.png` | Good | The required-update save-text state shows saved work, explicit `Bundle / Session / Latest` identity, and a safe refresh affordance. |
+| 5 | `05-old-draft-incompatible.png` | Good | The incompatible old-draft fallback explains why checking is needed and avoids submitting migrated sensitive data automatically. |
 
 ## Strengths
 
 - The build/version stamp is visible in each inspected state, which makes recovery and skew setup easier to verify during manual retests.
-- The guided controls answer the reset-state question directly at the scenario card level.
+- The guided controls answer the reset-state question directly at the scenario control level.
 - Required-update and incompatible-draft states use calm copy and preserve the user's next safe action.
 
 ## UX Risks

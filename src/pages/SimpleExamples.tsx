@@ -1,89 +1,61 @@
-import { Braces, FileWarning, GitBranch, KeyRound, RefreshCcw, ShieldCheck, type LucideIcon } from "lucide-react";
-import { useEffect } from "react";
+import { ArrowRight, RefreshCcw } from "lucide-react";
 import { BuildVersionStamp } from "../components/UpdateSurfaces";
 import { debugRouteHref } from "../shared/routerLinks";
-import { guidedScenarioSetupLabel, simplePatternCatalog, type SimplePatternSlug } from "../examples/simpleVersionSkewPatterns";
+import type { GuidedScenarioId } from "../examples/simpleVersionSkewPatterns";
 import type { RouterMode } from "../shared/types";
 
-const simpleAnchor = "simpleVersionSkewPatterns.ts";
-const testAnchor = "simple-patterns.spec.ts + docs vocabulary + update-policy.spec.ts";
-const proofCommand = "pnpm test:learning:windows";
-
-const exampleIcons: Record<SimplePatternSlug, LucideIcon> = {
-  "release-identity": GitBranch,
-  "chunk-recovery": FileWarning,
-  "safe-refresh": RefreshCcw,
-  "required-update-gate": ShieldCheck,
-  "idempotent-mutation": KeyRound,
-  "asset-strategy": Braces
-};
+const mostSimpleExamples = [
+  {
+    id: "release-identity",
+    title: "1. See old tab",
+    body: "Loaded build A. Latest build B. Show one refresh notice."
+  },
+  {
+    id: "safe-refresh",
+    title: "2. Save text",
+    body: "Typed text. Save, refresh, restore.",
+    scenarioId: "save-refresh" as GuidedScenarioId
+  },
+  {
+    id: "required-update-gate",
+    title: "3. Block submit",
+    body: "Old tab. Stop submit. Refresh first.",
+    scenarioId: "block-submit" as GuidedScenarioId
+  }
+];
 
 export function SimpleExamplesPage({ routerMode }: { routerMode: RouterMode }) {
-  useEffect(() => {
-    const id = window.location.hash.slice(1);
-    if (id) {
-      window.requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView({ block: "center" }));
-    }
-  }, []);
-
   return (
     <div className="page-stack">
       <section className="page-heading">
         <div>
-          <p className="eyebrow">Minimal patterns</p>
-          <h1>Simple examples</h1>
+          <p className="eyebrow">Three tiny examples</p>
+          <h1>Old tab. Saved text. Blocked submit.</h1>
         </div>
         <div className="heading-badges">
           <a className="button button-secondary" href={debugRouteHref("/debug/version-skew", routerMode)}>
             <RefreshCcw aria-hidden="true" />
             Reset or retest
           </a>
-          <span className="badge badge-muted">Small rules, robust paths</span>
           <BuildVersionStamp routerMode={routerMode} compact />
         </div>
       </section>
 
-      <section className="example-proof-strip" data-testid="simple-proof-anchors" aria-label="Simple examples proof anchors">
-        <div className="example-anchor">
-          <span>Simple source</span>
-          <code>{simpleAnchor}</code>
-        </div>
-        <div className="example-anchor">
-          <span>Verified by</span>
-          <code>{testAnchor}</code>
-        </div>
-        <div className="example-anchor">
-          <span>Proof command</span>
-          <code>{proofCommand}</code>
-        </div>
-      </section>
-
-      <section className="example-pattern-grid" data-testid="simple-examples">
-        {simplePatternCatalog.map((example, index) => {
-          const Icon = exampleIcons[example.slug];
+      <section className="most-simple-examples" data-testid="most-simple-examples">
+        {mostSimpleExamples.map((example) => {
+          const scenarioId = "scenarioId" in example ? example.scenarioId : undefined;
           return (
-            <article className="example-pattern-card" data-testid={`simple-example-${example.slug}`} id={`simple-${example.slug}`} key={example.title}>
-              <div className="example-card-top">
-                <Icon aria-hidden="true" />
-                <span className="status-chip">Step {index + 1}</span>
+            <article className="most-simple-card" id={`simple-${example.id}`} key={example.title}>
+              <div>
+                <strong>{example.title}</strong>
+                <p>{example.body}</p>
               </div>
-              <span>Solve path: {example.stepTitle}</span>
-              <strong>{example.title}</strong>
-              <p>{example.rule}</p>
-              <span className="example-code-label">Minimal rule</span>
-              <pre className="example-code">
-                <code>{example.code}</code>
-              </pre>
-              <div className="example-anchor">
-                <span>Robust source</span>
-                <code>{example.anchor}</code>
-              </div>
-              <span>
-                <strong>Robust path:</strong> {example.hook}
-              </span>
-              <a className="button button-light" href={debugRouteHref("/debug/version-skew", routerMode, example.scenarioId)}>
-                {example.scenarioId ? guidedScenarioSetupLabel(example.scenarioId) : "Open lab controls"}
-              </a>
+              {scenarioId ? (
+                <a className="button button-light" href={debugRouteHref("/debug/version-skew", routerMode, scenarioId)}>
+                  Try it
+                  <ArrowRight aria-hidden="true" />
+                </a>
+              ) : null}
             </article>
           );
         })}

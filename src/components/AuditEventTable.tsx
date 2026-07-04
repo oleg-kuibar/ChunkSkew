@@ -3,7 +3,24 @@ import { Download } from "lucide-react";
 import { fetchAuditEvents } from "../shared/auditLogClient";
 import { redactSensitiveMetadata } from "../shared/privacy";
 import { readTelemetryEvents } from "../shared/telemetry";
-import type { RouterMode } from "../shared/types";
+import { workflowTypeLabels, type RouterMode } from "../shared/types";
+
+const eventLabels: Record<string, string> = {
+  asset_retention_expiring_detected: "Retention window expiring",
+  asset_retention_used: "Retained file used",
+  api_contract_deprecating_detected: "API contract is changing",
+  chunk_load_failed: "Chunk load failed",
+  deployment_affinity_used: "Sticky tab used",
+  draft_submit_blocked_required_update: "Required update blocked submit",
+  draft_submit_deduped: "Duplicate submit reused result",
+  old_draft_submit_blocked_required_update: "Required update blocked old draft",
+  release_rollback_detected: "Release rollback detected",
+  workflow_draft_restored: "Draft restored"
+};
+
+function eventLabel(type: string) {
+  return eventLabels[type] ?? type.replaceAll("_", " ");
+}
 
 export function AuditEventTable({ routerMode, includeTelemetry = true }: { routerMode: RouterMode; includeTelemetry?: boolean }) {
   const auditQuery = useQuery({
@@ -18,15 +35,15 @@ export function AuditEventTable({ routerMode, includeTelemetry = true }: { route
       type: event.type,
       createdAt: event.createdAt,
       message: event.message,
-      source: "audit",
+      source: "server",
       metadata: redactSensitiveMetadata(event.metadata)
     })),
     ...telemetry.slice(0, 50).map((event) => ({
       id: event.id,
       type: event.name,
       createdAt: event.createdAt,
-      message: `${event.routerMode}${event.workflowType ? ` · ${event.workflowType}` : ""}`,
-      source: "telemetry",
+      message: `${event.routerMode}${event.workflowType ? ` · ${workflowTypeLabels[event.workflowType]}` : ""}`,
+      source: "browser",
       metadata: redactSensitiveMetadata(event.properties)
     }))
   ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -35,8 +52,8 @@ export function AuditEventTable({ routerMode, includeTelemetry = true }: { route
     <section className="table-section">
       <header className="section-header">
         <div>
-          <h2>Audit and telemetry events</h2>
-          <p>Internal simulation log with masked metadata only.</p>
+          <h2>Event trace</h2>
+          <p>Masked metadata only.</p>
         </div>
         <button className="button button-light" type="button" onClick={() => navigator.clipboard.writeText(JSON.stringify(rows, null, 2))}>
           <Download aria-hidden="true" />
@@ -49,9 +66,8 @@ export function AuditEventTable({ routerMode, includeTelemetry = true }: { route
             <tr>
               <th>Time</th>
               <th>Source</th>
-              <th>Type</th>
-              <th>Message</th>
-              <th>Metadata</th>
+              <th>Event</th>
+              <th>Data</th>
             </tr>
           </thead>
           <tbody>
@@ -59,8 +75,7 @@ export function AuditEventTable({ routerMode, includeTelemetry = true }: { route
               <tr key={row.id}>
                 <td>{new Date(row.createdAt).toLocaleTimeString()}</td>
                 <td>{row.source}</td>
-                <td>{row.type}</td>
-                <td>{row.message}</td>
+                <td>{eventLabel(row.type)}</td>
                 <td>
                   <code>{JSON.stringify(row.metadata)}</code>
                 </td>
@@ -68,7 +83,7 @@ export function AuditEventTable({ routerMode, includeTelemetry = true }: { route
             ))}
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={5}>No events recorded yet.</td>
+                <td colSpan={4}>No events recorded yet.</td>
               </tr>
             ) : null}
           </tbody>

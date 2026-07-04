@@ -6,20 +6,19 @@ Common search terms for this problem include version skew, build skew, stale chu
 
 ## Why It Matters
 
-In a simple content app, a failed lazy chunk is annoying. In a fintech workflow, it can be dangerous:
+In a simple content app, a failed lazy chunk is annoying. In any app with drafts or protected actions, it can be dangerous:
 
-- A payment review route may fail after the user entered recipient and amount.
-- An invoice approval modal may fail while the user is approving a bill.
-- A card-control page may fail after the user edited limits.
-- A KYB review step may fail after documents and owners were entered.
-- A retry after reload may duplicate a sensitive mutation unless idempotency is enforced.
+- A review route may fail after the user entered a draft.
+- A lazy check step may fail while the user is reviewing saved work.
+- A bad draft schema may need review before submit.
+- A retry after reload may duplicate a protected mutation unless idempotency is enforced.
 
 ## The Failure Path
 
 1. User opens release A.
 2. Release B deploys.
 3. The user continues in the old tab.
-4. The user navigates to a lazy route, modal, drawer, or review step.
+4. The user navigates to a lazy route, drawer, or review step.
 5. The browser requests a release A chunk.
 6. Old assets are missing, expired, or no longer routed by the CDN.
 7. The import rejects with a chunk/preload/module error.
@@ -36,9 +35,9 @@ ChunkSkew uses layered protection instead of pretending one technique solves eve
 | Update policy | Decide toast, banner, block, readonly, safe refresh, or fallback | `src/shared/updatePolicyEngine.ts` |
 | Chunk classification | Recognize Vite, dynamic import, CSS, and ChunkLoadError failures | `src/shared/chunkErrorClassifier.ts` |
 | Chunk recovery | Reload once, prevent loops, show controlled fallback | `src/shared/chunkRecoveryController.ts` |
-| Workflow drafts | Preserve payment, KYB, card, invoice, vendor state | `src/shared/workflowDraftStore.ts` |
+| Workflow drafts | Preserve draft and check-step state | `src/shared/workflowDraftStore.ts` |
 | Idempotency | Prevent duplicate sensitive mutations after refresh/retry | `src/shared/idempotencyKeyStore.ts` and `server/skew-server.ts` |
-| Mutation guard | Block risky actions when required update or incompatible API is pending | `src/shared/sensitiveMutationGuard.ts` |
+| Mutation guard | Block submit when required update or incompatible API is pending | `src/shared/sensitiveMutationGuard.ts` |
 | Asset strategy | Retain old assets or pin clients to deployment affinity | `src/shared/assetRetentionSimulator.ts` and `server/skew-server.ts` |
 
 ## Recommended Product Behavior
@@ -49,7 +48,7 @@ ChunkSkew uses layered protection instead of pretending one technique solves eve
 - API contract incompatible: allow review/read-only where safe, block mutation.
 - Chunk already failed: show a recovery fallback, not a generic crash.
 - Mutation pending: never reload until it settles.
-- Dirty form or MFA pending: never force refresh.
+- Dirty form or challenge pending: never force refresh.
 
 ## What Safe Refresh Means Here
 

@@ -1,14 +1,18 @@
-const namespace = "chunk-skew-finance";
+const namespace = "chunk-skew-lab";
 
 export function storageKey(key: string) {
   return `${namespace}:${key}`;
+}
+
+export function readStoredValue(storage: Storage, key: string) {
+  return storage.getItem(storageKey(key));
 }
 
 export function readJson<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") {
     return fallback;
   }
-  const raw = window.localStorage.getItem(storageKey(key));
+  const raw = readStoredValue(window.localStorage, key);
   if (!raw) {
     return fallback;
   }
@@ -39,7 +43,7 @@ export function readSessionFlag(key: string) {
   if (typeof window === "undefined") {
     return null;
   }
-  return window.sessionStorage.getItem(storageKey(key));
+  return readStoredValue(window.sessionStorage, key);
 }
 
 export function writeSessionFlag(key: string, value: string) {

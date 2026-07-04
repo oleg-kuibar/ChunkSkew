@@ -11,16 +11,18 @@ export type UpdateDecision =
   | "show-chunk-failure-fallback"
   | "allow-current-step-only"
   | "allow-readonly-mode";
-export type WorkflowType = "payment" | "invoice" | "card" | "kyb" | "transaction" | "admin" | "vendor" | "none";
+export type WorkflowType = "draft" | "old-draft" | "event" | "guarded" | "extra" | "none";
+
+export const workflowTypeLabels: Record<WorkflowType, string> = {
+  draft: "Save-refresh",
+  "old-draft": "Old draft",
+  event: "Lazy drawer",
+  guarded: "Guarded action",
+  extra: "Extra draft",
+  none: "General"
+};
 export type SensitiveMutationIntent =
-  | "payment.submit"
-  | "invoice.approve"
-  | "invoice.reject"
-  | "card.freeze"
-  | "card.unfreeze"
-  | "card.limit.update"
-  | "kyb.submit"
-  | "vendor.create"
+  | "draft.submit"
   | "role.change"
   | "api-key.generate";
 
@@ -52,15 +54,14 @@ export interface SessionUser {
   id: string;
   name: string;
   email: string;
-  role: "owner" | "admin" | "finance-manager" | "employee" | "auditor";
-  mfaEnabled: boolean;
+  role: "owner" | "admin" | "reviewer" | "employee" | "auditor";
+  challengeEnabled: boolean;
 }
 
 export interface Organization {
   id: string;
   name: string;
   fakeDataNotice: string;
-  riskTier: string;
 }
 
 export interface SessionSnapshot {
@@ -68,7 +69,7 @@ export interface SessionSnapshot {
   user: SessionUser;
   organization: Organization;
   permissions: string[];
-  mfaRequiredForSensitiveActions: boolean;
+  challengeRequiredForSensitiveActions: boolean;
   expiresAt: string;
 }
 
@@ -98,13 +99,11 @@ export type TelemetryEventName =
   | "chunk_reload_loop_prevented"
   | "workflow_draft_saved"
   | "workflow_draft_restored"
-  | "payment_submit_started"
-  | "payment_submit_succeeded"
-  | "payment_submit_deduped"
-  | "payment_submit_blocked_required_update"
-  | "invoice_approval_blocked_required_update"
-  | "card_update_blocked_required_update"
-  | "kyb_submit_blocked_required_update"
+  | "draft_submit_started"
+  | "draft_submit_succeeded"
+  | "draft_submit_deduped"
+  | "draft_submit_blocked_required_update"
+  | "old_draft_submit_blocked_required_update"
   | "mutation_deferred_due_to_pending_update"
   | "route_preload_started"
   | "route_preload_succeeded"

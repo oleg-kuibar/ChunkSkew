@@ -4,7 +4,7 @@ This documentation turns the runnable POC into a searchable knowledge repo for b
 
 Use it in three modes:
 
-- Learn the failure mode: open `/?debug=1`, read **Solve in this order**, then open `/examples?debug=1`.
+- Learn the failure mode: open `/?debug=1`, read the three tiny examples, then open `/examples?debug=1`.
 - Implement the pattern: use the [Pattern Index](patterns/README.md).
 - Reproduce the behavior: use the [Example Index](examples/README.md) and [Retest Runbook](guides/retest-runbook.md).
 
@@ -12,16 +12,16 @@ Use it in three modes:
 
 | Step | Where | What to prove |
 | --- | --- | --- |
-| 1 | `/?debug=1` | The four-step mental model and ordered pattern checklist are understandable before source reading, with direct links into matching simple examples. |
-| 2 | `/examples?debug=1` | Each card labels the `Minimal rule`, names a `Robust source`, shows proof anchors, and opens a named proof setup. |
-| 3 | **Open [proof] setup** | The app resets state, sets the lab mode, and opens the prepared workflow. |
-| 4 | **Lab controls** and **Return to example** | Diagnostics stay opt-in while the prepared workflow remains recoverable. |
-| 5 | [Production Checklist](reference/production-checklist.md) | The demo maps to rollout gates for a real React/Vite SPA. |
+| 1 | `/?debug=1` | Three examples explain the whole first pass: old tab, saved draft, blocked submit. |
+| 2 | `/examples?debug=1` | The simple examples stay plain: three rows, reset link, build stamp. |
+| 3 | **Lab controls** | Optional prepared examples reset state, set the lab mode, and open one focused route. |
+| 4 | **Return to example** | Diagnostics stay opt-in while the prepared example remains recoverable. |
+| 5 | [Production Checklist](reference/production-checklist.md) | The lab maps to rollout gates for a real React/Vite SPA. |
 
 ## Guides
 
 - [Rebuild Audit](audits/rebuild-audit.md): current UX/code friction and the target learning architecture.
-- [Completion Readiness Audit](audits/completion-readiness-audit.md): pasted brief versus current proof, including remaining partials.
+- [Completion Readiness Audit](audits/completion-readiness-audit.md): pasted brief versus current checks, including remaining partials.
 - [Build Version Skew](guides/build-version-skew.md): what breaks, why lazy chunks fail, and the layered mitigation model.
 - [Retest Runbook](guides/retest-runbook.md): reset state, reproduce stale chunk failure, and verify recovery.
 - [Production Rollout Guide](guides/production-rollout-guide.md): a practical rollout sequence for real apps.
@@ -40,13 +40,13 @@ Use it in three modes:
 
 - [Example Index](examples/README.md)
 - App route: `/examples?debug=1`
-- Standalone/fake-data/release-awareness contract proof: [`../tests/project-contract.spec.ts`](../tests/project-contract.spec.ts)
+- Standalone/fake-data/release-awareness contract check: [`../tests/project-contract.spec.ts`](../tests/project-contract.spec.ts)
 - Simple source: [`../src/examples/simpleVersionSkewPatterns.ts`](../src/examples/simpleVersionSkewPatterns.ts)
-- Simple source and docs vocabulary proof: [`../tests/simple-patterns.spec.ts`](../tests/simple-patterns.spec.ts)
-- Pure policy proof: [`../tests/update-policy.spec.ts`](../tests/update-policy.spec.ts)
-- Mutation metadata proof: [`../tests/api-client.spec.ts`](../tests/api-client.spec.ts)
-- [Payment Safe Refresh](examples/payment-safe-refresh.md)
-- [KYB Draft Recovery](examples/kyb-draft-recovery.md)
+- Simple source and docs vocabulary check: [`../tests/simple-patterns.spec.ts`](../tests/simple-patterns.spec.ts)
+- Pure policy check: [`../tests/update-policy.spec.ts`](../tests/update-policy.spec.ts)
+- Mutation metadata check: [`../tests/api-client.spec.ts`](../tests/api-client.spec.ts)
+- [Save Text Safely](examples/save-text-safe-refresh.md)
+- [Old Draft](examples/old-draft-recovery.md)
 - [Router Chunk Failure](examples/router-chunk-failure.md)
 
 ## Reference
@@ -54,7 +54,7 @@ Use it in three modes:
 - [Search Index](reference/search-index.md)
 - [Glossary](reference/glossary.md)
 - [Production Checklist](reference/production-checklist.md)
-- [Telemetry And Audit Events](reference/telemetry-and-audit-events.md)
+- [Event Trace](reference/telemetry-and-audit-events.md)
 
 ## Code Anchors
 
@@ -72,4 +72,5 @@ The most important implementation anchors are:
 - `src/components/UpdateSurfaces.tsx`
 - `src/pages/VersionSkewDebug.tsx`
 - `server/skew-server.ts`
+- `tests/learning-path.spec.ts`
 - `tests/version-skew.spec.ts`

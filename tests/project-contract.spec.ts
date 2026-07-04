@@ -13,7 +13,7 @@ test("project contract stays standalone and fake-data only", () => {
   const bannedPackages = ["next", "@next/env", "stripe", "plaid", "@auth0/auth0-react", "firebase", "aws-amplify"];
 
   expect(packageJson).toMatchObject({
-    name: "chunk-skew-fintech-poc",
+    name: "chunk-skew-lab",
     private: true
   });
   for (const name of bannedPackages) {
@@ -31,7 +31,7 @@ test("project contract stays standalone and fake-data only", () => {
 
   const readme = readFileSync("README.md", "utf8");
   expect(readme).toContain("standalone React/Vite");
-  expect(readme).toContain("fake deterministic fintech data only");
+  expect(readme).toContain("fake deterministic data only");
   expect(readme).toContain("does not import from, inspect, or depend on any production app");
   expect(readme).toContain("real money movement, real banking integrations, real auth, real customer data");
 

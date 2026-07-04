@@ -10,6 +10,7 @@ import { createAppQueryClient } from "./shared/queryClientVersionMiddleware";
 import { registerVitePreloadErrorHandler, type ChunkFailureEventDetail } from "./shared/chunkRecoveryController";
 import { startReleaseAwareness } from "./shared/releaseBusClient";
 import { registerOptionalServiceWorker } from "./shared/serviceWorkerRegistration";
+import { readStoredValue, storageKey } from "./shared/storage";
 import type { RouterMode } from "./shared/types";
 import "./styles.css";
 
@@ -17,14 +18,14 @@ function detectRouterMode(): RouterMode {
   const params = new URLSearchParams(window.location.search);
   const requested = params.get("router");
   if (requested === "tanstack") {
-    window.localStorage.setItem("chunk-skew-finance:router-mode", "tanstack-router");
+    window.localStorage.setItem(storageKey("router-mode"), "tanstack-router");
     return "tanstack-router";
   }
   if (requested === "react") {
-    window.localStorage.setItem("chunk-skew-finance:router-mode", "react-router");
+    window.localStorage.setItem(storageKey("router-mode"), "react-router");
     return "react-router";
   }
-  return (window.localStorage.getItem("chunk-skew-finance:router-mode") as RouterMode | null) ?? "react-router";
+  return (readStoredValue(window.localStorage, "router-mode") as RouterMode | null) ?? "react-router";
 }
 
 const initialRouterMode = detectRouterMode();

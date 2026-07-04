@@ -4,16 +4,13 @@ Use this checklist before enforcing strict build version skew behavior in a real
 
 ## Ordered Rollout Map
 
-Use the same order as the app's **Solve in this order** checklist. Start from `/examples?debug=1`: each card shows a `Minimal rule`, a `Robust source`, and a named proof setup before you apply the production gate.
+Use the same order as the app's three-example learning path. Start from `/examples?debug=1`: the page shows three plain rows, a reset link, and the current build stamp.
 
 | Order | Production gate |
 | --- | --- |
-| 1. Detect release skew | Build release metadata, `/version.json`, release bus, request headers, and telemetry. |
-| 2. Recover lazy chunks | Router-specific lazy wrappers, Vite preload handling, controlled fallback, and reload-loop prevention. |
-| 3. Preserve work | Draft autosave, schema compatibility, MFA safety, and idempotency keys that survive refresh. |
-| 4. Gate risky actions | Update policy, required-update gates, API compatibility blocking, and readonly fallback. |
-| 5. Prove no duplicates | Backend idempotency replay plus tests for retries after refresh or chunk failure. |
-| 6. Host for compatibility | No-cache HTML, immutable hashed assets, retained old chunks, and deployment affinity where needed. |
+| 1. Detect release skew | Build release metadata, `/version.json`, release bus, request headers, and an event trace. |
+| 2. Preserve work | Draft autosave, retry keys, schema compatibility, and safe refresh. |
+| 3. Block submit | Required-update gates, API compatibility blocking, and duplicate-submit prevention. |
 
 ## Build And Hosting
 
@@ -41,36 +38,36 @@ Use the same order as the app's **Solve in this order** checklist. Start from `/
 - Reload loops are prevented.
 - Normal users do not see raw stack traces.
 
-## Workflow Preservation
+## Draft Preservation
 
-- Sensitive workflows autosave drafts.
+- Protected routes autosave drafts.
 - Drafts include schema version and compatibility metadata.
-- Incompatible drafts show review-required fallback.
+- Incompatible drafts show a check fallback.
 - Idempotency keys survive refresh.
 - Pending mutations are not interrupted by refresh.
 
 ## Mutation Safety
 
 - Every sensitive mutation sends idempotency key, release ID, deployment ID, router mode, user ID, organization ID, API contract version, mutation intent, and timestamp.
-- Required update blocks new risky mutation.
+- Required update blocks new submit.
 - API contract incompatibility blocks mutation or switches to read-only.
 - Duplicate retry returns previous result.
 
-## Observability
+## Event Trace
 
-- Version checks are tracked.
-- Release availability and required updates are tracked.
-- Chunk failures and reload-loop prevention are tracked.
-- Blocked mutations are tracked.
-- Draft restore and duplicate-submit prevention are tracked.
-- Audit events are recorded for sensitive workflow recovery.
+- Version checks appear in the trace.
+- Release availability and required updates appear in the trace.
+- Chunk failures and reload-loop prevention appear in the trace.
+- Blocked actions appear in the trace.
+- Draft restore and duplicate-submit prevention appear in the trace.
+- Raw event plumbing can feed production observability later.
 
-## Product UX
+## User UX
 
 - Optional update shows passive awareness.
 - Recommended update prompts at safe points.
 - Required update explains that work is saved.
 - Dirty form is not force-refreshed.
-- MFA is not interrupted.
+- Confirmation challenge is not interrupted.
 - Mutation pending state is not refreshed.
 - Copy is calm and non-technical.

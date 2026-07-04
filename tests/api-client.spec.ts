@@ -1,21 +1,9 @@
 import { expect, test } from "@playwright/test";
 import { buildApiHeaders } from "../src/shared/apiClient";
-import type { ReleaseMetadata, SessionSnapshot } from "../src/shared/types";
+import type { SessionSnapshot } from "../src/shared/types";
+import { testRelease } from "./release-fixtures";
 
-const release: ReleaseMetadata = {
-  releaseId: "release-a",
-  buildTime: "2026-07-01T00:00:00.000Z",
-  gitSha: "test",
-  deploymentId: "deployment-release-a",
-  minimumSupportedClientRelease: "release-a",
-  updateSeverity: "optional",
-  routerMode: "react-router",
-  assetBasePath: "/releases/release-a/",
-  compatibilityWindowExpiresAt: "2026-07-04T00:00:00.000Z",
-  featureFlagSnapshotVersion: "ff-release-a",
-  apiContractVersion: "2026-06",
-  draftSchemaVersions: { payment: 2, kyb: 2, card: 2, invoice: 2, vendor: 2 }
-};
+const release = testRelease("release-a");
 
 const session: SessionSnapshot = {
   authenticated: true,
@@ -24,25 +12,24 @@ const session: SessionSnapshot = {
     name: "Test User",
     email: "test@example.test",
     role: "owner",
-    mfaEnabled: true
+    challengeEnabled: true
   },
   organization: {
     id: "org_test",
-    name: "Test Org LLC",
-    fakeDataNotice: "All data is fake.",
-    riskTier: "medium"
+    name: "Test Org",
+    fakeDataNotice: "All data is fake."
   },
-  permissions: ["payments:create"],
-  mfaRequiredForSensitiveActions: true,
+  permissions: ["protected:create"],
+  challengeRequiredForSensitiveActions: true,
   expiresAt: "2026-07-01T01:00:00.000Z"
 };
 
-test("api client sends fintech mutation metadata headers", () => {
+test("api client sends protected action metadata headers", () => {
   const headers = buildApiHeaders(
     "react-router",
     {
-      idempotencyKey: "payment.submit:workflow-1:key",
-      mutationIntent: "payment.submit"
+      idempotencyKey: "protected.submit:workflow-1:key",
+      mutationIntent: "api-key.generate"
     },
     release,
     session
@@ -55,7 +42,7 @@ test("api client sends fintech mutation metadata headers", () => {
   expect(headers.get("x-user-id")).toBe("usr_test");
   expect(headers.get("x-organization-id")).toBe("org_test");
   expect(headers.get("x-api-contract-version")).toBe("2026-06");
-  expect(headers.get("idempotency-key")).toBe("payment.submit:workflow-1:key");
-  expect(headers.get("x-mutation-intent")).toBe("payment.submit");
+  expect(headers.get("idempotency-key")).toBe("protected.submit:workflow-1:key");
+  expect(headers.get("x-mutation-intent")).toBe("api-key.generate");
   expect(Date.parse(headers.get("x-mutation-created-at") ?? "")).not.toBeNaN();
 });

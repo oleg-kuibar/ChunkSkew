@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { requiredUpdateState } from "./release-fixtures";
 
 async function prepare(page: Page, mode = "asset-retention") {
   await page.addInitScript((skewMode) => {
@@ -6,10 +7,10 @@ async function prepare(page: Page, mode = "asset-retention") {
       window.localStorage.clear();
       window.sessionStorage.setItem("chunk-skew-accessibility-initialized", "1");
     }
-    window.localStorage.setItem("chunk-skew-finance:debug", "1");
-    window.localStorage.setItem("chunk-skew-finance:router-mode", "react-router");
+    window.localStorage.setItem("chunk-skew-lab:debug", "1");
+    window.localStorage.setItem("chunk-skew-lab:router-mode", "react-router");
     window.localStorage.setItem(
-      "chunk-skew-finance:local-skew-mode",
+      "chunk-skew-lab:local-skew-mode",
       JSON.stringify({ "react-router": skewMode, "tanstack-router": skewMode })
     );
     window.__CHUNK_SKEW_TEST_NO_RELOAD__ = true;
@@ -26,43 +27,14 @@ async function expectNoHorizontalOverflow(page: Page) {
 }
 
 async function forceRequiredUpdate(page: Page) {
-  await page.request.post("/api/debug/version-skew/mode", { data: { mode: "broken" } });
-  await page.evaluate(() => {
-    const current = {
-      releaseId: "release-a",
-      buildTime: new Date().toISOString(),
-      gitSha: "test",
-      deploymentId: "deployment-release-a",
-      minimumSupportedClientRelease: "release-a",
-      updateSeverity: "optional",
-      routerMode: "react-router",
-      assetBasePath: "/releases/release-a/",
-      compatibilityWindowExpiresAt: new Date(Date.now() + 86400000).toISOString(),
-      featureFlagSnapshotVersion: "ff-release-a",
-      apiContractVersion: "2026-06",
-      draftSchemaVersions: { payment: 2, kyb: 2, card: 2, invoice: 2, vendor: 2 }
-    };
+  await page.request.post("/api/debug/version-skew/mode", { data: { mode: "api-contract-incompatible" } });
+  await page.evaluate((state) => {
     window.localStorage.setItem(
-      "chunk-skew-finance:version-state",
-      JSON.stringify({
-        current,
-        latest: {
-          ...current,
-          releaseId: "release-b",
-          deploymentId: "deployment-release-b",
-          minimumSupportedClientRelease: "release-b",
-          updateSeverity: "required",
-          assetBasePath: "/releases/release-b/"
-        },
-        updateAvailable: true,
-        updateSeverity: "required",
-        requiredUpdatePending: true,
-        apiContractCompatible: true,
-        checkedAt: new Date().toISOString()
-      })
+      "chunk-skew-lab:version-state",
+      JSON.stringify(state)
     );
     window.dispatchEvent(new CustomEvent("chunk-skew-storage", { detail: { key: "version-state" } }));
-  });
+  }, requiredUpdateState("react-router"));
 }
 
 async function expectContrast(locator: Locator, minimum = 4.5) {
@@ -115,44 +87,44 @@ test("learning and recovery surfaces reflow at 320px", async ({ page }) => {
   await prepare(page);
 
   await open(page, "/examples");
-  await expect(page.getByRole("heading", { name: "Simple examples" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Old tab. Saved text. Blocked submit." })).toBeVisible();
   await expect(page.getByRole("link", { name: "Reset or retest" })).toBeVisible();
   await expectNoHorizontalOverflow(page);
 
-  await open(page, "/debug/version-skew?scenario=payment-safe-refresh");
-  await expect(page.getByRole("button", { name: "Prepare payment recovery" })).toBeVisible();
+  await open(page, "/debug/version-skew?scenario=save-refresh");
+  await expect(page.getByRole("button", { name: "Start save text example" })).toBeVisible();
   await expectNoHorizontalOverflow(page);
 
-  await open(page, "/payments/create/recipient");
-  await page.getByLabel("Memo").fill("Narrow viewport draft");
+  await open(page, "/draft/write");
+  await page.getByLabel("Main text").fill("Narrow viewport draft");
   await page.reload();
   await expect(page.getByTestId("draft-restored-notice")).toBeVisible();
   await expectNoHorizontalOverflow(page);
 
   await open(page, "/debug/version-skew?scenario=missing-chunk");
-  await page.getByRole("button", { name: "Prepare missing chunk fallback" }).click();
+  await page.getByRole("button", { name: "Start missing file example" }).click();
   await expect(page.getByTestId("chunk-failure-fallback")).toBeVisible();
   await expectNoHorizontalOverflow(page);
 });
 
 test("primary learning and recovery colors meet normal text contrast", async ({ page }) => {
   await prepare(page);
-  await open(page, "/debug/version-skew?scenario=payment-safe-refresh");
+  await open(page, "/debug/version-skew?scenario=save-refresh");
   await expectContrast(page.getByRole("button", { name: "Reset simulation state" }));
-  await expectContrast(page.getByRole("button", { name: "Prepare payment recovery" }));
-  await expectContrast(page.getByText("Recommended next").first());
+  await expectContrast(page.getByRole("button", { name: "Start save text example" }));
+  await expectContrast(page.getByText("Next").first());
 
-  await open(page, "/payments/create/recipient");
-  await page.getByLabel("Memo").fill("Contrast proof draft");
+  await open(page, "/draft/write");
+  await page.getByLabel("Main text").fill("Contrast draft");
   await page.reload();
   await expectContrast(page.getByTestId("draft-restored-notice").locator("span"));
 
-  await open(page, "/settings");
+  await open(page, "/guarded-action");
   await forceRequiredUpdate(page);
-  await page.getByRole("button", { name: "Generate test key" }).click();
+  await page.getByRole("button", { name: "Run guarded action" }).click();
   await expectContrast(page.getByTestId("required-update-gate").locator(":scope > div > span").first());
 
   await open(page, "/debug/version-skew?scenario=missing-chunk");
-  await page.getByRole("button", { name: "Prepare missing chunk fallback" }).click();
+  await page.getByRole("button", { name: "Start missing file example" }).click();
   await expectContrast(page.getByTestId("chunk-failure-fallback").locator("p"));
 });

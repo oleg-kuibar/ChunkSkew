@@ -83,10 +83,10 @@ async function prime(page, routerMode, skewMode) {
         window.localStorage.clear();
         window.sessionStorage.setItem("chunk-skew-e2e-initialized", "1");
       }
-      window.localStorage.setItem("chunk-skew-finance:debug", "1");
-      window.localStorage.setItem("chunk-skew-finance:router-mode", mode);
+      window.localStorage.setItem("chunk-skew-lab:debug", "1");
+      window.localStorage.setItem("chunk-skew-lab:router-mode", mode);
       window.localStorage.setItem(
-        "chunk-skew-finance:local-skew-mode",
+        "chunk-skew-lab:local-skew-mode",
         JSON.stringify({ "react-router": skew, "tanstack-router": skew })
       );
       window.__CHUNK_SKEW_TEST_NO_RELOAD__ = true;
@@ -96,6 +96,13 @@ async function prime(page, routerMode, skewMode) {
 }
 
 async function forceRequiredUpdate(page, routerMode) {
+  await page.evaluate(() =>
+    fetch("/api/debug/version-skew/mode", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ mode: "broken" })
+    })
+  );
   await page.evaluate((mode) => {
     const current = {
       releaseId: "release-a",
@@ -109,17 +116,18 @@ async function forceRequiredUpdate(page, routerMode) {
       compatibilityWindowExpiresAt: new Date(Date.now() + 86400000).toISOString(),
       featureFlagSnapshotVersion: "ff-release-a",
       apiContractVersion: "2026-06",
-      draftSchemaVersions: { payment: 2, kyb: 2, card: 2, invoice: 2, vendor: 2 }
+      draftSchemaVersions: { draft: 2, oldDraft: 2, control: 2, modal: 2, extraDraft: 2 }
     };
     const latest = {
       ...current,
       releaseId: "release-b",
       deploymentId: "deployment-release-b",
       minimumSupportedClientRelease: "release-b",
-      updateSeverity: "required"
+      updateSeverity: "required",
+      assetBasePath: "/releases/release-b/"
     };
     window.localStorage.setItem(
-      "chunk-skew-finance:version-state",
+      "chunk-skew-lab:version-state",
       JSON.stringify({
         current,
         latest,
@@ -138,32 +146,31 @@ async function main() {
   await withPage(async (page) => {
     await prime(page, "react-router", "asset-retention");
     await page.goto("http://localhost:5173/?debug=1&router=react");
-    await page.getByRole("heading", { name: "Dashboard" }).waitFor();
-    console.log("✓ React Router dashboard loads");
+    await page.getByRole("heading", { name: "Three simple examples" }).waitFor();
+    console.log("✓ React Router article loads");
   });
 
   await withPage(async (page) => {
     await prime(page, "react-router", "broken");
-    await page.goto("http://localhost:5173/payments/create/review?debug=1&router=react");
+    await page.goto("http://localhost:5173/draft/check?debug=1&router=react");
     await page.getByTestId("chunk-failure-fallback").waitFor();
     console.log("✓ React Router chunk failure fallback appears");
   });
 
   await withPage(async (page) => {
     await prime(page, "react-router", "asset-retention");
-    await page.goto("http://localhost:5173/payments/create/mfa?debug=1&router=react");
-    await page.getByRole("button", { name: "Mark MFA verified" }).click();
+    await page.goto("http://localhost:5173/draft/submit?debug=1&router=react");
     await forceRequiredUpdate(page, "react-router");
-    await page.getByRole("button", { name: "Submit payment" }).click();
+    await page.getByRole("button", { name: "Submit action" }).click();
     await page.getByTestId("required-update-gate").waitFor();
-    console.log("✓ Required update blocks payment submit");
+    console.log("✓ Required update blocks submit");
   });
 
   await withPage(async (page) => {
     await prime(page, "tanstack-router", "asset-retention");
     await page.goto("http://localhost:5173/?debug=1&router=tanstack");
-    await page.getByRole("heading", { name: "Dashboard" }).waitFor();
-    console.log("✓ TanStack Router dashboard loads");
+    await page.getByRole("heading", { name: "Three simple examples" }).waitFor();
+    console.log("✓ TanStack Router article loads");
   });
 }
 

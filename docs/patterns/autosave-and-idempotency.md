@@ -4,7 +4,7 @@ Autosave preserves user intent. Idempotency prevents duplicate side effects.
 
 ## Problem
 
-After a safe refresh or chunk failure, the user may retry a sensitive action. Without idempotency, the retry can create a duplicate payment, duplicate approval, duplicate card change, or duplicate KYB submission.
+After a safe refresh or chunk failure, the user may retry a protected action. Without idempotency, the retry can create a duplicate side effect.
 
 ## Autosave Pattern
 
@@ -48,18 +48,14 @@ Code anchors:
 - `apiFetch(path, routerMode, options)` in `src/shared/apiClient.ts`
 - `requireIdempotency(...)` in `server/skew-server.ts`
 
-## Sensitive Mutations
+## Protected Actions
 
-- Create payment.
-- Approve invoice.
-- Reject invoice.
-- Freeze card.
-- Unfreeze card.
-- Update card limit.
-- Submit KYB/KYC.
-- Create vendor.
-- Change role/permission.
-- Generate API key.
+- Submit a draft.
+- Submit the saved-text example.
+- Submit a reviewed draft.
+- Create a related record.
+- Change a role or permission.
+- Generate a key example.
 
 ## Safety Rules
 

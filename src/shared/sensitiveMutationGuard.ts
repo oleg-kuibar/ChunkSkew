@@ -6,23 +6,14 @@ import { decideUpdatePolicy } from "./updatePolicyEngine";
 import type { RouterMode, SensitiveMutationIntent, TelemetryEventName, WorkflowType } from "./types";
 
 const permissionByIntent: Record<SensitiveMutationIntent, string> = {
-  "payment.submit": "payments:create",
-  "invoice.approve": "invoices:approve",
-  "invoice.reject": "invoices:approve",
-  "card.freeze": "cards:update",
-  "card.unfreeze": "cards:update",
-  "card.limit.update": "cards:update",
-  "kyb.submit": "kyb:submit",
-  "vendor.create": "payments:create",
+  "draft.submit": "protected:create",
   "role.change": "admin:write",
   "api-key.generate": "api-keys:create"
 };
 
 const requiredUpdateTelemetryByWorkflow: Partial<Record<WorkflowType, TelemetryEventName>> = {
-  payment: "payment_submit_blocked_required_update",
-  invoice: "invoice_approval_blocked_required_update",
-  card: "card_update_blocked_required_update",
-  kyb: "kyb_submit_blocked_required_update"
+  draft: "draft_submit_blocked_required_update",
+  "old-draft": "old_draft_submit_blocked_required_update"
 };
 
 export interface GuardInput {
@@ -32,7 +23,7 @@ export interface GuardInput {
   currentRoute: string;
   dirtyForm: boolean;
   mutationPending: boolean;
-  mfaPending: boolean;
+  challengePending: boolean;
   idempotencyKeyPresent: boolean;
   lastInteractionAt: number;
 }
@@ -94,7 +85,7 @@ function updatePolicyForMutation(input: GuardInput) {
     dirtyForm: input.dirtyForm,
     mutationPending: input.mutationPending,
     navigationPending: false,
-    mfaPending: input.mfaPending,
+    challengePending: input.challengePending,
     idempotencyKeyPresent: input.idempotencyKeyPresent,
     lastInteractionAt: input.lastInteractionAt,
     sensitiveWorkflow: input.workflowType !== "none",

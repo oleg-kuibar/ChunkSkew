@@ -1,26 +1,26 @@
-# Example: Payment Safe Refresh
+# Example: Save Text Safely
 
-This example demonstrates the core build version skew mitigation path for a sensitive payment workflow.
+This example demonstrates the core build version skew mitigation path for one autosaved text field and one protected action.
 
 ## Goal
 
-Prove that a required update does not lose the payment draft and does not create a duplicate payment after refresh/retry.
+Prove that a required update does not lose typed text and does not create a duplicate action after refresh/retry.
 
 ## Steps
 
 1. Start `pnpm dev:full`.
 2. Open `/debug/version-skew?debug=1&router=react`.
-3. Click **Prepare payment recovery**. The card resets simulation state, sets retained assets, and opens the payment workflow.
-4. Enter a memo.
-5. Continue through amount, schedule, review, and MFA.
+3. Click **Start** on the **Save text** control. The button resets simulation state, sets retained-file mode, and opens the draft example.
+4. Enter text.
+5. Continue to the submit step.
 6. Use **Lab controls** in the guided banner, open **Advanced diagnostics**, and select `broken`.
 7. Click **Return to example** in the guided banner.
-8. Click **Submit payment**.
-9. Confirm `RequiredUpdateGate` blocks the risky mutation.
+8. Click **Submit action**.
+9. Confirm `RequiredUpdateGate` blocks the submit.
 10. Click **Refresh safely**.
-11. Confirm the payment workflow resumes.
-12. Confirm the memo is restored.
-13. Submit payment.
+11. Confirm the draft example resumes.
+12. Confirm the text is restored.
+13. Submit the action.
 14. Retry with the same idempotency key and confirm the server dedupes.
 
 ## Expected UI
@@ -32,7 +32,7 @@ Prove that a required update does not lose the payment draft and does not create
 
 ## Code Anchors
 
-- `src/workflows/PaymentWorkflow.tsx`
+- `src/workflows/SaveRefreshWorkflow.tsx`
 - `src/shared/workflowDraftStore.ts`
 - `src/shared/idempotencyKeyStore.ts`
 - `src/shared/sensitiveMutationGuard.ts`
@@ -42,4 +42,4 @@ Prove that a required update does not lose the payment draft and does not create
 
 ## Test Anchor
 
-See `7b. Refresh safely resumes an autosaved payment workflow` and duplicate-submit tests in `tests/version-skew.spec.ts`.
+See `safe refresh blocks submit, recovers session, and keeps text` and `retry key survives reload` in `tests/version-skew.spec.ts`.

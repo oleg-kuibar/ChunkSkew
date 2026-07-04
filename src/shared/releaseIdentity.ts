@@ -1,13 +1,11 @@
 import type { ReleaseMetadata, RouterMode } from "./types";
-import { readJson, readSessionFlag, writeJson, writeSessionFlag } from "./storage";
+import { readJson, readSessionFlag, readStoredValue, storageKey, writeJson, writeSessionFlag } from "./storage";
 import { withAppBase } from "./routerLinks";
 
 const defaultDraftVersions = {
-  payment: 2,
-  kyb: 2,
-  card: 2,
-  invoice: 2,
-  vendor: 2
+  draft: 2,
+  oldDraft: 2,
+  extraDraft: 2
 };
 
 export function getBundledReleaseIdentity(routerMode: RouterMode): ReleaseMetadata {
@@ -67,14 +65,14 @@ export function isDebugMode() {
     return false;
   }
   const params = new URLSearchParams(window.location.search);
-  return params.get("debug") === "1" || window.localStorage.getItem("chunk-skew-finance:debug") === "1";
+  return params.get("debug") === "1" || readStoredValue(window.localStorage, "debug") === "1";
 }
 
 export function setDebugMode(enabled: boolean) {
   if (typeof window === "undefined") {
     return;
   }
-  window.localStorage.setItem("chunk-skew-finance:debug", enabled ? "1" : "0");
+  window.localStorage.setItem(storageKey("debug"), enabled ? "1" : "0");
 }
 
 export async function fetchVersionMetadata(routerMode: RouterMode): Promise<ReleaseMetadata> {

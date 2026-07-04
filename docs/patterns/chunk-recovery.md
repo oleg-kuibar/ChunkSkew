@@ -26,10 +26,9 @@ Code anchor:
 1. Classify the error.
 2. Count attempts per route/router/workflow in session storage.
 3. Emit `chunk-skew-chunk-failure`.
-4. Track router-specific telemetry.
-5. Record audit event.
-6. On first failure, attempt one reload unless test mode disables reload.
-7. On repeat failure, prevent loop and show fallback.
+4. Add the failure to the event trace.
+5. On first failure, attempt one reload unless test mode disables reload.
+6. On repeat failure, prevent loop and show fallback.
 
 Code anchor:
 

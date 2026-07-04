@@ -5,6 +5,11 @@ import { trackTelemetry } from "./telemetry";
 import type { RouterMode, SensitiveMutationIntent, WorkflowDraft, WorkflowType } from "./types";
 
 const supportedSchemaVersion = 2;
+const oldDraftExample = {
+  draftId: "old-draft",
+  workflowType: "old-draft",
+  intent: "draft.submit"
+} as const;
 
 export interface SaveDraftInput<T> {
   id: string;
@@ -76,8 +81,8 @@ function restoredDraft<T>(routerMode: RouterMode, draft: WorkflowDraft<T>, migra
   return { status: "restored", draft, migrated };
 }
 
-function migrateKybDraft<T>(draft: WorkflowDraft<T>) {
-  if (draft.schemaVersion !== 1 || draft.workflowType !== "kyb") {
+function migrateOldDraftExample<T>(draft: WorkflowDraft<T>) {
+  if (draft.schemaVersion !== 1 || draft.workflowType !== oldDraftExample.workflowType) {
     return null;
   }
   return {
@@ -95,7 +100,7 @@ function incompatibleDraft<T>(routerMode: RouterMode, draft: WorkflowDraft<T>): 
   void recordAuditEvent(
     routerMode,
     "workflow_draft.incompatible",
-    "Draft schema was incompatible and required review.",
+    "Draft schema was incompatible and required a check.",
     {
       workflowType: draft.workflowType,
       schemaVersion: draft.schemaVersion
@@ -117,7 +122,7 @@ export function restoreWorkflowDraft<T>(id: string, routerMode: RouterMode): Dra
   if (draft.schemaVersion === supportedSchemaVersion) {
     return restoredDraft(routerMode, draft, false);
   }
-  const migrated = migrateKybDraft(draft);
+  const migrated = migrateOldDraftExample(draft);
   if (migrated) {
     writeJson(key(id), migrated);
     return restoredDraft(routerMode, migrated, true, draft.schemaVersion);
@@ -129,22 +134,20 @@ export function clearWorkflowDraft(id: string) {
   removeKey(key(id));
 }
 
-export function seedIncompatibleKybDraft(routerMode: RouterMode) {
+export function seedOldDraftExample(routerMode: RouterMode) {
   saveWorkflowDraft({
-    id: "kyb",
-    workflowType: "kyb",
+    id: oldDraftExample.draftId,
+    workflowType: oldDraftExample.workflowType,
     routerMode,
-    currentPath: "/kyb/review",
-    currentStep: "review",
-    userId: "usr_olivia",
-    organizationId: "org_northstar",
+    currentPath: "/bad-draft/check",
+    currentStep: "check",
+    userId: "usr_example",
+    organizationId: "org_example",
     formValues: {
-      legalName: "Legacy Northstar LLC",
-      owners: [],
-      uploadedDocumentIds: [],
+      note: "Legacy saved note",
       migrationReviewRequired: true
     },
     schemaVersion: 99,
-    mutationIntent: "kyb.submit"
+    mutationIntent: oldDraftExample.intent
   });
 }

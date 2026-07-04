@@ -2,21 +2,19 @@ import { expect, test, type Page } from "@playwright/test";
 import { redactSensitiveMetadata } from "../src/shared/privacy";
 
 const rawValues = [
-  "123456789012",
-  "4242424242424242",
   "doc_raw_001",
   "sk_test_raw",
   "12-3456789",
-  "payment.submit:workflow-raw:key"
+  "protected.action:workflow-raw:key"
 ];
 
 async function prepare(page: Page) {
   await page.addInitScript(() => {
     window.localStorage.clear();
-    window.localStorage.setItem("chunk-skew-finance:debug", "1");
-    window.localStorage.setItem("chunk-skew-finance:router-mode", "react-router");
+    window.localStorage.setItem("chunk-skew-lab:debug", "1");
+    window.localStorage.setItem("chunk-skew-lab:router-mode", "react-router");
     window.localStorage.setItem(
-      "chunk-skew-finance:telemetry-events",
+      "chunk-skew-lab:telemetry-events",
       JSON.stringify([
         {
           id: "tel_raw",
@@ -24,14 +22,12 @@ async function prepare(page: Page) {
           createdAt: new Date().toISOString(),
           releaseId: "release-a",
           routerMode: "react-router",
-          workflowType: "payment",
+          workflowType: "guarded",
           properties: {
-            accountNumber: "123456789012",
-            cardPan: "4242424242424242",
             documentIds: ["doc_raw_001"],
             nested: { secret: "sk_test_raw", taxId: "12-3456789" },
-            idempotencyKey: "payment.submit:workflow-raw:key",
-            safeRoute: "/audit"
+            idempotencyKey: "protected.action:workflow-raw:key",
+            safeRoute: "/event-log"
           }
         }
       ])
@@ -42,13 +38,11 @@ async function prepare(page: Page) {
 
 test("privacy redaction masks nested sensitive metadata", () => {
   const redacted = redactSensitiveMetadata({
-    accountNumber: "123456789012",
-    cardPan: "4242424242424242",
     documentCount: 2,
     documentIds: ["doc_raw_001"],
     nested: { secret: "sk_test_raw", taxId: "12-3456789" },
-    idempotencyKey: "payment.submit:workflow-raw:key",
-    safeRoute: "/audit"
+    idempotencyKey: "protected.action:workflow-raw:key",
+    safeRoute: "/event-log"
   });
   const json = JSON.stringify(redacted);
 
@@ -58,23 +52,21 @@ test("privacy redaction masks nested sensitive metadata", () => {
   expect(redacted).toMatchObject({
     documentCount: 2,
     idempotencyKey: "present",
-    safeRoute: "/audit"
+    safeRoute: "/event-log"
   });
 });
 
-test("privacy redaction covers audit table and telemetry storage", async ({ page }) => {
+test("privacy redaction covers event trace and stored events", async ({ page }) => {
   await prepare(page);
   await page.request.post("/api/audit-events", {
     data: {
       type: "privacy.raw",
       message: "Raw metadata should not leave debug surfaces.",
       metadata: {
-        accountNumber: "123456789012",
-        cardPan: "4242424242424242",
         documentIds: ["doc_raw_001"],
         nested: { secret: "sk_test_raw", taxId: "12-3456789" },
-        idempotencyKey: "payment.submit:workflow-raw:key",
-        safeRoute: "/audit"
+        idempotencyKey: "protected.action:workflow-raw:key",
+        safeRoute: "/event-log"
       }
     }
   });
@@ -85,8 +77,8 @@ test("privacy redaction covers audit table and telemetry storage", async ({ page
     expect(auditText).not.toContain(raw);
   }
 
-  await page.goto("/audit?debug=1&router=react");
-  await expect(page.getByRole("heading", { name: "Audit and telemetry events" })).toBeVisible();
+  await page.goto("/event-log?debug=1&router=react");
+  await expect(page.getByRole("heading", { name: "Event trace" })).toBeVisible();
   const tableText = await page.locator("table").innerText();
   for (const raw of rawValues) {
     expect(tableText).not.toContain(raw);
@@ -99,14 +91,12 @@ test("privacy redaction covers audit table and telemetry storage", async ({ page
       "version_check_failed",
       "react-router",
       {
-        accountNumber: "123456789012",
-        cardPan: "4242424242424242",
         documentIds: ["doc_raw_001"],
         nested: { secret: "sk_test_raw", taxId: "12-3456789" },
-        idempotencyKey: "payment.submit:workflow-raw:key",
-        safeRoute: "/audit"
+        idempotencyKey: "protected.action:workflow-raw:key",
+        safeRoute: "/event-log"
       },
-      "payment"
+      "admin"
     );
     return JSON.stringify(event);
   });

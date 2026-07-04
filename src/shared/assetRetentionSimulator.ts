@@ -4,15 +4,12 @@ import { getVersionState } from "./versionCheckClient";
 import type { RouterMode, SkewMode } from "./types";
 
 const failingRoutes = new Set([
-  "payment-review",
-  "invoice-detail",
-  "card-detail",
-  "kyb-review",
-  "transaction-report",
-  "tanstack-payment-lazy",
-  "tanstack-invoice-lazy",
+  "draft-check",
+  "bad-draft-check",
+  "retained-file",
+  "tanstack-draft-route",
   "tanstack-pending-lazy",
-  "tanstack-error-lazy"
+  "tanstack-bad-draft-route"
 ]);
 
 export function getLocalSkewMode(routerMode: RouterMode): SkewMode | undefined {

@@ -59,22 +59,22 @@ This page intentionally repeats common search terms so people can find the right
 - simple pattern catalog
 - guided scenario catalog
 - start page scenario catalog
-- guided proof scenario labels
+- guided example labels
 - guided scenario setup label
 - named setup links
 - primary guided scenario
-- proof setup
-- active proof setup
+- example setup
+- active example
 - return to example
 - reset confirmation strip
-- learning proof command
+- learning check command
 - release identity in sync
 - release debug status
 - update policy vs status
 - session recovered status
 - build status visible
 - update policy decisions
-- pure update policy proof
+- pure update policy check
 
 ## Deployment Terms
 

@@ -5,20 +5,13 @@ import express from "express";
 import { WebSocketServer } from "ws";
 import { redactSensitiveMetadata } from "../src/shared/privacy";
 import {
-  accounts,
   apiKeys,
-  cards,
   getActor,
   getRequestMetadata,
-  invoices,
-  kybApplication,
   organization,
-  payments,
   resetMockData,
   roleMatrix,
-  transactions,
   users,
-  vendors,
   type AuditEvent,
   type SkewMode
 } from "./mock-data";
@@ -89,11 +82,9 @@ function versionMetadata(routerMode = "react-router", clientReleaseId?: string) 
     featureFlagSnapshotVersion: `ff-${releaseId}`,
     apiContractVersion: state.apiContractVersion,
     draftSchemaVersions: {
-      payment: 2,
-      kyb: 2,
-      card: 2,
-      invoice: 2,
-      vendor: 2
+      draft: 2,
+      oldDraft: 2,
+      extraDraft: 2
     },
     skewMode: state.mode
   };
@@ -248,7 +239,7 @@ app.get("/api/session", (req, res) => {
     user: actor,
     organization,
     permissions: roleMatrix[actor.role],
-    mfaRequiredForSensitiveActions: true,
+    challengeRequiredForSensitiveActions: true,
     expiresAt: expired ? new Date(Date.now() - 1000).toISOString() : new Date(Date.now() + 45 * 60 * 1000).toISOString()
   });
 });
@@ -257,168 +248,18 @@ app.get("/api/org", (_req, res) => {
   res.json(organization);
 });
 
-app.get("/api/dashboard", (_req, res) => {
-  res.json({
-    accounts,
-    pendingApprovals: invoices.filter((invoice) => invoice.status === "pending").slice(0, 3),
-    recentTransactions: transactions.slice(0, 6),
-    riskAlerts: [
-      { id: "risk_001", severity: "medium", title: "New vendor above approval threshold", entity: "Kestrel Cloud Services" },
-      { id: "risk_002", severity: "low", title: "Card receipt missing", entity: "Nora Adams" }
-    ],
-    cardsRequiringAttention: cards.filter((card) => Boolean(card.attention)),
-    invoicesDueSoon: invoices.slice(0, 3)
-  });
-});
-
-app.get("/api/accounts", (_req, res) => res.json(accounts));
-app.get("/api/vendors", (_req, res) => res.json(vendors));
-
-app.post("/api/vendors", permissionGuard("payments:create"), (req, res) => {
-  requireIdempotency(req, res, "vendor.create", () => {
-    const created = {
-      id: `ven_${Date.now()}`,
-      name: String(req.body.name ?? "New fake vendor"),
-      accountMask: "**** 5401",
-      risk: "medium",
-      category: String(req.body.category ?? "General")
-    };
-    vendors.push(created);
-    appendAudit(req, "vendor.created", `Vendor ${created.name} created.`, { vendorId: created.id });
-    return created;
-  });
-});
-
-app.get("/api/payments", (_req, res) => res.json(payments));
-app.get("/api/payments/:id", (req, res) => {
-  const payment = payments.find((item) => item.id === req.params.id);
-  if (!payment) {
-    res.status(404).json({ error: "not_found" });
-    return;
-  }
-  res.json(payment);
-});
-
-app.post("/api/payments", permissionGuard("payments:create"), (req, res) => {
-  requireIdempotency(req, res, "payment.submit", () => {
-    const payment = {
-      id: `pay_${Date.now()}`,
-      vendorId: String(req.body.vendorId),
-      amountCents: Number(req.body.amountCents),
-      fundingAccountId: String(req.body.fundingAccountId),
-      paymentDate: String(req.body.paymentDate),
-      status: "scheduled",
-      idempotencyKey: req.header("idempotency-key") ?? "missing",
+app.post("/api/draft-action", permissionGuard("protected:create"), (req, res) => {
+  requireIdempotency(req, res, "draft.submit", () => {
+    const result = {
+      id: `draft_${Date.now()}`,
+      memo: String(req.body.memo ?? ""),
       createdAt: new Date().toISOString()
     };
-    payments.push(payment);
-    appendAudit(req, "payment.submitted", `Payment ${payment.id} scheduled.`, {
-      paymentId: payment.id,
-      amountCents: payment.amountCents,
+    appendAudit(req, "draft.submitted", `Draft action ${result.id} submitted.`, {
+      resultId: result.id,
       idempotencyKeyPresent: true
     });
-    return payment;
-  });
-});
-
-app.get("/api/invoices", (_req, res) => res.json(invoices));
-app.get("/api/invoices/:id", (req, res) => {
-  const invoice = invoices.find((item) => item.id === req.params.id);
-  if (!invoice) {
-    res.status(404).json({ error: "not_found" });
-    return;
-  }
-  res.json(invoice);
-});
-
-app.post("/api/invoices/:id/approve", permissionGuard("invoices:approve"), (req, res) => {
-  requireIdempotency(req, res, "invoice.approve", () => {
-    const invoice = invoices.find((item) => item.id === req.params.id);
-    if (!invoice) {
-      return { error: "not_found" };
-    }
-    invoice.status = "approved";
-    appendAudit(req, "invoice.approved", `Invoice ${invoice.id} approved.`, { invoiceId: invoice.id });
-    return invoice;
-  });
-});
-
-app.post("/api/invoices/:id/reject", permissionGuard("invoices:approve"), (req, res) => {
-  requireIdempotency(req, res, "invoice.reject", () => {
-    const invoice = invoices.find((item) => item.id === req.params.id);
-    if (!invoice) {
-      return { error: "not_found" };
-    }
-    invoice.status = "rejected";
-    appendAudit(req, "invoice.rejected", `Invoice ${invoice.id} rejected.`, {
-      invoiceId: invoice.id,
-      notePresent: Boolean(req.body.note)
-    });
-    return invoice;
-  });
-});
-
-app.get("/api/cards", (_req, res) => res.json(cards));
-app.get("/api/cards/:id", (req, res) => {
-  const card = cards.find((item) => item.id === req.params.id);
-  if (!card) {
-    res.status(404).json({ error: "not_found" });
-    return;
-  }
-  res.json(card);
-});
-
-app.post("/api/cards/:id/freeze", permissionGuard("cards:update"), (req, res) => {
-  requireIdempotency(req, res, "card.freeze", () => {
-    const card = cards.find((item) => item.id === req.params.id);
-    if (card) {
-      card.status = "frozen";
-    }
-    appendAudit(req, "card.frozen", `Card ${req.params.id} frozen.`, { cardId: req.params.id });
-    return card;
-  });
-});
-
-app.post("/api/cards/:id/unfreeze", permissionGuard("cards:update"), (req, res) => {
-  requireIdempotency(req, res, "card.unfreeze", () => {
-    const card = cards.find((item) => item.id === req.params.id);
-    if (card) {
-      card.status = "active";
-    }
-    appendAudit(req, "card.unfrozen", `Card ${req.params.id} unfrozen.`, { cardId: req.params.id });
-    return card;
-  });
-});
-
-app.post("/api/cards/:id/limits", permissionGuard("cards:update"), (req, res) => {
-  requireIdempotency(req, res, "card.limit.update", () => {
-    const card = cards.find((item) => item.id === req.params.id);
-    if (card) {
-      card.spendLimitCents = Number(req.body.spendLimitCents);
-      card.categories = Array.isArray(req.body.categories) ? req.body.categories : card.categories;
-    }
-    appendAudit(req, "card.limit_updated", `Card ${req.params.id} controls updated.`, {
-      cardId: req.params.id,
-      spendLimitCents: card?.spendLimitCents
-    });
-    return card;
-  });
-});
-
-app.get("/api/transactions", (req, res) => {
-  const q = String(req.query.q ?? "").toLowerCase();
-  res.json(q ? transactions.filter((item) => item.description.toLowerCase().includes(q)) : transactions);
-});
-
-app.get("/api/kyb", (_req, res) => res.json(kybApplication));
-app.post("/api/kyb", permissionGuard("kyb:submit"), (req, res) => {
-  requireIdempotency(req, res, "kyb.submit", () => {
-    kybApplication.status = "submitted";
-    appendAudit(req, "kyb.submitted", "KYB application submitted for review.", {
-      applicationId: kybApplication.id,
-      documentCount: Array.isArray(req.body.documents) ? req.body.documents.length : 0
-    });
-    return { ...kybApplication, submittedAt: new Date().toISOString() };
+    return result;
   });
 });
 
@@ -451,7 +292,7 @@ app.post("/api/admin/roles", permissionGuard("admin:write"), (req, res) => {
   requireIdempotency(req, res, "role.change", () => {
     const actor = getActor(req);
     const nextRole = String(req.body.role);
-    if (!["owner", "admin", "finance-manager", "employee", "auditor"].includes(nextRole)) {
+    if (!["owner", "admin", "reviewer", "employee", "auditor"].includes(nextRole)) {
       return { error: "invalid_role" };
     }
     actor.role = nextRole as typeof actor.role;

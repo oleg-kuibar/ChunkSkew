@@ -11,7 +11,7 @@ export interface PolicyInput {
   dirtyForm: boolean;
   mutationPending: boolean;
   navigationPending: boolean;
-  mfaPending: boolean;
+  challengePending: boolean;
   idempotencyKeyPresent: boolean;
   lastInteractionAt: number;
   sensitiveWorkflow: boolean;
@@ -57,7 +57,7 @@ export function decideUpdatePolicy(input: PolicyInput): PolicyResult {
 
 export function decideUpdatePolicyForState(input: PolicyInput, versionState: VersionMetadata, now = Date.now()): PolicyResult {
   const idle = now - input.lastInteractionAt > 60_000;
-  const clean = !input.dirtyForm && !input.mutationPending && !input.mfaPending && !input.navigationPending;
+  const clean = !input.dirtyForm && !input.mutationPending && !input.challengePending && !input.navigationPending;
 
   if (input.chunkFailureAlreadyHappened) {
     return policyResult(
@@ -91,7 +91,7 @@ export function decideUpdatePolicyForState(input: PolicyInput, versionState: Ver
   }
 
   if (versionState.requiredUpdatePending) {
-    if (input.sensitiveWorkflow && input.requiredWorkflowChunksPreloaded && !input.dirtyForm && !input.mfaPending) {
+    if (input.sensitiveWorkflow && input.requiredWorkflowChunksPreloaded && !input.dirtyForm && !input.challengePending) {
       return policyResult(
         versionState,
         "allow-current-step-only",
@@ -100,7 +100,7 @@ export function decideUpdatePolicyForState(input: PolicyInput, versionState: Ver
       );
     }
 
-    if (input.dirtyForm || input.mfaPending || input.sensitiveWorkflow) {
+    if (input.dirtyForm || input.challengePending || input.sensitiveWorkflow) {
       return policyResult(
         versionState,
         "block-next-sensitive-mutation",

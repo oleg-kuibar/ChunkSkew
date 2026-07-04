@@ -15,7 +15,7 @@ async function clearServiceWorkerState(page: import("@playwright/test").Page) {
 
 test("optional service worker caches release metadata and acknowledges asset warming", async ({ page }) => {
   await page.goto("/?debug=1&router=react");
-  await expect(page.getByRole("heading", { name: /Understand the failure/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Three simple examples" })).toBeVisible();
   await clearServiceWorkerState(page);
 
   const registered = await page.evaluate(async () => {
@@ -29,11 +29,11 @@ test("optional service worker caches release metadata and acknowledges asset war
   expect(registered).toBe(true);
 
   await page.reload();
-  await expect(page.getByRole("heading", { name: /Understand the failure/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Three simple examples" })).toBeVisible();
 
   const lifecycle = await page.evaluate(async () => {
     const registration = await navigator.serviceWorker.ready;
-    const versionUrl = `/version.json?sw-cache-proof=${crypto.randomUUID()}`;
+    const versionUrl = `/version.json?sw-cache-check=${crypto.randomUUID()}`;
     await fetch(versionUrl, { cache: "reload" });
 
     let cachedVersion = false;
@@ -59,7 +59,7 @@ test("optional service worker caches release metadata and acknowledges asset war
 
     registration.active?.postMessage({
       type: "WARM_WORKFLOW_ASSETS",
-      urls: [`/version.json?warm-proof=${crypto.randomUUID()}`]
+      urls: [`/version.json?warm-check=${crypto.randomUUID()}`]
     });
 
     return {

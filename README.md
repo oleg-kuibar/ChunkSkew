@@ -4,29 +4,29 @@ ChunkSkew is a standalone React/Vite knowledge repo for learning, testing, and d
 
 If someone searches this repo for **build version skew**, **version skew**, **stale chunks**, **Vite preload error**, **ChunkLoadError**, **safe refresh**, **asset retention**, or **deployment affinity**, they should land here and find both the runnable POC and the reusable engineering patterns.
 
-This repo uses fake deterministic fintech data only. It does not import from, inspect, or depend on any production app.
+This repo uses fake deterministic data only. It does not import from, inspect, or depend on any production app.
 
 ## Start Here
 
 Fast path for learning and proving the pattern:
 
-1. Open `/?debug=1` and read the four-step mental model plus **Solve in this order**.
-2. Use the **Open Step** links or open `/examples?debug=1` for cards labeled `Minimal rule`, `Robust source`, `Simple source`, and `Verified by`.
-3. Use each card's `Robust source` anchor for the implementation, then click the named **Open ... setup** button to run the workflow proof.
-4. Use **Lab controls** for diagnostics, then **Return to example** in the guided banner to continue the prepared workflow.
-5. Prove the learning path with:
+1. Open `/?debug=1` and read the three tiny examples: old tab, saved draft, blocked submit.
+2. Open `/examples?debug=1` for the same three rows without optional setup clutter.
+3. Open **Lab controls** when you want to prepare missing-file, old-draft, retained-file, or reset scenarios.
+4. Use **Return to example** in the guided banner to continue the prepared example after inspecting controls.
+5. Prove the article path with:
 
 ```bash
-pnpm test:learning:windows
+pnpm test:article
 ```
 
 - [Knowledge map](docs/README.md): guide, pattern, example, and reference index.
 - [Rebuild audit](docs/audits/rebuild-audit.md): current friction and the target learning architecture.
-- [Completion readiness audit](docs/audits/completion-readiness-audit.md): pasted brief versus current proof and remaining partials.
+- [Completion readiness audit](docs/audits/completion-readiness-audit.md): pasted brief versus current checks and remaining partials.
 - [Build version skew guide](docs/guides/build-version-skew.md): the core explanation and mitigation model.
-- [Retest runbook](docs/guides/retest-runbook.md): how to reset state and replay the demos.
+- [Retest runbook](docs/guides/retest-runbook.md): how to reset state and replay the examples.
 - [Pattern index](docs/patterns/README.md): reusable implementation patterns with code anchors.
-- [Examples index](docs/examples/README.md): payment, KYB, invoice, card, and router scenarios.
+- [Examples index](docs/examples/README.md): safe refresh, bad draft, missing chunk, and retained asset scenarios.
 - [Search index](docs/reference/search-index.md): keywords and synonyms people are likely to use.
 - [Production checklist](docs/reference/production-checklist.md): rollout gates for real apps.
 
@@ -35,11 +35,11 @@ pnpm test:learning:windows
 - Runtime release identity through `import.meta.env.VITE_RELEASE_ID`, generated `/version.json`, and visible bundle/session/latest/status build stamps.
 - Polling, focus/reconnect checks, route-transition checks, and SSE/WebSocket release awareness.
 - Chunk error classification for Vite preload failures, dynamic import failures, `ChunkLoadError`, and missing CSS/JS assets.
-- Safe refresh behavior that preserves autosaved workflow state and idempotency keys.
+- Safe refresh behavior that preserves autosaved draft state and idempotency keys.
 - React Router v6 lazy route recovery and TanStack Router lazy route recovery.
-- Sensitive mutation guards for payment, invoice, card, KYB, vendor, role, and API key actions.
+- Sensitive mutation guards for protected actions that must not run on an incompatible client.
 - Mock backend idempotency replay to prevent duplicate submissions.
-- Audit and telemetry events that can later map to Datadog, Bugsnag, Sentry, or OpenTelemetry.
+- A readable event trace that can later map to production observability.
 - Deployment mode simulations: `no-affinity`, `affinity`, `asset-retention`, `broken`, `compatibility-window-expired`, and `api-contract-incompatible`.
 
 ## Run The Knowledge App
@@ -71,9 +71,9 @@ Open Lab controls at `/debug/version-skew?debug=1` and click **Reset simulation 
 
 After reload, the page shows a reset confirmation strip and the build stamp should return to `Session dev-local` with `in sync` status unless another scenario is prepared.
 
-Guided scenario cards reset automatically before they prepare a scenario, so a manual reset is only needed before custom/manual replay.
+Guided example buttons reset automatically before they prepare a scenario, so a manual reset is only needed before custom/manual replay.
 
-That clears browser-side drafts, MFA state, idempotency keys, version overrides, preload state, telemetry, and local skew mode. It also resets backend skew mode, audit events, idempotency records, and mutable fake seed data.
+That clears browser-side drafts, idempotency keys, version overrides, preload state, the event log, and local skew mode. It also resets backend skew mode, stored events, idempotency records, and mutable fake seed data.
 
 Live skew mode is written to ignored `.chunk-skew/skew-state.json`. The tracked `server/skew-state.json` is only the seed state, so retests should not dirty it.
 
@@ -101,6 +101,8 @@ pnpm simulate:api-contract-incompatible
 
 ```bash
 pnpm exec tsc --noEmit
+pnpm test:article
+pnpm test:article:windows
 pnpm test:learning:windows
 pnpm test:e2e
 pnpm test:e2e:windows
@@ -110,6 +112,7 @@ pnpm build
 On this Codex/WSL setup, the Windows wrapper is the reliable browser path:
 
 ```bash
+pnpm test:article:windows
 pnpm test:e2e:windows
 ```
 
@@ -119,16 +122,16 @@ pnpm test:e2e:windows
 docs/
   guides/       Narrative guides and testing runbooks
   patterns/     Reusable implementation patterns
-  examples/     Workflow and router examples
+  examples/     Three small version-skew examples
   reference/    Glossary, search index, production checklist
 server/         Mock backend, release bus, skew-mode simulator
 src/
-  components/   Update surfaces, badges, audit UI, error boundaries
+  components/   Update surfaces, badges, event trace UI, error boundaries
   examples/     Tiny copy-paste version skew patterns
-  pages/        Fintech screens and debug controls
+  pages/        Guided example pages and debug controls
   router/       React Router and TanStack Router shells
-  shared/       Release, recovery, policy, telemetry, drafts, guards
-  workflows/    Payment, KYB, invoice modal, transaction drawer
+  shared/       Release, recovery, policy, events, drafts, guards
+  workflows/    Shared example flows used by the lazy routes
 tests/          Playwright version-skew matrix
 ```
 

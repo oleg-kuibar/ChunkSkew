@@ -35,4 +35,4 @@ Client recovery is necessary, but hosting strategy should prevent most stale chu
 
 ## Tradeoff
 
-Asset retention costs storage and CDN cache complexity. Deployment affinity can delay users from seeing the latest release. Both are usually cheaper than losing a payment workflow or creating duplicate sensitive actions.
+Asset retention costs storage and CDN cache complexity. Deployment affinity can delay users from seeing the latest release. Both are usually cheaper than losing a protected draft or creating duplicate side effects.
